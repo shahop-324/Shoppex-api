@@ -8,7 +8,6 @@ const userSchema = new mongoose.Schema({
   firstName: {
     type: String,
     trim: true,
-    required: [true, 'Please provide first name'],
   },
   lastName: {
     type: String,

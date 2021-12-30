@@ -4,7 +4,16 @@ const User = require('./../model/userModel')
 exports.registerUser = catchAsync(async (req, res, next) => {
   // Logic;
 
-  res.status(200).json({
+  const newUser = await User.create({
+    firstName: 'OP',
+    lastName: 'SHAH',
+    email: 'op@gmail.com',
+  });
+
+  console.log(newUser)
+
+  res.status(201).json({
     status: 'success',
+    data: newUser,
   })
 })

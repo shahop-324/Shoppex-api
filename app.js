@@ -1,29 +1,28 @@
-const axios = require('axios')
-const qs = require('query-string')
-const morgan = require('morgan')
+const axios = require('axios');
+const qs = require('query-string');
+const morgan = require('morgan');
 const express = require('express')
-
-const helmet = require('helmet')
-const mongosanitize = require('express-mongo-sanitize')
+const helmet = require('helmet');
+const mongosanitize = require('express-mongo-sanitize');
 const bodyParser = require('body-parser')
-const xss = require('xss-clean')
-const cors = require('cors')
-const cookieParser = require('cookie-parser')
-const jwt = require('jsonwebtoken')
-const session = require('cookie-session')
-var request = require('superagent')
-const querystring = require('querystring')
-const { promisify } = require('util')
+const xss = require('xss-clean');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
+const session = require('cookie-session');
+var request = require('superagent');
+const querystring = require('querystring');
+const { promisify } = require('util');
 
-const globalErrorHandler = require('./controllers/errController')
+const globalErrorHandler = require('./controllers/errController');
 const catchAsync = require('./utils/catchAsync')
 
 // Import routes
 
-const authRoutes = require('./routes/authRoutes')
+const authRoutes = require('./route/userRoutes')
 const { application } = require('express')
 
-const app = express()
+const app = express();
 
 app.use(
   cors({
@@ -36,11 +35,10 @@ app.use(
       'https://zapier.com',
       'https://www.zapier.com',
     ],
-
     methods: ['GET', 'PATCH', 'POST', 'DELETE', 'PUT'],
     credentials: true,
   }),
-)
+);
 
 app.use(cookieParser())
 
@@ -96,7 +94,7 @@ app.use(xss())
 
 // api.shoppex.in/v1/auth/registerUser (POST);
 
-app.use('/v1/auth', authRoutes)
+app.use('/v1/auth', authRoutes);
 
 const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET)
 
