@@ -8,7 +8,7 @@ process.on('uncaughtException', (err) => {
   console.log(err)
   console.log('UNCAUGHT Exception! Shutting down ...')
   process.exit(1)
-})
+});
 
 dotenv.config({ path: './config.env' })
 const cors = require('cors')
