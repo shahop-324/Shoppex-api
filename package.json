@@ -1,0 +1,33 @@
+{
+  "name": "shoppex-api",
+  "version": "0.1.0",
+  "description": "Shoppex is the easiest way to take any kind of offline shop online within 5 minutes.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Omprakash shah",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.24.0",
+    "body-parser": "^1.19.1",
+    "btoa": "^1.2.1",
+    "cookie-parser": "^1.4.6",
+    "cookie-session": "^2.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.2",
+    "express-mongo-sanitize": "^2.1.0",
+    "express-rate-limit": "^6.0.2",
+    "helmet": "^4.6.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.1.4",
+    "morgan": "^1.10.0",
+    "nanoid": "^3.1.30",
+    "query-string": "^7.0.1",
+    "querystring": "^0.2.1",
+    "superagent": "^6.1.0",
+    "util": "^0.12.4",
+    "xss-clean": "^0.1.1"
+  }
+}
