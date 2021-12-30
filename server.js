@@ -11,7 +11,6 @@ process.on('uncaughtException', (err) => {
 })
 
 dotenv.config({ path: './config.env' })
-
 const cors = require('cors')
 const app = require('./app')
 const http = require('http')
