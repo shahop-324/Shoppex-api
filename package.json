@@ -4,7 +4,8 @@
   "description": "Shoppex is the easiest way to take any kind of offline shop online within 5 minutes.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
   },
   "author": "Omprakash shah",
   "license": "ISC",
