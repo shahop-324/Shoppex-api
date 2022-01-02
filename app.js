@@ -20,7 +20,10 @@ const catchAsync = require('./utils/catchAsync')
 // Import routes
 
 const authRoutes = require('./route/userRoutes')
-const { application } = require('express')
+const productRoutes = require("./route/productRoutes");
+
+
+const { application } = require('express');
 
 const app = express();
 
@@ -93,8 +96,8 @@ app.use(mongosanitize())
 app.use(xss())
 
 // api.shoppex.in/v1/auth/registerUser (POST);
-
 app.use('/v1/auth', authRoutes);
+app.use("/v1/product", productRoutes);
 
 const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET)
 
