@@ -10,7 +10,7 @@ const productSchema = new mongoose.Schema({
     currency: {
         type: String,
         enum: ["INR", "USD"],
-    }
+    },
 });
 
 const Product = mongoose.model("Product", productSchema);
