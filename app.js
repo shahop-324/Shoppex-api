@@ -19,8 +19,9 @@ const catchAsync = require('./utils/catchAsync')
 
 // Import routes
 
-const authRoutes = require('./route/userRoutes')
+const authRoutes = require('./route/authRoutes')
 const productRoutes = require("./route/productRoutes");
+const notificationRoutes = require("./route/notificationRoutes");
 
 
 const { application } = require('express');
@@ -32,7 +33,7 @@ app.use(
     origin: [
       'https://127.0.0.1:3000',
       'http://127.0.0.1:3001',
-      'http://localhost:3001',
+      'http://localhost:3030',
       'https://www.letstream.live',
       'https://letstream.live',
       'https://zapier.com',
@@ -98,6 +99,7 @@ app.use(xss())
 // api.shoppex.in/v1/auth/registerUser (POST);
 app.use('/v1/auth', authRoutes);
 app.use("/v1/product", productRoutes);
+app.use("/v1/notification", notificationRoutes);
 
 const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET)
 

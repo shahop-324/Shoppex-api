@@ -10,6 +10,8 @@
   "author": "Omprakash shah",
   "license": "ISC",
   "dependencies": {
+    "@sendgrid/mail": "^7.6.0",
+    "aws-sdk": "^2.1055.0",
     "axios": "^0.24.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.1",
@@ -27,9 +29,11 @@
     "mongoose": "^6.1.4",
     "morgan": "^1.10.0",
     "nanoid": "^3.1.30",
+    "otp-generator": "^4.0.0",
     "query-string": "^7.0.1",
     "querystring": "^0.2.1",
     "superagent": "^6.1.0",
+    "twilio": "^3.72.0",
     "util": "^0.12.4",
     "validator": "^13.7.0",
     "xss-clean": "^0.1.1"
