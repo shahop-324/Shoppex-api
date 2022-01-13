@@ -6,7 +6,7 @@ const sgMail = require('@sendgrid/mail')
 sgMail.setApiKey(process.env.SENDGRID_KEY)
 
 exports.register = catchAsync(async (req, res, next) => {
-  const { firstName, lastName, shopName, phone } = req.body
+  const { firstName, lastName, shopName, email, password } = req.body
 
   const newUserRequest = await UserRequest.create({
     firstName,
@@ -14,15 +14,16 @@ exports.register = catchAsync(async (req, res, next) => {
     shopName,
     email,
     password,
-  })
+  });
 
   const otp = otpGenerator.generate(6, {
     upperCaseAlphabets: false,
     specialChars: false,
-  })
+    lowerCaseAlphabets: false,
+  });
 
-  newUserRequest.otp = otp
-  newUserRequest.expiry = Date.now() + 30 * 60 * 1000
+  newUserRequest.otp = otp;
+  newUserRequest.expiry = Date.now() + 30 * 60 * 1000;
 
   await newUserRequest.save({ new: true, validateModifiedOnly: true })
 
@@ -41,12 +42,12 @@ exports.register = catchAsync(async (req, res, next) => {
     })
     .catch(async (error) => {
       console.log('Failed to send verification mail to our user.');
-    })
+    });
 
   console.log(newUserRequest)
 
   res.status(201).json({
     status: 'success',
     // authySecret: newUserRequest, Create and send a secret for identification
-  })
-})
+  });
+});

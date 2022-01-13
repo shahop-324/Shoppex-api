@@ -10,9 +10,12 @@ const userRequestSchema = new mongoose.Schema({
   shopName: {
     type: String,
   },
-  phone: {
+  email: {
     type: String,
   },
+  password: {
+    type: String,
+  }
 })
 
 const UserRequest = mongoose.model('UserRequest', userRequestSchema)
