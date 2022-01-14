@@ -3,6 +3,10 @@ const bcrypt = require('bcryptjs')
 const crypto = require('crypto')
 
 const userRequestSchema = new mongoose.Schema({
+  type: {
+    type: String,
+    enum: ["Buyer", "Seller"],
+  },
   firstName: {
     type: String,
   },

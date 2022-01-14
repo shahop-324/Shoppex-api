@@ -1,25 +1,17 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
 const customerSchema = new mongoose.Schema({
-    firstName: {
-        type: String,
-        trim: true,
+  shopId: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Shop',
+  },
+  customers: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: 'Buyer',
     },
-    lastName: {
-        type: String,
-    },
-    email: {
-        type: String,
-    },
-    profilePic: {
+  ],
+})
 
-        type: String,
-
-    },
-    mobile: { type: String },
-    defaultAddress: { type: String },
-
-});
-
-const customer = mongoose.model("User", customerSchema);
-module.exports = customer;
+const Customer = mongoose.model('Customer', customerSchema)
+module.exports = Customer
