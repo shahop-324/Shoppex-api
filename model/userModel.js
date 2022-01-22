@@ -16,13 +16,12 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
   },
-  shopName: {
-    type: String,
-  },
-  shop: {
-    type: mongoose.Schema.ObjectId,
-    ref: "Shop",
-  },
+  stores: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: "Store",
+    }
+  ],
 })
 
 userSchema.methods.correctPassword = async function (

@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken')
 const catchAsync = require('../utils/catchAsync')
-const User = require('./../model/userModel')
+const User = require('./../model/userModel');
+const Store = require('../model/StoreModel');
 const UserRequest = require('./../model/userRequestModel')
 const bcrypt = require('bcryptjs')
 const crypto = require('crypto')
@@ -192,10 +193,19 @@ exports.verifyOTPForRegistration = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
     firstName: user.firstName,
     lastName: user.lastName,
-    shopName: user.shopName,
     email: user.email,
     password: user.password,
-  })
+  });
+
+  // Create new store with given shopName and assign it to user
+
+  const newStore = await Store.create({
+    name: user.shopName,
+  });
+
+  newUser.stores = newStore._id;
+
+  await newStore.save({new: true, validateModifiedOnly: true});
 
   // Destroy all userAccountRequests with this email
 
