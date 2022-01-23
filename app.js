@@ -32,8 +32,8 @@ app.use(
   cors({
     origin: [
       'https://127.0.0.1:3000',
-      'http://127.0.0.1:3001',
-      'http://localhost:3030',
+      'http://127.0.0.1:3000',
+      'http://localhost:3000',
       'https://www.letstream.live',
       'https://letstream.live',
       'https://zapier.com',

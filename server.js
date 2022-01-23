@@ -31,7 +31,7 @@ mongoose
     console.log('DB Connection successful')
   })
 
-const port = process.env.PORT || 8000
+const port =  8000
 const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET)
 
 server.listen(port, () => {
