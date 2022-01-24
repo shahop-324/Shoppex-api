@@ -25,6 +25,7 @@ const notificationRoutes = require('./route/notificationRoutes')
 const storeRoutes = require('./route/storeRoutes')
 const userRoutes = require('./route/userRoutes')
 const orderRoutes = require("./route/orderRoutes");
+const generalRoutes = require("./route/generalRoutes");
 
 const { application } = require('express')
 
@@ -99,6 +100,7 @@ app.use(mongosanitize())
 app.use(xss())
 
 // api.shoppex.in/v1/auth/registerUser (POST);
+app.use('/v1/general', generalRoutes);
 app.use('/v1/auth', authRoutes)
 app.use('/v1/product', productRoutes)
 app.use('/v1/notification', notificationRoutes)
