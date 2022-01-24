@@ -57,12 +57,44 @@ const checkoutFieldSchema = new mongoose.Schema({
 })
 
 const storeSchema = new mongoose.Schema({
+  setupCompleted: {
+    type: Boolean,
+    default: false,
+  },
   name: {
+    type: String,
+  },
+  country: {
+    type: String,
+  },
+  state: {
+    type: String,
+  },
+  city: {
+    type: String,
+  },
+  pincode:  {
+    type: Number,
+  },
+  address: {
+    type: String,
+  },
+  landmark: {
+    type: String,
+  },
+  gstin: {
     type: String,
   },
   subName: {
     type: String,
   },
+  category: {
+    type: String,
+  },
+  phone: {
+    type: String,
+  },
+  logo: {type: String,},
   email: {
     type: String,
   },
@@ -72,6 +104,30 @@ const storeSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  productsSold: {
+    type: Number,
+    default: 0,
+  },
+  customers: {
+    type: Number, 
+    default: 0,
+  },
+  storeViews: {
+    type: Number,
+    default: 0,
+  },
+  amountOnHold: {
+    type: Number,
+    default: 0,
+  },
+  amountPaid: {
+    type: Number,
+    default: 0,
+  },
+  createdAt: {
+    type: Date, 
+    default: Date.now(),
+  }
 })
 
 const Store = mongoose.model('Store', storeSchema)

@@ -84,3 +84,16 @@ exports.getAbondonedCarts = catchAsync(async (req, res, next) => {
     message: 'Abondoned carts found successfully!',
   })
 })
+
+exports.getRecentOrders = catchAsync(async (req, res, next) => {
+  // get latest 6 orders
+  const orders = await Order.find({ store: req.store._id })
+    .sort({ timestamp: -1 })
+    .limit(6)
+
+  res.status(200).json({
+    status: 'success',
+    data: orders,
+    message: 'successfully found latest orders',
+  })
+})

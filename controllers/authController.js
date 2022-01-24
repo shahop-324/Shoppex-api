@@ -1,16 +1,21 @@
 const jwt = require('jsonwebtoken')
 const catchAsync = require('../utils/catchAsync')
-const User = require('./../model/userModel');
-const Store = require('../model/StoreModel');
+const User = require('./../model/userModel')
+const Store = require('../model/StoreModel')
 const UserRequest = require('./../model/userRequestModel')
 const bcrypt = require('bcryptjs')
+const { promisify } = require("util");
 const crypto = require('crypto')
 const otpGenerator = require('otp-generator')
 const sgMail = require('@sendgrid/mail')
 sgMail.setApiKey(process.env.SENDGRID_KEY)
+const StoreSubName = require('../model/StoreSubNameModel')
+const { slugify } = require('slugify')
+const { nanoid } = require('nanoid')
 
 // this function will return you jwt token
-const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET)
+const signToken = (userId, storeId) =>
+  jwt.sign({ userId, storeId }, process.env.JWT_SECRET)
 
 // Register user
 
@@ -22,7 +27,7 @@ exports.register = catchAsync(async (req, res, next) => {
   const existingUser = await User.findOne({ email: email })
 
   if (existingUser) {
-    res.status(200).json({
+    res.status(400).json({
       status: 'error',
       message:
         'Email already registered on QwikShop, Please use different email.',
@@ -77,6 +82,7 @@ exports.register = catchAsync(async (req, res, next) => {
 
       res.status(201).json({
         status: 'success',
+        message: 'Please confirm your email address using OTP sent.',
       })
     })
     .catch(async (error) => {
@@ -162,65 +168,109 @@ exports.resendEmailVerificationOTP = catchAsync(async (req, res, next) => {
 // Verify OTP for registration
 
 exports.verifyOTPForRegistration = catchAsync(async (req, res, next) => {
-  const { email, otp } = req.body
+  try {
+    const { email, otp } = req.body
 
-  console.log(email, otp)
+    console.log(email, otp)
 
-  const user = await UserRequest.findOne({ email: email }).select('+otp')
+    const user = await UserRequest.findOne({ email: email }).select('+otp')
 
-  console.log(user)
+    console.log(user)
 
-  if (!user || !otp) {
-    // Bad request
-    res.status(400).json({
-      status: 'error',
-      message: 'Bad request',
+    if (!user || !otp) {
+      // Bad request
+      res.status(400).json({
+        status: 'error',
+        message: 'Bad request',
+      })
+      return
+    }
+
+    if (!(await user.correctOTP(otp, user.otp))) {
+      // Incorrect OTP
+      res.status(400).json({
+        status: 'error',
+        message: 'Incorrect OTP',
+      })
+    }
+
+    // At this point we are sure that OTP has been successfully verified
+    // Create actual user with this email and now no one can use this email again
+
+    const newUser = await User.create({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      password: user.password,
     })
-    return
-  }
 
-  if (!(await user.correctOTP(otp, user.otp))) {
-    // Incorrect OTP
-    res.status(400).json({
-      status: 'error',
-      message: 'Incorrect OTP',
+    // Create new store with given shopName and assign it to user
+
+    const newStore = await Store.create({
+      name: user.shopName,
     })
+
+    // Create a subname for store and create a subname doc for this store
+
+    const newSubNameDoc = await StoreSubName.create({
+      store: newStore._id,
+      createdAt: Date.now(),
+    })
+
+    // Find available sub-name
+
+    let slugName = slugify(user.shopName.toLowerCase())
+    let alternateSubname = nanoid()
+    let isAvailable = true
+
+    const subNameDocs = await StoreSubName.find({})
+
+    for (let element of subNameDocs) {
+      if (element.subName === slugName) {
+        isAvailable = false
+      }
+    }
+
+    if (isAvailable) {
+      newSubNameDoc.subName = slugName
+      newStore.subName = slugName
+    } else {
+      newSubNameDoc.subName = alternateSubname
+      newStore.subName = alternateSubname
+    }
+
+    newUser.stores.push(newStore._id)
+    // save store, user and subname doc
+
+    const updatedUser = await newUser.save({
+      new: true,
+      validateModifiedOnly: true,
+    })
+    await newSubNameDoc.save({ new: true, validateModifiedOnly: true })
+    const updatedStore = await newStore.save({
+      new: true,
+      validateModifiedOnly: true,
+    })
+
+    // Destroy all userAccountRequests with this email
+    await UserRequest.deleteMany({ email: email })
+
+    // Create and send login token for this user
+
+    const token = signToken(newUser._id, newUser.stores[0])
+
+    // TODO => Send welcome email to this user (P5)
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Email verified successfully!',
+      token,
+      user: updatedUser,
+      store: updatedStore,
+    })
+  } catch (error) {
+    console.log(error)
   }
-
-  // At this point we are sure that OTP has been successfully verified
-  // Create actual user with this email and now no one can use this email again
-
-  const newUser = await User.create({
-    firstName: user.firstName,
-    lastName: user.lastName,
-    email: user.email,
-    password: user.password,
-  });
-
-  // Create new store with given shopName and assign it to user
-
-  const newStore = await Store.create({
-    name: user.shopName,
-  });
-
-  newUser.stores = newStore._id;
-
-  await newStore.save({new: true, validateModifiedOnly: true});
-
-  // Destroy all userAccountRequests with this email
-
-  await UserRequest.deleteMany({ email: email })
-
-  // Create and send login token for this user
-
-  const token = signToken(newUser._id)
-
-  // TODO => Send welcome email to this user (P5)
-
-  res.status(200).json({
-    status: 'success',
-    message: 'Email verified successfully!',
-  })
 })
 
 // Login user
@@ -249,10 +299,11 @@ exports.loginUser = catchAsync(async (req, res, next) => {
     return
   }
 
-  const token = signToken(user._id)
+  const token = signToken(user._id, user.stores[0])
 
   res.status(200).json({
     status: 'success',
+    message: 'Logged in successfully!',
     token,
   })
 })
@@ -279,13 +330,13 @@ exports.protect = catchAsync(async (req, res, next) => {
   // 2) Verification of token
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
 
-  // 3) Check if user still exists
-
-  const freshUser = await User.findById(decoded.id)
-  if (!freshUser) {
+  // 3) Check if user & store still exists
+  const freshUser = await User.findById(decoded.userId)
+  const freshStore = await Store.findById(decoded.storeId)
+  if (!freshUser || !freshStore) {
     return next(
       new AppError(
-        'The user belonging to this token does no longer exists.',
+        'The user or store belonging to this token does no longer exists.',
         401,
       ),
     )
@@ -299,6 +350,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   // GRANT ACCESS TO PROTECTED ROUTE
   req.user = freshUser
+  req.store = freshStore
   next()
 })
 

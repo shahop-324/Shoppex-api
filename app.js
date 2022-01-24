@@ -1,32 +1,34 @@
-const axios = require('axios');
-const qs = require('query-string');
-const morgan = require('morgan');
+const axios = require('axios')
+const qs = require('query-string')
+const morgan = require('morgan')
 const express = require('express')
-const helmet = require('helmet');
-const mongosanitize = require('express-mongo-sanitize');
+const helmet = require('helmet')
+const mongosanitize = require('express-mongo-sanitize')
 const bodyParser = require('body-parser')
-const xss = require('xss-clean');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
-const jwt = require('jsonwebtoken');
-const session = require('cookie-session');
-var request = require('superagent');
-const querystring = require('querystring');
-const { promisify } = require('util');
+const xss = require('xss-clean')
+const cors = require('cors')
+const cookieParser = require('cookie-parser')
+const jwt = require('jsonwebtoken')
+const session = require('cookie-session')
+var request = require('superagent')
+const querystring = require('querystring')
+const { promisify } = require('util')
 
-const globalErrorHandler = require('./controllers/errController');
+const globalErrorHandler = require('./controllers/errController')
 const catchAsync = require('./utils/catchAsync')
 
 // Import routes
 
 const authRoutes = require('./route/authRoutes')
-const productRoutes = require("./route/productRoutes");
-const notificationRoutes = require("./route/notificationRoutes");
+const productRoutes = require('./route/productRoutes')
+const notificationRoutes = require('./route/notificationRoutes')
+const storeRoutes = require('./route/storeRoutes')
+const userRoutes = require('./route/userRoutes')
+const orderRoutes = require("./route/orderRoutes");
 
+const { application } = require('express')
 
-const { application } = require('express');
-
-const app = express();
+const app = express()
 
 app.use(
   cors({
@@ -42,7 +44,7 @@ app.use(
     methods: ['GET', 'PATCH', 'POST', 'DELETE', 'PUT'],
     credentials: true,
   }),
-);
+)
 
 app.use(cookieParser())
 
@@ -97,9 +99,12 @@ app.use(mongosanitize())
 app.use(xss())
 
 // api.shoppex.in/v1/auth/registerUser (POST);
-app.use('/v1/auth', authRoutes);
-app.use("/v1/product", productRoutes);
-app.use("/v1/notification", notificationRoutes);
+app.use('/v1/auth', authRoutes)
+app.use('/v1/product', productRoutes)
+app.use('/v1/notification', notificationRoutes)
+app.use('/v1/store', storeRoutes)
+app.use('/v1/user', userRoutes)
+app.use('/v1/order', orderRoutes);
 
 const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET)
 

@@ -6,61 +6,85 @@ const { nanoid } = require('nanoid')
 const StoreSubName = require('../model/StoreSubNameModel')
 const StorePages = require('../model/StorePages')
 
+// Get store details 
+
+exports.getStoreDetails = catchAsync(async(req, res, next) => {
+  const storeDoc = await Store.findById(req.store._id);
+  res.status(200).json({
+    status: "success",
+    data: storeDoc,
+    message: "Successfully found store details",
+  })
+});
+
 // Setup Store
 
 exports.setupStore = catchAsync(async (req, res, next) => {
+
+  console.log(req.user, req.store, req.body);
+
   const {
     name,
     country,
     state,
     city,
-    pincode,
     address,
     pincode,
     landmark,
     gstin,
     category,
     phone,
-    logo,
+    image,
   } = req.body
 
-  const subName = nanoid()
+  // Check if there is no previously assigned subname then assign new one
 
-  // Create a new subname Doc for this store
+  const storeSubNameDoc = await StoreSubName.findOne({ store: req.store._id })
 
-  await StoreSubName.create({
-    subName,
-    store: req.params.id,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  })
+  if (!storeSubNameDoc) {
+    const subName = nanoid()
+
+    // Create a new subname Doc for this store
+
+    await StoreSubName.create({
+      subName,
+      store: req.store._id,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    await Store.findByIdAndUpdate(
+      req.store._id,
+      { subName: subName },
+      { new: true, validateModifiedOnly: true },
+    )
+  }
 
   const updatedStore = await Store.findByIdAndUpdate(
-    req.params.id,
+    req.store._id,
     {
+      setupCompleted: true,
       name,
-      country,
+      country: country.label,
       state,
       city,
       pincode,
       address,
       landmark,
       gstin,
-      category,
+      category: category.label,
       phone,
-      logo,
-      email,
-      subName,
+      logo: image.path,
     },
     { new: true, validateModifiedOnly: true },
   )
 
   res.status(200).json({
     status: 'success',
-    message: 'Store created successfully',
+    message: 'Store details updated successfully',
     data: updatedStore,
-  })
-})
+  });
+});
 
 // Update notification settings
 
@@ -569,4 +593,4 @@ exports.updateStoreTheme = catchAsync(async (req, res, next) => {
     message: 'Store theme updated successfully!',
     data: updatedStore,
   })
-});
+})

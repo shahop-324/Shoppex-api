@@ -2,7 +2,7 @@ const Review = require('../model/reviewModel')
 const catchAsync = require('../utils/catchAsync')
 
 exports.getReveiwsForStore = catchAsync(async (req, res, next) => {
-  const { id } = req.params
+  const { id } = req.params;
 
   const reviews = await Review.find({ store: id })
 
