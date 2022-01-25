@@ -13,9 +13,21 @@ const categorySchema = new mongoose.Schema({
       ref: 'Product',
     },
   ],
-  shop: {
+  store: {
     type: mongoose.Schema.ObjectId,
-    ref: 'Shop',
+    ref: 'Store',
+  },
+  outOfStock: {
+    type: Boolean,
+    default: false,
+  },
+  hidden: {
+    type: Boolean,
+    default: false,
+  },
+  totalSales: {
+    type: Number,
+    default: 0,
   },
 })
 

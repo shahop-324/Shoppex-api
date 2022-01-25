@@ -1,12 +1,21 @@
 const Category = require('../model/CategoryModel')
 const Product = require('../model/productModel')
+const catchAsync = require('../utils/catchAsync')
 // Add, Edit, Delete, Get => Category
+
+const filterObj = (obj, ...allowedFields) => {
+  const newObj = {}
+  Object.keys(obj).forEach((el) => {
+    if (allowedFields.includes(el)) newObj[el] = obj[el]
+  })
+  return newObj
+}
 
 exports.addCategory = catchAsync(async (req, res, next) => {
   const { name, image } = req.body
 
   const newCategory = await Category.create({
-    store: req.params.id,
+    store: req.store._id,
     name,
     image,
   })
@@ -19,11 +28,13 @@ exports.addCategory = catchAsync(async (req, res, next) => {
 })
 
 exports.updateCategory = catchAsync(async (req, res, next) => {
-  const { name, image, categoryId } = req.body
+  const { categoryId } = req.params;
+
+  const filteredBody = filterObj(req.body, 'name', 'image', 'outOfStock', 'hidden');
 
   const updatedCategory = await Category.findByIdAndUpdate(
     categoryId,
-    { name, image },
+    filteredBody,
     { new: true, validateModifiedOnly: true },
   )
 
@@ -50,11 +61,9 @@ exports.deleteCategory = catchAsync(async (req, res, next) => {
 })
 
 exports.getCategories = catchAsync(async (req, res, next) => {
-  const { id } = req.params;
-
   // Also send total no. of products, total sales using aggregation pipeline
 
-  const categories = await Category.find({ store: id })
+  const categories = await Category.find({ store: req.store._id })
 
   res.status(200).json({
     status: 'success',
