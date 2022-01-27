@@ -1,12 +1,13 @@
 const mongoose = require('mongoose')
 
-const categorySchema = new mongoose.Schema({
+const subCategorySchema = new mongoose.Schema({
   name: {
     type: String,
   },
   image: {
     type: String,
   },
+  category: { type: Map },
   products: [
     {
       type: mongoose.Schema.ObjectId,
@@ -31,10 +32,10 @@ const categorySchema = new mongoose.Schema({
   },
 })
 
-categorySchema.index({
+subCategorySchema.index({
   name: 'text',
 })
 
-const Category = new mongoose.model('Category', categorySchema)
+const SubCategory = new mongoose.model('SubCategory', subCategorySchema)
 
-module.exports = Category
+module.exports = SubCategory

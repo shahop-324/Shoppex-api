@@ -27,6 +27,7 @@ const userRoutes = require('./route/userRoutes')
 const orderRoutes = require("./route/orderRoutes");
 const generalRoutes = require("./route/generalRoutes");
 const categoryRoutes = require("./route/categoryRoutes");
+const subCategoryRoutes = require("./route/subCategoryRoutes");
 
 const { application } = require('express')
 
@@ -109,6 +110,7 @@ app.use('/v1/store', storeRoutes)
 app.use('/v1/user', userRoutes)
 app.use('/v1/order', orderRoutes);
 app.use('/v1/category', categoryRoutes);
+app.use('/v1/subCategory', subCategoryRoutes);
 
 const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET)
 

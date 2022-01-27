@@ -1,62 +1,37 @@
 const Product = require('../model/productModel')
+const Catalouge = require('../model/catalougeModel')
 // Add, Edit, Delete, Get => Product
 const catchAsync = require('../utils/catchAsync')
+const apiFeatures = require('../utils/apiFeatures')
+
+const filterObj = (obj, ...allowedFields) => {
+  const newObj = {}
+  Object.keys(obj).forEach((el) => {
+    if (allowedFields.includes(el)) newObj[el] = obj[el]
+  })
+  return newObj
+}
 
 exports.addProduct = catchAsync(async (req, res, next) => {
-  const {
-    coins,
-    name,
-    category,
-    price,
-    discountedPrice,
-    wholesalePrice,
-    minWholesalePrice,
-    type,
-    description,
-    COD,
-    images,
-    productUnit,
-    minimumQuantitySold,
-    SKU,
-    quantityInStock,
-    weight,
-    variants,
-    colors,
-    addOns,
-    compulsoryAddon,
-    metaTitle,
-    metaKeywords,
-    metaDescription,
-  } = req.body
+  console.log(req.body)
 
   const newProduct = await Product.create({
-    coins,
-    store: req.params.id,
-    shopCategory: req.params.categoryId,
-    name,
-    category,
-    price,
-    discountedPrice,
-    wholesalePrice,
-    minWholesalePrice,
-    type,
-    description,
-    COD,
-    images,
-    productUnit,
-    minimumQuantitySold,
-    SKU,
-    quantityInStock,
-    weight,
-    variants,
-    colors,
-    addOns,
-    compulsoryAddon,
-    metaTitle,
-    metaKeywords,
-    metaDescription,
+    ...req.body,
+    store: req.store._id,
   })
-  
+
+  newProduct.updatedAt = Date.now()
+  await newProduct.save({ new: true, validateModifiedOnly: true })
+
+  // Add this product to its category
+
+  await Catalouge.create({
+    ...req.body,
+    store: req.store._id,
+  })
+
+  // Update corresponding category
+
   res.status(200).json({
     status: 'success',
     message: 'Product Added successfully!',
@@ -65,63 +40,40 @@ exports.addProduct = catchAsync(async (req, res, next) => {
 })
 
 exports.updateProduct = catchAsync(async (req, res, next) => {
-  const { id, categoryId, productId } = req.params
+  console.log(req.body)
+  const productDoc = await Product.findById(req.params.productId)
 
-  const {
-    coins,
-    name,
-    category,
-    price,
-    discountedPrice,
-    wholesalePrice,
-    minWholesalePrice,
-    type,
-    description,
-    COD,
-    images,
-    productUnit,
-    minimumQuantitySold,
-    SKU,
-    quantityInStock,
-    weight,
-    variants,
-    colors,
-    addOns,
-    compulsoryAddon,
-    metaTitle,
-    metaKeywords,
-    metaDescription,
-  } = req.body
+  // exclude images that needs to be excluded
+
+  productDoc.images = productDoc.images.filter(
+    (el) => !req.body.excludedImages.includes(el),
+  )
+
+  // exclude videos that needs to be excluded
+  productDoc.videos = productDoc.videos.filter(
+    (el) => !req.body.excludedVideos.includes(el),
+  )
+
+  // add videos that are added freshly
+
+  for (let element of req.body.videoKeys) {
+    productDoc.videos.push(element)
+  }
+
+  // add images that are added freshly
+  for (let element of req.body.imageKeys) {
+    productDoc.images.push(element)
+  }
+
+  productDoc.updatedAt = Date.now()
+
+  // then update rest of the things
+
+  await productDoc.save({ new: true, validateModifiedOnly: true })
 
   const updatedProduct = await Product.findByIdAndUpdate(
-    productId,
-    {
-      coins,
-      store: id,
-      shopCategory: categoryId,
-      name,
-      category,
-      price,
-      discountedPrice,
-      wholesalePrice,
-      minWholesalePrice,
-      type,
-      description,
-      COD,
-      images,
-      productUnit,
-      minimumQuantitySold,
-      SKU,
-      quantityInStock,
-      weight,
-      variants,
-      colors,
-      addOns,
-      compulsoryAddon,
-      metaTitle,
-      metaKeywords,
-      metaDescription,
-    },
+    req.params.productId,
+    { ...req.body },
     { new: true, validateModifiedOnly: true },
   )
 
@@ -133,14 +85,27 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
 })
 
 exports.deleteProduct = catchAsync(async (req, res, next) => {
-  const { id, categoryId, productId } = req.params
+  const { productId } = req.params
 
+  // Remove all products in this category
   await Product.findByIdAndDelete(productId)
-  // Remove this product from its category
 
+  // Remove this product from its category
   res.status(200).json({
     status: 'success',
     message: 'Product deleted successfully!',
+  })
+})
+
+exports.deleteMultipleProduct = catchAsync(async (req, res, next) => {
+  for (let element of req.body.productIds) {
+    // Remove all products in this category
+    await Product.findByIdAndDelete(element)
+    // Remove this product from its category
+  }
+  res.status(200).json({
+    status: 'success',
+    message: 'Products deleted successfully!',
   })
 })
 
@@ -159,14 +124,15 @@ exports.getProduct = catchAsync(async (req, res, next) => {
 exports.getProducts = catchAsync(async (req, res, next) => {
   // Get all products of a store
 
-  const { id } = req.params
+  const query = Product.find({ store: req.store._id })
 
-  const products = await Product.find({ store: id })
+  const features = new apiFeatures(query, req.query).textFilter()
+  const products = await features.query
 
   res.status(200).json({
     status: 'success',
-    data: products,
     message: 'Products found successfully!',
+    data: products,
   })
 })
 
@@ -214,4 +180,18 @@ exports.bulkUploadProducts = catchAsync(async (req, res, next) => {
         message: 'Failed to upload products.',
       })
     })
+})
+
+exports.reorderProducts = catchAsync(async (req, res, next) => {
+  // Delete all products and arrange them
+
+  await Product.deleteMany({ store: req.store._id })
+
+  const newProducts = await Product.insertMany(req.body.products)
+
+  res.status(200).json({
+    message: 'Reordered successfully!',
+    data: newProducts,
+    status: 'success',
+  })
 })

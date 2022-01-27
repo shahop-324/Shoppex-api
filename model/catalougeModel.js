@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const productSchema = new mongoose.Schema({
+const catalougeSchema = new mongoose.Schema({
   store: {
     type: mongoose.Schema.ObjectId,
     ref: 'Store',
@@ -57,9 +57,11 @@ const productSchema = new mongoose.Schema({
   hidden: { type: Boolean, default: false },
   totalSales: { type: Number, default: 0 },
   totalOrders: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now() },
+  updatedAt: { type: Date },
 })
 
-productSchema.index({
+catalougeSchema.index({
   productName: 'text',
   metaDescription: 'text',
   metaTitle: 'text',
@@ -68,5 +70,5 @@ productSchema.index({
   description: 'text',
 })
 
-const Product = mongoose.model('Product', productSchema)
-module.exports = Product
+const Catalouge = mongoose.model('Catalouge', catalougeSchema)
+module.exports = Catalouge
