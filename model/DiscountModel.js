@@ -16,6 +16,7 @@ const discountSchema = new mongoose.Schema({
   applicableSubCategories: { type: Map },
   applicableProducts: { type: Map },
   numberOfCoupons: { type: Number },
+  totalUsed: { type: Number, default: 0 },
   discountCode: { type: String },
   usesPerCustomer: { type: Number },
   discountPercentage: { type: Number },
@@ -23,6 +24,7 @@ const discountSchema = new mongoose.Schema({
   minOrderValue: { type: Number },
   maxDiscount: { type: Number },
   showToCustomer: { type: Boolean, default: true },
+  usedByCustomers: { type: mongoose.Schema.ObjectId, ref: 'Customer' },
 
   totalSales: { type: Number },
 

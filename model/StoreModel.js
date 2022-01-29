@@ -137,7 +137,19 @@ const storeSchema = new mongoose.Schema({
   accountNumber: { type: Number },
   accountHolderName: { type: String },
   IFSCCode: { type: String },
-})
+  // Manage
+  favicon: { type: String },
+  seoTitle: { type: String },
+  seoMetaDescription: { type: String },
+  seoImagePreview: { type: String },
+  storePincode: { type: String },
+  deliveryZones: [{ type: Map }],
+  extraCharges: [{ type: Map }],
+  gstEnabled: { type: Boolean, default: false },
+  gstNumber: { type: String },
+  gstPercentage: { type: Number },
+  storeTimings: [{ type: Map }],
+});
 
 const Store = mongoose.model('Store', storeSchema)
-module.exports = Store;
+module.exports = Store

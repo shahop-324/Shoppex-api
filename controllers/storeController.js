@@ -6,6 +6,14 @@ const { nanoid } = require('nanoid')
 const StoreSubName = require('../model/StoreSubNameModel')
 const StorePages = require('../model/StorePages')
 
+const filterObj = (obj, ...allowedFields) => {
+  const newObj = {}
+  Object.keys(obj).forEach((el) => {
+    if (allowedFields.includes(el)) newObj[el] = obj[el]
+  })
+  return newObj
+}
+
 // Get store details
 
 exports.getStoreDetails = catchAsync(async (req, res, next) => {
@@ -601,11 +609,89 @@ exports.updatePaymentSettings = catchAsync(async (req, res, next) => {
     { new: true, validateModifiedOnly: true },
   )
 
-  res
-    .status(200)
-    .json({
-      status: 'success',
-      message: 'Payout Settings updated successfully!',
-      data: updatedStore,
-    })
+  res.status(200).json({
+    status: 'success',
+    message: 'Payout Settings updated successfully!',
+    data: updatedStore,
+  })
+})
+
+// Update store favicon
+
+exports.updateFavicon = catchAsync(async (req, res, next) => {
+  const updatedStore = await Store.findByIdAndUpdate(
+    req.store._id,
+    { ...req.body },
+    { new: true, validateModifiedOnly: true },
+  )
+
+  res.status(200).json({
+    status: 'success',
+    data: updatedStore,
+    message: 'Store favicon updated successfully!',
+  })
+})
+
+// Update Store SEO
+
+exports.updateStoreSEO = catchAsync(async (req, res, next) => {
+  const filteredBody = filterObj(
+    req.body,
+    'seoTitle',
+    'seoMetaDescription',
+    'seoImagePreview',
+  )
+  const updatedStore = await Store.findByIdAndUpdate(
+    req.store._id,
+    filteredBody,
+    { new: true, validateModifiedOnly: true },
+  )
+
+  res.status(200).json({
+    status: 'success',
+    data: updatedStore,
+    message: 'Store SEO updated successfully!',
+  })
+})
+
+exports.updateSelfDeliveryZone = catchAsync(async (req, res, next) => {
+  const updatedStore = await Store.findByIdAndUpdate(
+    req.store._id,
+    { ...req.body },
+    { new: true, validateModifiedOnly: true },
+  )
+
+  res.status(200).json({
+    status: 'success',
+    data: updatedStore,
+    message: 'Self Delivery Zones updated successfully!',
+  })
 });
+
+exports.updateManageCharges = catchAsync(async(req, res, next) => {
+  const updatedStore = await Store.findByIdAndUpdate(
+    req.store._id,
+    { ...req.body },
+    { new: true, validateModifiedOnly: true },
+  )
+
+  res.status(200).json({
+    status: 'success',
+    data: updatedStore,
+    message: 'Extra charges updated successfully!',
+  })
+})
+
+exports.updateStoreTimings = catchAsync(async(req, res, next) => {
+  const updatedStore = await Store.findByIdAndUpdate(
+    req.store._id,
+    { ...req.body },
+    { new: true, validateModifiedOnly: true },
+  )
+
+  res.status(200).json({
+    status: 'success',
+    data: updatedStore,
+    message: 'Store timings updated successfully!',
+  })
+})
