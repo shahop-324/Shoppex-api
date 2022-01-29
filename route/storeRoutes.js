@@ -6,5 +6,6 @@ const authController = require('../controllers/authController')
 
 router.get('/getDetails', authController.protect, storeController.getStoreDetails);
 router.post('/setup', authController.protect, storeController.setupStore) // For first time store setup
+router.patch('/update/paymentSettings', authController.protect, storeController.updatePaymentSettings);
 
 module.exports = router;

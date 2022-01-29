@@ -14,6 +14,9 @@ const productSchema = new mongoose.Schema({
   category: {
     type: Map,
   },
+  subCategory: {
+    type: Map,
+  },
   price: {
     type: Number,
   },

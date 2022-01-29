@@ -1,44 +1,49 @@
 const mongoose = require('mongoose')
 
 const discountSchema = new mongoose.Schema({
-  discountCode: {
-    type: String,
-  },
-  type: {
-    type: String,
-    enum: ['Percentage', 'Flat'],
-  },
-  percentage: {
-    type: Number,
-  },
-  minimumOrderValue: {
-    type: Number,
-  },
-  maximumDiscountValue: {
-    type: Number,
-  },
-  flatDiscount: {
-    type: Number,
-  },
-  showToCustomers: {
-    type: Boolean,
-    default: true,
-  },
-  usedOnOrders: [
+  store: { type: mongoose.Schema.ObjectId, ref: 'Store' },
+
+  discountType: { type: String },
+  applicableOn: { type: String },
+  type: { type: String },
+  applicableFromDateTime: { type: Date },
+  applicableTillDateTime: { type: Date },
+  buyX: { type: Number },
+  getY: { type: Number },
+  boughtProduct: { type: Map },
+  givenProduct: { type: Map },
+  applicableCategories: { type: Map },
+  applicableSubCategories: { type: Map },
+  applicableProducts: { type: Map },
+  numberOfCoupons: { type: Number },
+  discountCode: { type: String },
+  usesPerCustomer: { type: Number },
+  discountPercentage: { type: Number },
+  discountAmount: { type: Number },
+  minOrderValue: { type: Number },
+  maxDiscount: { type: Number },
+  showToCustomer: { type: Boolean, default: true },
+
+  totalSales: { type: Number },
+
+  appliedOnOrders: [
     {
       type: mongoose.Schema.ObjectId,
       ref: 'Order',
     },
   ],
   active: {
-      type: Boolean,
-      default: true,
+    type: Boolean,
+    default: true,
   },
-  deleted: {
-      type: Boolean,
-      default: false,
+  createdAt: {
+    type: Date,
+    default: Date.now(),
   },
-});
+  updatedAt: {
+    type: Date,
+  },
+})
 
 const Discount = new mongoose.model('Discount', discountSchema)
 

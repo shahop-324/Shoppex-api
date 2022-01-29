@@ -73,7 +73,7 @@ const storeSchema = new mongoose.Schema({
   city: {
     type: String,
   },
-  pincode:  {
+  pincode: {
     type: Number,
   },
   address: {
@@ -94,7 +94,7 @@ const storeSchema = new mongoose.Schema({
   phone: {
     type: String,
   },
-  logo: {type: String,},
+  logo: { type: String },
   email: {
     type: String,
   },
@@ -109,7 +109,7 @@ const storeSchema = new mongoose.Schema({
     default: 0,
   },
   customers: {
-    type: Number, 
+    type: Number,
     default: 0,
   },
   storeViews: {
@@ -125,10 +125,19 @@ const storeSchema = new mongoose.Schema({
     default: 0,
   },
   createdAt: {
-    type: Date, 
+    type: Date,
     default: Date.now(),
-  }
+  },
+  enableCOD: { type: Boolean, default: false },
+  enablePartialCOD: { type: Boolean, default: false },
+  partialCODPercentage: { type: Number, default: 20 },
+  paymentMode: { type: String, default: 'upi' },
+  upiId: { type: String },
+  bank: { type: Map },
+  accountNumber: { type: Number },
+  accountHolderName: { type: String },
+  IFSCCode: { type: String },
 })
 
 const Store = mongoose.model('Store', storeSchema)
-module.exports = Store
+module.exports = Store;

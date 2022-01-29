@@ -1,30 +1,37 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose')
 
 const pickupPointSchema = new mongoose.Schema({
-    shop: {
-        type: mongoose.Schema.ObjectId,
-        ref: "Shop",
-    },
-    address: {
-        type: String, // Street, Colony, Flat or Building Name or No.
-    },
-    landmark: {
-        type: String, // Well known nearby location
-    },
-    pincode: {
-        type: String, // 6 digit pincode
-    },
-    state: {
-        type: String, // 
-    },
-    city: {
-        type: String,
-    },
-    country: {
-        type: String,
-    },
+  store: { type: mongoose.Schema.ObjectId, ref: 'Store' },
+  addressType: {
+    type: String,
+  },
+  pickupPointName: {
+    type: String,
+  },
+  country: { type: Map },
+  state: { type: String },
+  city: { type: String },
+  address: { type: String },
+  pincode: { type: Number },
+  landmark: { type: String },
+  phone: { type: String },
+  contactPersonName: { type: String },
+  contactEmail: { type: String },
+  operational: { type: Boolean, default: true },
 });
 
-const PickupPoint = new mongoose.model("PickupPoint", pickupPointSchema);
+pickupPointSchema.index({
+    addressType: 'text',
+    pickupPointName: 'text',
+    state: 'text',
+    city: 'text',
+    landmark: 'text',
+    contactPersonName: 'text',
+    contactEmail: 'text',
+    phone: 'text',
+    address: 'text',
+})
 
-module.exports = PickupPoint;
+const PickupPoint = new mongoose.model('PickupPoint', pickupPointSchema)
+
+module.exports = PickupPoint

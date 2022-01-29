@@ -1,45 +1,11 @@
+const Discount = require('../model/DiscountModel')
+const apiFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync')
 
 exports.addDiscount = catchAsync(async (req, res, next) => {
-  const { id } = req.params
-  const {
-    code,
-    usesPerCustomer,
-    type,
-    minOrderValue,
-    maxDiscountValue,
-    discountAmount,
-    validForOnlyFirstPurchase,
-    validForCategories,
-    validForProducts,
-    buyProduct,
-    buyX,
-    getY,
-    getProduct,
-    validTill,
-    hidden,
-    enabled,
-  } = req.body
-
   const newDiscount = await Discount.create({
-    createdAt: Date.now(),
-    store: id,
-    code,
-    usesPerCustomer,
-    type,
-    minOrderValue,
-    maxDiscountValue,
-    discountAmount,
-    validForOnlyFirstPurchase,
-    validForCategories,
-    validForProducts,
-    buyProduct,
-    buyX,
-    getY,
-    getProduct,
-    validTill,
-    hidden,
-    enabled,
+    store: req.store._id,
+    ...req.body,
   })
 
   res.status(200).json({
@@ -50,45 +16,13 @@ exports.addDiscount = catchAsync(async (req, res, next) => {
 })
 
 exports.updateDiscount = catchAsync(async (req, res, next) => {
-  const { discountId, id } = req.params
-  const {
-    code,
-    usesPerCustomer,
-    type,
-    minOrderValue,
-    maxDiscountValue,
-    discountAmount,
-    validForOnlyFirstPurchase,
-    validForCategories,
-    validForProducts,
-    buyProduct,
-    buyX,
-    getY,
-    getProduct,
-    validTill,
-    hidden,
-    enabled,
-  } = req.body
+  const { discountId } = req.params
 
   const updatedDiscount = await Discount.findByIdAndUpdate(
     discountId,
     {
-      code,
-      usesPerCustomer,
-      type,
-      minOrderValue,
-      maxDiscountValue,
-      discountAmount,
-      validForOnlyFirstPurchase,
-      validForCategories,
-      validForProducts,
-      buyProduct,
-      buyX,
-      getY,
-      getProduct,
-      validTill,
-      hidden,
-      enabled,
+      ...req.body,
+      updatedAt: Date.now(),
     },
     { new: true, validateModifiedOnly: true },
   )
@@ -112,9 +46,10 @@ exports.deleteDiscount = catchAsync(async (req, res, next) => {
 })
 
 exports.getDiscounts = catchAsync(async (req, res, next) => {
-  const { id } = req.params
+  const query = Discount.find({ store: req.store._id })
+  const features = new apiFeatures(query, req.query).textFilter()
 
-  const discounts = await Discount.find({ store: id })
+  const discounts = await features.query
 
   res.status(200).json({
     status: 'success',

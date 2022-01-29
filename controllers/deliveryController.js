@@ -1,35 +1,12 @@
+const PickupPoint = require('../model/PickupPointModel')
+const Shipment = require('../model/shipmentModel');
 const catchAsync = require('../utils/catchAsync')
+const apiFeatures = require('../utils/apiFeatures')
 
 exports.addPickupPoint = catchAsync(async (req, res, next) => {
-  const { id } = req.params
-
-  const {
-    type,
-    storeName,
-    country,
-    region,
-    city,
-    address,
-    pincode,
-    landmark,
-    phoneNumber,
-    contactPersonName,
-    contactEmail,
-  } = req.body
-
-  const newPickupPoint = await PickupPoints.create({
-    store: id,
-    type,
-    storeName,
-    country,
-    region,
-    city,
-    address,
-    pincode,
-    landmark,
-    phoneNumber,
-    contactPersonName,
-    contactEmail,
+  const newPickupPoint = await PickupPoint.create({
+    store: req.store._id,
+    ...req.body,
   })
 
   res.status(200).json({
@@ -40,38 +17,11 @@ exports.addPickupPoint = catchAsync(async (req, res, next) => {
 })
 
 exports.updatePickupPoint = catchAsync(async (req, res, next) => {
-  const { pickupPointId, id } = req.params
+  const { pickupPointId } = req.params
 
-  const {
-    type,
-    storeName,
-    country,
-    region,
-    city,
-    address,
-    pincode,
-    landmark,
-    phoneNumber,
-    contactPersonName,
-    contactEmail,
-  } = req.body
-
-  const updatedPickupPoint = await PickupPoints.findByIdAndUpdate(
+  const updatedPickupPoint = await PickupPoint.findByIdAndUpdate(
     pickupPointId,
-    {
-      store: id,
-      type,
-      storeName,
-      country,
-      region,
-      city,
-      address,
-      pincode,
-      landmark,
-      phoneNumber,
-      contactPersonName,
-      contactEmail,
-    },
+    { ...req.body },
     { new: true, validateModifiedOnly: true },
   )
 
@@ -85,7 +35,7 @@ exports.updatePickupPoint = catchAsync(async (req, res, next) => {
 exports.deletePickupPoint = catchAsync(async (req, res, next) => {
   const { pickupPointId } = req.params
 
-  await PickupPoints.findByIdAndDelete(pickupPointId)
+  await PickupPoint.findByIdAndDelete(pickupPointId)
 
   res.status(200).json({
     status: 'success',
@@ -93,10 +43,22 @@ exports.deletePickupPoint = catchAsync(async (req, res, next) => {
   })
 })
 
-exports.getPickupPoints = catchAsync(async (req, res, next) => {
-  const { id } = req.params
+exports.deleteMultiplePickupPoint = catchAsync(async (req, res, next) => {
+  const { pickupPointIds } = req.body
+  for (let element of pickupPointIds) {
+    await PickupPoint.findByIdAndDelete(element)
+  }
+  res.status(200).json({
+    status: 'success',
+    message: 'Pickup points deleted successfully!',
+  })
+})
 
-  const pickupPoints = await PickupPoints.find({ store: id })
+exports.getPickupPoints = catchAsync(async (req, res, next) => {
+  const query = PickupPoint.find({ store: req.store._id })
+  const features = new apiFeatures(query, req.query).textFilter()
+
+  const pickupPoints = await features.query
 
   res.status(200).json({
     status: 'success',
@@ -105,73 +67,17 @@ exports.getPickupPoints = catchAsync(async (req, res, next) => {
   })
 })
 
-// Shipment
+// *************************************************** Shipment *************************************************** //
 
-exports.addShipment = catchAsync(async (req, res, next) => {
-  // store, order, origination, destination, carrier, charge, status, currentLocation, self tracking link
-
-  const {
-    store,
-    order,
-    origination,
-    destination,
-    carrier,
-    charge,
-    status,
-    currentLocation,
-    selfTrackingLink,
-    expectedDelivery,
-  } = req.body
-
-  const newShipment = await Shipment.create({
-    store,
-    order,
-    origination,
-    destination,
-    carrier,
-    charge,
-    status,
-    currentLocation,
-    selfTrackingLink,
-    expectedDelivery,
-  })
-
-  res.status(200).json({
-    status: 'success',
-    data: newShipment,
-    message: 'Shipment Added successfully!',
-  })
-})
+// Update shipment
 
 exports.updateShipment = catchAsync(async (req, res, next) => {
   const { shipmentId } = req.params
 
-  const {
-    store,
-    order,
-    origination,
-    destination,
-    carrier,
-    charge,
-    status,
-    currentLocation,
-    selfTrackingLink,
-    expectedDelivery,
-  } = req.body
-
   const updatedShipment = await Shipment.findByIdAndUpdate(
     shipmentId,
     {
-      store,
-      order,
-      origination,
-      destination,
-      carrier,
-      charge,
-      status,
-      currentLocation,
-      selfTrackingLink,
-      expectedDelivery,
+      ...req.body,
     },
     { new: true, validateModifiedOnly: true },
   )
@@ -183,10 +89,13 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
   })
 })
 
-exports.getShipments = catchAsync(async (req, res, next) => {
-  const { id } = req.params
+// Fetch Shipments
 
-  const shipments = await Shipment.find({ store: id })
+exports.getShipments = catchAsync(async (req, res, next) => {
+  const query = Shipment.find({ store: req.store._id });
+  const features = new apiFeatures(query, req.query).textFilter()
+
+  const shipments = await features.query
 
   res.status(200).json({
     status: 'success',

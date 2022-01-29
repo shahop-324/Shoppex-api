@@ -6,22 +6,21 @@ const { nanoid } = require('nanoid')
 const StoreSubName = require('../model/StoreSubNameModel')
 const StorePages = require('../model/StorePages')
 
-// Get store details 
+// Get store details
 
-exports.getStoreDetails = catchAsync(async(req, res, next) => {
-  const storeDoc = await Store.findById(req.store._id);
+exports.getStoreDetails = catchAsync(async (req, res, next) => {
+  const storeDoc = await Store.findById(req.store._id)
   res.status(200).json({
-    status: "success",
+    status: 'success',
     data: storeDoc,
-    message: "Successfully found store details",
+    message: 'Successfully found store details',
   })
-});
+})
 
 // Setup Store
 
 exports.setupStore = catchAsync(async (req, res, next) => {
-
-  console.log(req.user, req.store, req.body);
+  console.log(req.user, req.store, req.body)
 
   const {
     name,
@@ -83,8 +82,8 @@ exports.setupStore = catchAsync(async (req, res, next) => {
     status: 'success',
     message: 'Store details updated successfully',
     data: updatedStore,
-  });
-});
+  })
+})
 
 // Update notification settings
 
@@ -594,3 +593,19 @@ exports.updateStoreTheme = catchAsync(async (req, res, next) => {
     data: updatedStore,
   })
 })
+
+exports.updatePaymentSettings = catchAsync(async (req, res, next) => {
+  const updatedStore = await Store.findByIdAndUpdate(
+    req.store._id,
+    { ...req.body },
+    { new: true, validateModifiedOnly: true },
+  )
+
+  res
+    .status(200)
+    .json({
+      status: 'success',
+      message: 'Payout Settings updated successfully!',
+      data: updatedStore,
+    })
+});
