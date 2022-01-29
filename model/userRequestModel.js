@@ -5,7 +5,7 @@ const crypto = require('crypto')
 const userRequestSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ["Buyer", "Seller"],
+    enum: ['Buyer', 'Seller'],
   },
   firstName: {
     type: String,
@@ -19,6 +19,7 @@ const userRequestSchema = new mongoose.Schema({
   email: {
     type: String,
   },
+  phone: { type: String },
   password: {
     type: String,
   },
@@ -49,8 +50,11 @@ userRequestSchema.pre('save', async function (next) {
   next()
 })
 
-userRequestSchema.methods.correctOTP = async function (candidateOTP, userRequestOTP) {
-  return await bcrypt.compare(candidateOTP, userRequestOTP);
+userRequestSchema.methods.correctOTP = async function (
+  candidateOTP,
+  userRequestOTP,
+) {
+  return await bcrypt.compare(candidateOTP, userRequestOTP)
 }
 
 const UserRequest = mongoose.model('UserRequest', userRequestSchema)

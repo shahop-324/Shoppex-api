@@ -4,7 +4,9 @@ const catchAsync = require('../utils/catchAsync')
 const slugify = require('slugify')
 const { nanoid } = require('nanoid')
 const StoreSubName = require('../model/StoreSubNameModel')
+const User = require('../model/userModel')
 const StorePages = require('../model/StorePages')
+const StaffInvitation = require('../model/staffInvitationModel')
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {}
@@ -148,15 +150,35 @@ exports.updateStoreSocialLinks = catchAsync(async (req, res, next) => {
 //! Add staff member
 exports.addStaffMember = catchAsync(async (req, res, next) => {
   // Add staff member and send a Message to their number informing them
-  const { name, phone, permissions } = req.body
+  const { name, phone, email, permissions } = req.body
 
-  const storeDoc = await Store.findById(req.params.id)
+  // Find user by this email
+
+  const userDoc = await User.findOne({ email: email })
+
+  if (userDoc) {
+    // Add this store to user's stores array
+    userDoc.stores.push(req.store._id)
+  } else {
+    await StaffInvitation.create({
+      store: req.store._id,
+      name: name,
+      phone: phone,
+      permissions: permissions,
+      email: email,
+      createdAt: Date.now(),
+    })
+  }
+
+  const storeDoc = await Store.findById(req.store._id)
 
   storeDoc.team.push({
     name: name,
     phone: phone,
     permissions: permissions,
     addedAt: Date.now(),
+    email: email,
+    status: userDoc ? 'Accepted' : 'Pending',
   })
 
   const updatedStore = await storeDoc.save({
@@ -666,9 +688,9 @@ exports.updateSelfDeliveryZone = catchAsync(async (req, res, next) => {
     data: updatedStore,
     message: 'Self Delivery Zones updated successfully!',
   })
-});
+})
 
-exports.updateManageCharges = catchAsync(async(req, res, next) => {
+exports.updateManageCharges = catchAsync(async (req, res, next) => {
   const updatedStore = await Store.findByIdAndUpdate(
     req.store._id,
     { ...req.body },
@@ -682,7 +704,7 @@ exports.updateManageCharges = catchAsync(async(req, res, next) => {
   })
 })
 
-exports.updateStoreTimings = catchAsync(async(req, res, next) => {
+exports.updateStoreTimings = catchAsync(async (req, res, next) => {
   const updatedStore = await Store.findByIdAndUpdate(
     req.store._id,
     { ...req.body },
@@ -695,3 +717,110 @@ exports.updateStoreTimings = catchAsync(async(req, res, next) => {
     message: 'Store timings updated successfully!',
   })
 })
+
+// Policy
+
+exports.updatePolicy = catchAsync(async (req, res, next) => {
+  const updatedStore = await Store.findByIdAndUpdate(
+    req.store._id,
+    { ...req.body },
+    { new: true, validateModifiedOnly: true },
+  )
+
+  res.status(200).json({
+    status: 'success',
+    data: updatedStore,
+    message: 'Store Policy Updated Successfully!',
+  })
+})
+
+// Update Notifications
+
+exports.updateNotifications = catchAsync(async (req, res, next) => {
+  const updatedStore = await Store.findByIdAndUpdate(
+    req.store._id,
+    { ...req.body },
+    { new: true, validateModifiedOnly: true },
+  )
+
+  res.status(200).json({
+    status: 'success',
+    data: updatedStore,
+    message: 'Notification settings Updated Successfully!',
+  })
+})
+
+// Update Social Links
+
+exports.updateSocialLinks = catchAsync(async (req, res, next) => {
+  const updatedStore = await Store.findByIdAndUpdate(
+    req.store._id,
+    { ...req.body },
+    { new: true, validateModifiedOnly: true },
+  )
+
+  res.status(200).json({
+    status: 'success',
+    data: updatedStore,
+    message: 'Social Links Updated Successfully!',
+  })
+})
+
+// Update Store General Info
+
+exports.updateGeneralStoreInfo = catchAsync(async (req, res, next) => {
+  const storeDoc = await Store.findById(req.store._id)
+  const storeSubNameDocs = await StoreSubName.find({})
+
+  const allSubNames = storeSubNameDocs.map((el) => el.subName)
+
+  if (!allSubNames.includes(req.body.subName)) {
+    //  Safe to reassign subname
+    storeDoc.subName = req.body.subName
+    await StoreSubName.findOneAndUpdate(
+      { store: req.store._id },
+      { subName: req.body.subName },
+      { new: true, validateModifiedOnly: true },
+    )
+  }
+
+  if (req.body.key) {
+    storeDoc.logo = req.body.key
+  }
+
+  //  Save store document
+
+  await storeDoc.save({ new: true, validateModifiedOnly: true })
+
+  // update store logo if !null
+  // update store sub name
+  // update other store info
+
+  const updatedStore = await Store.findByIdAndUpdate(
+    req.store._id,
+    {
+      storeName: req.body.storeName,
+      country: req.body.country,
+      state: req.body.state,
+      city: req.body.city,
+      address: req.body.address,
+      pincode: req.body.pincode,
+      landmark: req.body.landmark,
+      gstin: req.body.gstin,
+      category: req.body.category,
+      phone: req.body.phone,
+      emailAddress: req.body.emailAddress,
+    },
+    { new: true, validateModifiedOnly: true },
+  )
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Store Profile updated successfully!',
+    data: updatedStore,
+  })
+})
+
+// Add staff member
+// Directly add if user with same email is already on platform
+// and create a invitation if not already present

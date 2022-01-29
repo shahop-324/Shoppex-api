@@ -4,7 +4,7 @@ const User = require('./../model/userModel')
 const Store = require('../model/StoreModel')
 const UserRequest = require('./../model/userRequestModel')
 const bcrypt = require('bcryptjs')
-const { promisify } = require("util");
+const { promisify } = require('util')
 const crypto = require('crypto')
 const otpGenerator = require('otp-generator')
 const sgMail = require('@sendgrid/mail')
@@ -202,13 +202,43 @@ exports.verifyOTPForRegistration = catchAsync(async (req, res, next) => {
       lastName: user.lastName,
       email: user.email,
       password: user.password,
+      phone: user.phone,
     })
+
+    // ! Must check that if there is any pending invitation for this member using email then add to that store
+
+    // ** Add this user as admin to its own store which is being created DONE
 
     // Create new store with given shopName and assign it to user
 
     const newStore = await Store.create({
       name: user.shopName,
     })
+
+    newStore.team.push({
+      name: `${newUser.firstName} ${newUser.lastName}`,
+      email: newUser.email,
+      phone: newUser.phone,
+      role: 'Admin',
+      addedAt: Date.now(),
+      permissions: [
+        'Order',
+        'Catalouge',
+        'Delivery',
+        'Customer',
+        'Dining',
+        'Marketing',
+        'Payment',
+        'Discount',
+        'Manage',
+        'Design',
+        'Integration',
+        'Reviews',
+        'Reports',
+      ],
+    });
+
+    await newStore.save({new: true, validateModifiedOnly: true});
 
     // Create a subname for store and create a subname doc for this store
 

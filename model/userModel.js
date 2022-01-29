@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const crypto = require('crypto');
+const mongoose = require('mongoose')
+const bcrypt = require('bcryptjs')
+const crypto = require('crypto')
 const otpGenerator = require('otp-generator')
 
 const userSchema = new mongoose.Schema({
@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
   },
+  phone: { type: String },
   password: {
     type: String,
   },
@@ -23,8 +24,8 @@ const userSchema = new mongoose.Schema({
   stores: [
     {
       type: mongoose.Schema.ObjectId,
-      ref: "Store",
-    }
+      ref: 'Store',
+    },
   ],
   referralCode: {
     type: String,
@@ -32,8 +33,8 @@ const userSchema = new mongoose.Schema({
       upperCaseAlphabets: true,
       specialChars: false,
       lowerCaseAlphabets: false,
-    })
-  }
+    }),
+  },
 })
 
 userSchema.methods.correctPassword = async function (
@@ -47,14 +48,14 @@ userSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
   if (this.passwordChangedAt) {
     const changedTimeStamp = parseInt(
       this.passwordChangedAt.getTime() / 1000,
-      10
-    );
-    return JWTTimeStamp < changedTimeStamp;
+      10,
+    )
+    return JWTTimeStamp < changedTimeStamp
   }
 
   // FALSE MEANS NOT CHANGED
-  return false;
-};
+  return false
+}
 
 const User = mongoose.model('User', userSchema)
 module.exports = User

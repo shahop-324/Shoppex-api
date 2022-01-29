@@ -43,4 +43,35 @@ router.patch(
   storeController.updateStoreTimings,
 )
 
+router.patch(
+  '/policy/update',
+  authController.protect,
+  storeController.updatePolicy,
+)
+
+router.patch(
+  '/notification/update',
+  authController.protect,
+  storeController.updateNotifications,
+)
+
+router.patch(
+  '/social-links/update',
+  authController.protect,
+  storeController.updateSocialLinks,
+)
+
+router.patch(
+  '/general/update',
+  authController.protect,
+  storeController.updateGeneralStoreInfo,
+)
+
+router.patch('/notification/update', authController.protect, storeController.updateNotifications);
+
+router.patch('/social-links/update', authController.protect, storeController.updateSocialLinks);
+
+// Staff
+router.post('/staff/create', authController.protect, storeController.addStaffMember);
+
 module.exports = router

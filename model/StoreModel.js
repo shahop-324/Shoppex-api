@@ -1,15 +1,14 @@
 const mongoose = require('mongoose')
 
 const staffMemberSchema = new mongoose.Schema({
+  status: { type: String, enum: ['Pending', 'Accepted'], default: "Pending", },
   name: {
     type: String,
   },
   phone: {
     type: String,
   },
-  lastLoggedIn: {
-    type: Date,
-  },
+  email: { type: String },
   role: {
     type: String,
     enum: ['Admin', 'Staff'],
@@ -61,11 +60,11 @@ const storeSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  name: {
+  storeName: {
     type: String,
   },
   country: {
-    type: String,
+    type: Map,
   },
   state: {
     type: String,
@@ -89,13 +88,13 @@ const storeSchema = new mongoose.Schema({
     type: String,
   },
   category: {
-    type: String,
+    type: Map,
   },
   phone: {
     type: String,
   },
   logo: { type: String },
-  email: {
+  emailAddress: {
     type: String,
   },
   team: [staffMemberSchema],
@@ -149,7 +148,28 @@ const storeSchema = new mongoose.Schema({
   gstNumber: { type: String },
   gstPercentage: { type: Number },
   storeTimings: [{ type: Map }],
-});
+  termsOfService: { type: String },
+  privacyPolicy: { type: String },
+  refundPolicy: { type: String },
+  shippingPolicy: { type: String },
+  disclaimerPolicy: { type: String },
+
+  // Notifications
+  // Application notifications
+  applicationBlog: { type: Boolean, default: true },
+  applicationNews: { type: Boolean, default: true },
+  applicationProduct: { type: Boolean, default: true },
+
+  // Store Notifications
+  storeAbondonedCart: { type: Boolean, default: true },
+  storeOrder: { type: Boolean, default: true },
+  storeStock: { type: Boolean, default: true },
+
+  // Social Links
+  facebookLink: { type: String },
+  instagramLink: { type: String },
+  twitterLink: { type: String },
+})
 
 const Store = mongoose.model('Store', storeSchema)
 module.exports = Store
