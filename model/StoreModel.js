@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 const staffMemberSchema = new mongoose.Schema({
-  status: { type: String, enum: ['Pending', 'Accepted'], default: "Pending", },
+  status: { type: String, enum: ['Pending', 'Accepted'], default: 'Pending' },
   name: {
     type: String,
   },
@@ -42,17 +42,17 @@ const staffMemberSchema = new mongoose.Schema({
 })
 
 const checkoutFieldSchema = new mongoose.Schema({
-  name: {
+  fieldName: {
     type: String,
   },
   type: {
-    type: String,
+    type: Map,
   },
   required: {
     type: Boolean,
     default: true,
   },
-  options: [{ type: String }],
+  options: [{ type: Map }],
 })
 
 const storeSchema = new mongoose.Schema({
@@ -169,6 +169,22 @@ const storeSchema = new mongoose.Schema({
   facebookLink: { type: String },
   instagramLink: { type: String },
   twitterLink: { type: String },
+  // Ambience
+  mode: { type: String, default: 'light' },
+  primaryColor: { type: String, default: '#2065D1' },
+  // Store Other info
+  freeDeliveryAbove: { type: Number },
+  orderIsShippedIn: { type: Map },
+  returnAccepted: { type: Boolean, default: false },
+  replacementAccepted: { type: Boolean, default: false },
+  returnPeriod: { type: Map },
+  replacementPeriod: { type: Map },
+  deliveryHappensWithin: { type: String },
+  deliveryState: { type: String },
+  deliveryCity: { type: String },
+  minDeliveryDistance: { type: Number },
+  maxDeliveryDistance: { type: Number },
+  showShopInsideDeliveryZoneOnly: { type: Boolean, default: false },
 })
 
 const Store = mongoose.model('Store', storeSchema)

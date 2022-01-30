@@ -197,25 +197,30 @@ exports.addStaffMember = catchAsync(async (req, res, next) => {
 
 //! Edit staff member
 exports.editStaffMember = catchAsync(async (req, res, next) => {
-  const { memberId, id } = req.params
+  const { email } = req.params
 
-  const { name, phone, permissions } = req.body
+  // Find this member by this email and update permission in store as well as invitation request
 
-  const storeDoc = await Store.findById(id)
+  const { permissions } = req.body
+
+  const storeDoc = await Store.findById(req.store._id)
 
   storeDoc.team = storeDoc.team.map((el) => {
-    if (el._id !== memberId) {
+    if (el.email !== email) {
       return el
     } else {
-      el.name = name
-      el.phone = phone
       el.permissions = permissions
-
       el.updatedAt = Date.now()
 
       return el
     }
   })
+
+  await StaffInvitation.findOneAndUpdate(
+    { $and: [{ email: email }, { store: req.store._id }] },
+    { permissions: permissions },
+    { new: true, validateModifiedOnly: true },
+  )
 
   const updatedStore = await storeDoc.save({
     new: true,
@@ -231,10 +236,14 @@ exports.editStaffMember = catchAsync(async (req, res, next) => {
 
 //! Delete staff Member
 exports.removeStaffMember = catchAsync(async (req, res, next) => {
-  const { memberId, id } = req.params
-  const storeDoc = await Store.findById(id)
+  const { email } = req.params
+  const storeDoc = await Store.findById(req.store._id)
 
-  storeDoc.team = storeDoc.team.filter((el) => el._id !== memberId)
+  storeDoc.team = storeDoc.team.filter((el) => el.email !== email)
+
+  await StaffInvitation.findOneAndDelete({
+    $and: [{ email: email }, { store: req.store._id }],
+  })
 
   const updatedStore = await storeDoc.save({
     new: true,
@@ -250,11 +259,11 @@ exports.removeStaffMember = catchAsync(async (req, res, next) => {
 
 //! Add Checkout Field
 exports.addCheckoutField = catchAsync(async (req, res, next) => {
-  const { name, type, required, options } = req.body
+  const { fieldName, type, required, options } = req.body
 
-  const storeDoc = await Store.findById(req.params.id)
+  const storeDoc = await Store.findById(req.store._id)
 
-  storeDoc.formFields.push({ name, type, required, options })
+  storeDoc.formFields.push({ fieldName, type, required, options })
 
   const updatedStore = await storeDoc.save({
     new: true,
@@ -270,17 +279,17 @@ exports.addCheckoutField = catchAsync(async (req, res, next) => {
 
 //! Edit Checkout Field
 exports.editCheckoutField = catchAsync(async (req, res, next) => {
-  const { fieldId, id } = req.params
+  const { fieldId } = req.params
 
-  const { name, type, required, options } = req.body
+  const { fieldName, type, required, options } = req.body
 
-  const storeDoc = await Store.findById(id)
+  const storeDoc = await Store.findById(req.store._id)
 
   storeDoc.formFields = storeDoc.formFields.map((el) => {
     if (el._id !== fieldId) {
       return el
     }
-    el.name = name
+    el.name = fieldName
     el.type = type
     el.required = required
     el.options = options
@@ -302,9 +311,9 @@ exports.editCheckoutField = catchAsync(async (req, res, next) => {
 
 //! Delete Checkout Field
 exports.deleteCheckoutField = catchAsync(async (req, res, next) => {
-  const { fieldId, id } = req.params
+  const { fieldId } = req.params
 
-  const storeDoc = await Store.findById(id)
+  const storeDoc = await Store.findById(req.store._id)
 
   storeDoc.formFields = storeDoc.formFields.filter((el) => el._id !== fieldId)
 
@@ -428,132 +437,13 @@ exports.updatePlan = catchAsync(async (req, res, next) => {
   })
 })
 
-// Add Page
-
-exports.addStorePage = catchAsync(async (req, res, next) => {
-  const { html, name } = req.body
-
-  const pageSlug = slugify(name)
-
-  const storeDoc = await Store.findById(req.params.id)
-
-  if (storeDoc.pageSlugs.includes(pageSlug)) {
-    // Please change the name  of page (already used)
-    res.status(400).json({
-      status: 'error',
-      message: 'A page with same name exists. Please modify name.',
-    })
-  } else {
-    // Safe to proceed
-    // Create a new page and log in to store
-
-    await StorePages.create({
-      store: req.params.id,
-      name,
-      html,
-      slug: pageSlug,
-      createdAt: Date.now(),
-    })
-
-    // Save slug to store doc
-
-    storeDoc.pageSlugs.push(pageSlug)
-    await storeDoc.save({ new: true, validateModifiedOnly: true })
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Page Created successfully!',
-    })
-  }
-})
-
-// Edit Page
-
-exports.editStorePage = catchAsync(async (req, res, next) => {
-  const { pageId, id, slug } = req.params // Id of page being edited, id of store
-
-  const { html, name } = req.body
-
-  const newSlug = slugify(name)
-
-  const storeDoc = await Store.findById(id)
-
-  if (slug !== newSlug) {
-    if (storeDoc.pageSlugs.includes(newSlug)) {
-      // Please change the name  of page (already used)
-      res.status(400).json({
-        status: 'error',
-        message: 'A page with same name exists. Please modify name.',
-      })
-    } else {
-      //   Update both slug,name and html
-
-      const updatedPage = await StorePages.findByIdAndUpdate(pageId, {
-        html,
-        name,
-        newSlug,
-        updatedAt: Date.now(),
-      })
-
-      // Update slug in  store
-
-      let filtered = storeDoc.pageSlugs.filter((el) => el !== slug)
-
-      filtered.push(newSlug)
-
-      storeDoc.pageSlugs = filtered
-
-      await storeDoc.save({ new: true, validateModifiedOnly: true })
-
-      res.status(200).json({
-        status: 'success',
-        message: 'Page updated successfully!',
-        data: updatedPage,
-      })
-    }
-  } else {
-    //   Simply update page as only html was altered
-
-    const updatedPage = await StorePages.findByIdAndUpdate(pageId, {
-      html,
-      name,
-      updatedAt: Date.now(),
-    })
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Page updated successfully!',
-      data: updatedPage,
-    })
-  }
-})
-
-// Delete Page
-
-exports.deleteStorePage = catchAsync(async (req, res, next) => {
-  const { pageId, id, slug } = req.params // Id of page being edited, id of store
-
-  await StorePages.findByIdAndDelete(pageId)
-
-  const storeDoc = await Store.findById(id)
-
-  storeDoc.pageSlugs = storeDoc.pageSlugs.filter((el) => el !== slug)
-
-  await storeDoc.save({ new: true, validateModifiedOnly: true })
-
-  res.status(200).json({
-    status: 'success',
-    message: 'Page deleted successfully!',
-  })
-})
-
 // Update Ambience
 
 exports.updateStoreAmbience = catchAsync(async (req, res, next) => {
   const { mode, primaryColor } = req.body
 
   const updatedStore = await Store.findByIdAndUpdate(
-    req.params.id,
+    req.store._id,
     {
       mode,
       primaryColor,
@@ -568,12 +458,14 @@ exports.updateStoreAmbience = catchAsync(async (req, res, next) => {
 })
 
 // Update Other info
-exports.updateStoreOtheInfo = catchAsync(async (req, res, next) => {
+exports.updateStoreOtherInfo = catchAsync(async (req, res, next) => {
   const {
     freeDeliveryAbove,
     orderIsShippedIn,
     returnAccepted,
     replacementAccepted,
+    returnPeriod,
+    replacementPeriod,
     deliveryHappensWithin,
     deliveryState,
     deliveryCity,
@@ -583,12 +475,14 @@ exports.updateStoreOtheInfo = catchAsync(async (req, res, next) => {
   } = req.body
 
   const updatedStore = await Store.findByIdAndUpdate(
-    req.params.id,
+    req.store._id,
     {
       freeDeliveryAbove,
       orderIsShippedIn,
       returnAccepted,
       replacementAccepted,
+      returnPeriod,
+      replacementPeriod,
       deliveryHappensWithin,
       deliveryState,
       deliveryCity,
@@ -763,6 +657,22 @@ exports.updateSocialLinks = catchAsync(async (req, res, next) => {
     status: 'success',
     data: updatedStore,
     message: 'Social Links Updated Successfully!',
+  })
+})
+
+// Update guest checkout
+exports.updateGuestCheckout = catchAsync(async (req, res, next) => {
+  const updatedStore = await Store.findByIdAndUpdate(
+    req.store._id,
+    { ...req.body },
+    { new: true, validateModifiedOnly: true },
+  )
+  res.status(200).json({
+    status: 'success',
+    message: req.body.guestCheckout
+      ? 'Guest checkout enabled successfully!'
+      : 'Guest checkout disabled successfully!',
+    data: updatedStore,
   })
 })
 
