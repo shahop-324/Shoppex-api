@@ -7,9 +7,10 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
 
   client.messages
     .create({
-      body: 'Hi Dino, This is a test SMS from Shoppex API. Your OTP is 508978',
-      from: "+1 610 421 0065",
-      to: '+919770668454',
+      body:
+        'Hi Dino, This is another test SMS from Shoppex API. Your OTP is 508978',
+      from: '+1 775 535 7258',
+      to: '+918103032829',
     })
 
     .then((message) => {

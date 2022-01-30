@@ -85,9 +85,6 @@ exports.deleteMultipleSubCategory = catchAsync(async (req, res, next) => {
 
 exports.getSubCategories = catchAsync(async (req, res, next) => {
   // Also send total no. of products, total sales using aggregation pipeline
-
-  console.log(req.params)
-
   const query = SubCategory.find({ store: req.store._id })
 
   const features = new apiFeatures(query, req.query).textFilter()

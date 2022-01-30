@@ -31,6 +31,7 @@ const subCategoryRoutes = require("./route/subCategoryRoutes");
 const deliveryRoutes = require("./route/deliveryRoutes");
 const discountRoutes = require("./route/discountRoutes");
 const storePagesRoutes = require("./route/storePagesRoutes");
+const referralRoutes = require("./route/referralRoutes");
 
 const { application } = require('express')
 
@@ -117,6 +118,7 @@ app.use('/v1/subCategory', subCategoryRoutes);
 app.use('/v1/delivery', deliveryRoutes);
 app.use('/v1/discount', discountRoutes);
 app.use('/v1/pages', storePagesRoutes);
+app.use('/v1/referral', referralRoutes);
 
 const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET)
 
