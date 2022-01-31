@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 
-const reviewSchema = new mongoose.Schema({
+const questionSchema = new mongoose.Schema({
+  store: { type: mongoose.Schema.ObjectId, ref: 'Store' },
   customer: {
     type: mongoose.Schema.ObjectId,
     ref: 'Customer',
@@ -9,27 +10,22 @@ const reviewSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'Product',
   },
-  rating: {
-    type: Number,
-    enum: [1, 2, 3, 4, 5],
-  },
-  comment: {
+  question: {
     type: String,
   },
-  images: [
-    {
-      type: String,
-    },
-  ],
-  video: { type: String },
-  visibile: { type: Boolean, default: true },
-  isTestemonial: { type: Boolean, default: false },
+  answer: {
+    type: String,
+  },
+  answeredBy: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+  },
   createdAt: { type: Date, default: Date.now() },
   updatedAt: { type: Date },
   foundUseful: [{ type: mongoose.Schema.ObjectId, ref: 'Customer' }],
   foundNotUseful: [{ type: mongoose.Schema.ObjectId, ref: 'Customer' }],
 })
 
-const Review = new mongoose.model('Review', reviewSchema)
+const Question = new mongoose.model('Question', questionSchema)
 
-module.exports = Review
+module.exports = Question

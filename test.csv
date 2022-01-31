@@ -1,0 +1,4 @@
+customer => model, controller, route
+review => model, controller, route
+questions => model, controller, route
+marketing => model, controller, route

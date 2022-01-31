@@ -1,195 +1,132 @@
 const catchAsync = require('../utils/catchAsync')
+const apiFeatures = require('../utils/apiFeatures')
+const Marketing = require('../model/MarketingModel')
+
+const sgMail = require('@sendgrid/mail')
+sgMail.setApiKey(process.env.SENDGRID_KEY)
+
+const accountSid = process.env.TWILIO_ACCOUNT_SID
+const authToken = process.env.TWILIO_AUTH_TOKEN
+const client = require('twilio')(accountSid, authToken)
 
 exports.createSMSCampaign = catchAsync(async (req, res, next) => {
-  const { id } = req.params
-  const { name, message, mobileNumbers } = req.body
-
-  const newSMSCampaign = await SMSCampaign.create({
-    store: id,
-    name,
-    message,
-    mobileNumbers,
+  const newCampaign = await Marketing.create({
+    store: req.store._id,
+    ...req.body,
   })
 
-  //    Send SMS campaign
+  // send sms to all in the target audience list
+
+  for (let element of newCampaign.customers) {
+    client.messages
+      .create({
+        body: newCampaign.message,
+        from: '+1 775 535 7258',
+        to: element,
+      })
+
+      .then((message) => {
+        console.log(message.sid)
+        console.log(`Successfully sent Campaign SMS to ${element}`)
+      })
+      .catch((e) => {
+        console.log(e)
+        console.log(`Failed to send Campaign SMS to ${element}`)
+      })
+  }
 
   res.status(200).json({
     status: 'success',
-    message: 'SMS campaign lauched successfully!',
-    data: newSMSCampaign,
-  })
-})
-exports.createWhatsAppCampaign = catchAsync(async (req, res, next) => {
-  const { id } = req.params
-  const { name, message, mobileNumbers } = req.body
-
-  const newWhatsAppCampaign = await WhatsAppCampaign.create({
-    store: id,
-    name,
-    message,
-    mobileNumbers,
-  })
-
-  // Send WhatsApp campaign
-
-  res.status(200).json({
-    status: 'success',
-    message: 'WhatsApp campaign lauched successfully!',
-    data: newWhatsAppCampaign,
+    messgae: 'Campaign created and launched successfully!!',
+    data: newCampaign,
   })
 })
 
-exports.createGoogleAdsCampaign = catchAsync(async (req, res, next) => {
-  const { id } = req.params
-  const {
-    text1,
-    text2,
-    text3,
-    description,
-    keywords,
-    gender,
-    minAge,
-    maxAge,
-    locations,
-    minRange,
-    maxRange,
-    dailyBudget,
-    adDuration,
-  } = req.body
-
-  const newGoogleAdsCampaign = await GoogleAdsCampaign.create({
-    store: id,
-    text1,
-    text2,
-    text3,
-    description,
-    keywords,
-    gender,
-    minAge,
-    maxAge,
-    locations,
-    minRange,
-    maxRange,
-    dailyBudget,
-    adDuration,
-    status: 'Under review',
+exports.createMailCampaign = catchAsync(async (req, res, next) => {
+  const newCampaign = await Marketing.create({
+    store: req.store._id,
+    ...req.body,
   })
-
-  // Create Google Ad Campaign
 
   res.status(200).json({
     status: 'success',
-    message: 'Google Ad campaign lauched successfully!',
-    data: newGoogleAdsCampaign,
+    messgae: 'Campaign created and saved as draft!',
+    data: newCampaign,
   })
 })
 
-exports.createFacebookAdsCampaign = catchAsync(async (req, res, next) => {
-  const { id } = req.params
+exports.launchMailCampaign = catchAsync(async (req, res, next) => {
+  const campaign = await Marketing.findById(req.params.campaignId)
 
-  const {
-    headline,
-    files,
-    websiteURL,
-    buttonLabel,
-    gender,
-    minAge,
-    maxAge,
-    locations,
-    minRange,
-    maxRange,
-    dailyBudget,
-    adDuration,
-    facebook,
-    messenger,
-    instagram,
-  } = req.body
+  for (let element of campaign) {
+    const msg = {
+      to: email, // Change to your recipient
+      from: 'welcome@letstream.live', // Change to your verified sender
+      subject: campaign.name,
+      // text: `Here we can send plain text mail to our user.`,
+      html: campaign.html,
+    }
 
-  const newFacebookAdsCampaign = await FacebookAdsCampaign.create({
-    store: id,
-    headline,
-    files,
-    websiteURL,
-    buttonLabel,
-    gender,
-    minAge,
-    maxAge,
-    locations,
-    minRange,
-    maxRange,
-    dailyBudget,
-    adDuration,
-    facebook,
-    messenger,
-    instagram,
-    status: 'Under review',
-  })
-
-  // Create Facebook Ad Campaign
+    sgMail
+      .send(msg)
+      .then(() => {
+        console.log(`Campaign mail successfully sent to ${element}`)
+      })
+      .catch((error) => {
+        console.log(error)
+        console.log(`Failed to send campaign mail to ${element}`)
+      })
+  }
 
   res.status(200).json({
     status: 'success',
-    message: 'Facebook Ad campaign lauched successfully!',
-    data: newFacebookAdsCampaign,
+    message: 'Campaign launched successfully!',
   })
 })
 
-// TODO Email Marketing
+exports.sendTestEmailCampaign = catchAsync(async (req, res, next) => {
+  const campaign = await Marketing.findById(req.params.campaignId)
 
-exports.getCapmaigns = catchAsync(async (req, res, next) => {
-  const { id } = req.params
+  // Send mail
 
-  const smsCampaigns = await SMSCampaign.find({ store: id })
-  const whatsAppCampaigns = await WhatsAppCampaign.find({ store: id })
-  const googleAdCampaigns = await GoogleAdsCampaign.find({ store: id })
-  const facebookAdCampaigns = await FacebookAdsCampaign.find({ store: id })
+  const msg = {
+    to: req.params.email, // Change to your recipient
+    from: 'welcome@letstream.live', // Change to your verified sender
+    subject: campaign.name,
+    // text: `Hello, this is a test for sending email campaign.`,
+    html: campaign.html,
+  }
 
-  res.status(200).json({
-    status: 'success',
-    data: {
-      smsCampaigns,
-      whatsAppCampaigns,
-      googleAdCampaigns,
-      facebookAdCampaigns,
-    },
-    message: 'Marketing Campaigns found successfully!',
-  })
+  sgMail
+    .send(msg)
+    .then(async () => {
+      console.log('Campaign mail sent successfully!')
+
+      res.status(201).json({
+        status: 'success',
+        message: 'Test mail sent successfully!',
+      })
+    })
+    .catch(async (error) => {
+      console.log(error)
+      console.log('Failed to send test mail, Please try again.')
+
+      res.status(400).json({
+        status: 'error',
+        message: 'Failed to send test mail, Please try again.',
+      })
+    })
 })
 
-exports.pauseGoogleAdsCampaign = catchAsync(async (req, res, next) => {
-  const { id, googleCampaignId } = req.body
+exports.fetchCampaigns = catchAsync(async (req, res, next) => {
+  const query = Marketing.find({ store: req.store._id })
 
-  // TODO Ask Google to pause the ad
-  // Find and pause google ad
-
-  const updatedGoogleCampaign = await GoogleAdsCampaign.findByIdAndUpdate(
-    googleCampaignId,
-    { status: 'Paused' },
-    { new: true, validateModifiedOnly: true },
-  )
+  const features = new apiFeatures(query, req.query).textFilter()
+  const campaigns = await features.query
 
   res.status(200).json({
     status: 'success',
-    data: updatedGoogleCampaign,
-    message: 'Google Ad campaign paused successfully!',
-  })
-})
-
-exports.puaseFacebookAdsCampaign = catchAsync(async (req, res, next) => {
-  const { id, facebookCampaignId } = req.body
-
-  // TODO Ask Facebook to pause the ad
-  // Find and pause facebook ad
-
-  const updatedFacebookCampaign = await FacebookAdsCampaign.findByIdAndUpdate(
-    facebookCampaignId,
-    { status: 'Paused' },
-    { new: true, validateModifiedOnly: true },
-  )
-
-  res.status(200).json({
-    status: 'success',
-    data: updatedFacebookCampaign,
-    message: 'Facebook Ad campaign paused successfully!',
+    data: campaigns,
+    message: 'Campaigns found successfully!',
   })
 })

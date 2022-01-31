@@ -185,6 +185,16 @@ const storeSchema = new mongoose.Schema({
   minDeliveryDistance: { type: Number },
   maxDeliveryDistance: { type: Number },
   showShopInsideDeliveryZoneOnly: { type: Boolean, default: false },
+
+  // Coins
+  coinValue: {
+    type: Number, // Value of 1 coin in ruppee
+  },
+
+  // Wallet
+  walletAmount: {
+    type: Number,
+  },
 })
 
 const Store = mongoose.model('Store', storeSchema)
