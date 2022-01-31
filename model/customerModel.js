@@ -15,7 +15,7 @@ const customerSchema = new mongoose.Schema({
   phone: { type: String },
   email: { type: String },
   orders: [{ type: mongoose.Schema.ObjectId, ref: 'Order' }],
-  addresses: [{ type: mongoose.Schema, ObjectId, ref: 'CustomerAddress' }],
+  addresses: [{ type: mongoose.Schema.ObjectId, ref: 'CustomerAddress' }],
   reviews: [{ type: mongoose.Schema.ObjectId, ref: 'Review' }],
   questions: [{ type: mongoose.Schema.ObjectId, ref: 'Question' }],
   smsCommunications: [

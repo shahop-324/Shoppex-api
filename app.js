@@ -24,14 +24,18 @@ const productRoutes = require('./route/productRoutes')
 const notificationRoutes = require('./route/notificationRoutes')
 const storeRoutes = require('./route/storeRoutes')
 const userRoutes = require('./route/userRoutes')
-const orderRoutes = require("./route/orderRoutes");
-const generalRoutes = require("./route/generalRoutes");
-const categoryRoutes = require("./route/categoryRoutes");
-const subCategoryRoutes = require("./route/subCategoryRoutes");
-const deliveryRoutes = require("./route/deliveryRoutes");
-const discountRoutes = require("./route/discountRoutes");
-const storePagesRoutes = require("./route/storePagesRoutes");
-const referralRoutes = require("./route/referralRoutes");
+const orderRoutes = require('./route/orderRoutes')
+const generalRoutes = require('./route/generalRoutes')
+const categoryRoutes = require('./route/categoryRoutes')
+const subCategoryRoutes = require('./route/subCategoryRoutes')
+const deliveryRoutes = require('./route/deliveryRoutes')
+const discountRoutes = require('./route/discountRoutes')
+const storePagesRoutes = require('./route/storePagesRoutes')
+const referralRoutes = require('./route/referralRoutes')
+const customerRoutes = require('./route/customerRoutes')
+const reviewRoutes = require('./route/reviewRoutes')
+const questionRoutes = require('./route/questionRoutes')
+const marketingRoutes = require('./route/marketingRoutes')
 
 const { application } = require('express')
 
@@ -106,19 +110,23 @@ app.use(mongosanitize())
 app.use(xss())
 
 // api.shoppex.in/v1/auth/registerUser (POST);
-app.use('/v1/general', generalRoutes);
+app.use('/v1/general', generalRoutes)
 app.use('/v1/auth', authRoutes)
 app.use('/v1/product', productRoutes)
 app.use('/v1/notification', notificationRoutes)
 app.use('/v1/store', storeRoutes)
 app.use('/v1/user', userRoutes)
-app.use('/v1/order', orderRoutes);
-app.use('/v1/category', categoryRoutes);
-app.use('/v1/subCategory', subCategoryRoutes);
-app.use('/v1/delivery', deliveryRoutes);
-app.use('/v1/discount', discountRoutes);
-app.use('/v1/pages', storePagesRoutes);
-app.use('/v1/referral', referralRoutes);
+app.use('/v1/order', orderRoutes)
+app.use('/v1/category', categoryRoutes)
+app.use('/v1/subCategory', subCategoryRoutes)
+app.use('/v1/delivery', deliveryRoutes)
+app.use('/v1/discount', discountRoutes)
+app.use('/v1/pages', storePagesRoutes)
+app.use('/v1/referral', referralRoutes)
+app.use('/v1/customer', customerRoutes)
+app.use('/v1/review', reviewRoutes)
+app.use('/v1/questions', questionRoutes)
+app.use('/v1/marketing', marketingRoutes)
 
 const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET)
 
