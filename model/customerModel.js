@@ -34,7 +34,7 @@ const customerSchema = new mongoose.Schema({
   authOTP: {
     type: String,
   },
-});
+})
 
 const Customer = mongoose.model('Customer', customerSchema)
 module.exports = Customer

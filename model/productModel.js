@@ -60,6 +60,7 @@ const productSchema = new mongoose.Schema({
   hidden: { type: Boolean, default: false },
   totalSales: { type: Number, default: 0 },
   totalOrders: { type: Number, default: 0 },
+  coins: { type: Number, default: 0 },
 })
 
 productSchema.index({
