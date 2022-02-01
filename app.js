@@ -36,6 +36,7 @@ const customerRoutes = require('./route/customerRoutes')
 const reviewRoutes = require('./route/reviewRoutes')
 const questionRoutes = require('./route/questionRoutes')
 const marketingRoutes = require('./route/marketingRoutes')
+const divisionRoutes = require('./route/divisionRoutes')
 
 const { application } = require('express')
 
@@ -47,6 +48,9 @@ app.use(
       'https://127.0.0.1:3000',
       'http://127.0.0.1:3000',
       'http://localhost:3000',
+      'https://127.0.0.1:4000',
+      'http://127.0.0.1:4000',
+      'http://localhost:4000',
       'https://www.letstream.live',
       'https://letstream.live',
       'https://zapier.com',
@@ -127,6 +131,7 @@ app.use('/v1/customer', customerRoutes)
 app.use('/v1/review', reviewRoutes)
 app.use('/v1/questions', questionRoutes)
 app.use('/v1/marketing', marketingRoutes)
+app.use('/v1/division', divisionRoutes);
 
 const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET)
 

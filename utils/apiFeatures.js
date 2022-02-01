@@ -14,5 +14,13 @@ class apiFeatures {
     }
     return this
   }
+  tagFilter() {
+    if (this.queryString.tag) {
+      this.query = this.query.find({
+        $or: [{ tag: this.queryString.tag }, { type: this.queryString.tag }],
+      })
+    }
+    return this
+  }
 }
 module.exports = apiFeatures

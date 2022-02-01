@@ -1,6 +1,11 @@
 const Customer = require('../model/CustomerModel')
+const SMSCommunication = require('../model/SMSCommunicationsModel')
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
+
+const accountSid = process.env.TWILIO_ACCOUNT_SID
+const authToken = process.env.TWILIO_AUTH_TOKEN
+const client = require('twilio')(accountSid, authToken)
 
 exports.addNewCustomer = catchAsync(async (req, res, next) => {
   const newCustomer = await Customer.create({
@@ -16,8 +21,8 @@ exports.addNewCustomer = catchAsync(async (req, res, next) => {
 })
 
 exports.giveCoinsToCustomer = catchAsync(async (req, res, next) => {
-  const customer = await Customer.findById(req.params.id)
-  customer.coins = customer.coins + req.params.coins
+  const customer = await Customer.findById(req.body.id)
+  customer.coins = customer.coins*1 + req.body.coins*1
   const updatedCustomer = customer.save({
     new: true,
     validateModifiedOnly: true,
@@ -82,4 +87,50 @@ exports.importCustomers = catchAsync(async (req, res, next) => {
 
 exports.sendSMSToCustomer = catchAsync(async (req, res, next) => {
   // Send sms and create a copy of communication in SMSCommunications
+
+  const { message, id } = req.body
+
+  const customer = await Customer.findById(id)
+
+  console.log(customer, message);
+
+//   res.status(200).json({
+//     status: "success",
+// message: "This is a test",
+//   })
+
+  client.messages
+    .create({
+      body: message,
+      from: '+1 775 535 7258',
+      to: customer.phone,
+    })
+
+    .then(async (message) => {
+      console.log(message.sid)
+      console.log(
+        `Message Sent successfully to ${customer.name} on mobile ${customer.phone}.`,
+      )
+      await SMSCommunication.create({
+        store: req.store._id,
+        user: req.user._id,
+        customer: id,
+        message: req.body.message,
+        createdAt: Date.now(),
+      })
+      res.status(200).json({
+        status: 'success',
+        message: 'SMS sent successfully!',
+      })
+    })
+    .catch((e) => {
+      console.log(e)
+      console.log(
+        `Failed to send SMS to ${customer.name} on mobile ${customer.phone}`,
+      )
+      res.status(400).json({
+        status: 'error',
+        message: 'Failed to send SMS, Please try again.',
+      })
+    })
 })

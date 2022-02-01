@@ -6,14 +6,13 @@ const customerSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'Store',
   },
-  firstName: {
-    type: String,
-  },
-  lastName: {
-    type: String,
-  },
+  name: {type: String,},
+  image: {type: String,},
   phone: { type: String },
   email: { type: String },
+  pincode: {type: String,},
+  city: {type: String,},
+  totalSale: {type: Number,},
   orders: [{ type: mongoose.Schema.ObjectId, ref: 'Order' }],
   addresses: [{ type: mongoose.Schema.ObjectId, ref: 'CustomerAddress' }],
   reviews: [{ type: mongoose.Schema.ObjectId, ref: 'Review' }],
@@ -23,8 +22,8 @@ const customerSchema = new mongoose.Schema({
   ],
   createdAt: { type: Date, default: Date.now() },
   updatedAt: { type: Date },
-  type: { type: String, enum: ['Self', 'Imported'] },
-  tags: [{ type: String, enum: ['new', 'returning', 'noSale'] }],
+  type: { type: String, enum: ['Self', 'Imported'], default: "Self" },
+  tag: { type: String, enum: ['new', 'returning', 'noSale'], default: "new" },
   password: {
     type: String,
   },
@@ -34,6 +33,14 @@ const customerSchema = new mongoose.Schema({
   authOTP: {
     type: String,
   },
+});
+
+customerSchema.index({
+  name: 'text',
+  phone: 'text',
+  email: 'text',
+  city: 'text',
+  pincode: 'text',
 })
 
 const Customer = mongoose.model('Customer', customerSchema)
