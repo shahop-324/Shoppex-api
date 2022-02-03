@@ -2,7 +2,6 @@ const mongoose = require('mongoose')
 
 const discountSchema = new mongoose.Schema({
   store: { type: mongoose.Schema.ObjectId, ref: 'Store' },
-
   discountType: { type: String },
   applicableOn: { type: String },
   type: { type: String },
@@ -12,9 +11,10 @@ const discountSchema = new mongoose.Schema({
   getY: { type: Number },
   boughtProduct: { type: Map },
   givenProduct: { type: Map },
-  applicableCategories: { type: Map },
-  applicableSubCategories: { type: Map },
-  applicableProducts: { type: Map },
+  applicableCategories: [{ type: Map }],
+  applicableSubCategories: [{ type: Map }],
+  applicableDivisions: [{type: Map,}],
+  applicableProducts: [{ type: Map }],
   numberOfCoupons: { type: Number },
   totalUsed: { type: Number, default: 0 },
   discountCode: { type: String },
@@ -25,9 +25,7 @@ const discountSchema = new mongoose.Schema({
   maxDiscount: { type: Number },
   showToCustomer: { type: Boolean, default: true },
   usedByCustomers: { type: mongoose.Schema.ObjectId, ref: 'Customer' },
-
   totalSales: { type: Number },
-
   appliedOnOrders: [
     {
       type: mongoose.Schema.ObjectId,

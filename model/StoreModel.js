@@ -153,18 +153,15 @@ const storeSchema = new mongoose.Schema({
   refundPolicy: { type: String },
   shippingPolicy: { type: String },
   disclaimerPolicy: { type: String },
-
   // Notifications
   // Application notifications
   applicationBlog: { type: Boolean, default: true },
   applicationNews: { type: Boolean, default: true },
   applicationProduct: { type: Boolean, default: true },
-
   // Store Notifications
   storeAbondonedCart: { type: Boolean, default: true },
   storeOrder: { type: Boolean, default: true },
   storeStock: { type: Boolean, default: true },
-
   // Social Links
   facebookLink: { type: String },
   instagramLink: { type: String },
@@ -185,16 +182,16 @@ const storeSchema = new mongoose.Schema({
   minDeliveryDistance: { type: Number },
   maxDeliveryDistance: { type: Number },
   showShopInsideDeliveryZoneOnly: { type: Boolean, default: false },
-
   // Coins
   coinValue: {
     type: Number, // Value of 1 coin in ruppee
   },
-
   // Wallet
   walletAmount: {
     type: Number,
   },
+  theme: { type: String, default: 'Lite', },
+  themesUnlocked: { type: Boolean, default: false },
 })
 
 const Store = mongoose.model('Store', storeSchema)

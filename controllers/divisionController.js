@@ -2,6 +2,7 @@ const Division = require('../model/DivisionModel')
 const Product = require('../model/productModel')
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
+const SubCategory = require('../model/SubCategoryModel')
 // Add, Edit, Delete, Get => Division
 
 const filterObj = (obj, ...allowedFields) => {
@@ -21,6 +22,14 @@ exports.addDivision = catchAsync(async (req, res, next) => {
     image,
     subCategory,
   })
+
+  // Find its subCategory and push its id into it
+
+  const subCategoryDoc = await SubCategory.findById(subCategory.value)
+
+  subCategoryDoc.divisions.push(newDivision._id)
+
+  await subCategoryDoc.save({ new: true, validateModifiedOnly: true })
 
   res.status(200).json({
     status: 'success',
@@ -58,7 +67,7 @@ exports.deleteDivision = catchAsync(async (req, res, next) => {
   const { divisionId } = req.params
 
   // Remove all products in this sub subCategory
-  await Product.deleteMany({ division: divisionId })
+  // await Product.deleteMany({ division: divisionId })
 
   // Remove this subCategory
   await Division.findByIdAndDelete(divisionId)
@@ -72,7 +81,7 @@ exports.deleteDivision = catchAsync(async (req, res, next) => {
 exports.deleteMultipleDivision = catchAsync(async (req, res, next) => {
   for (let element of req.body.divisionIds) {
     // Remove all products in this subCategory
-    await Product.deleteMany({ division: element })
+    // await Product.deleteMany({ division: element })
 
     // Remove this subCategory
     await Division.findByIdAndDelete(element)

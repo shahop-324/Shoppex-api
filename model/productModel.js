@@ -17,6 +17,9 @@ const productSchema = new mongoose.Schema({
   subCategory: {
     type: Map,
   },
+  division: { 
+    type: Map,
+  },
   price: {
     type: Number,
   },
@@ -61,6 +64,10 @@ const productSchema = new mongoose.Schema({
   totalSales: { type: Number, default: 0 },
   totalOrders: { type: Number, default: 0 },
   coins: { type: Number, default: 0 },
+  brand: {type: String,},
+  
+  rating: {type: Number, default: 0,},
+  numberOfRatings: {type: Number, default: 0,},
 })
 
 productSchema.index({

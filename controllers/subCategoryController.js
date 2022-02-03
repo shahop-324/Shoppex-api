@@ -2,6 +2,7 @@ const SubCategory = require('../model/SubCategoryModel')
 const Product = require('../model/productModel')
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
+const Category = require('../model/CategoryModel')
 // Add, Edit, Delete, Get => SubCategory
 
 const filterObj = (obj, ...allowedFields) => {
@@ -21,6 +22,14 @@ exports.addSubCategory = catchAsync(async (req, res, next) => {
     image,
     category,
   })
+
+  // Find its category and push its id into it
+
+  const categoryDoc = await Category.findById(category.value)
+
+  categoryDoc.subCategories.push(newSubCategory._id)
+
+  await categoryDoc.save({new: true, validateModifiedOnly: true});
 
   res.status(200).json({
     status: 'success',

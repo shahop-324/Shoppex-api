@@ -286,7 +286,6 @@ exports.verifyOTPForRegistration = catchAsync(async (req, res, next) => {
     await UserRequest.deleteMany({ email: email })
 
     // Create and send login token for this user
-
     const token = signToken(newUser._id, newUser.stores[0])
 
     // TODO => Send welcome email to this user (P5)
@@ -385,7 +384,6 @@ exports.protect = catchAsync(async (req, res, next) => {
 })
 
 // Reset password
-
 exports.resetPassword = catchAsync(async (req, res, next) => {
   try {
     // 1) Get user based on the token

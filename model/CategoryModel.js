@@ -17,6 +17,12 @@ const categorySchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'Store',
   },
+  subCategories: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: 'SubCategory',
+    },
+  ],
   outOfStock: {
     type: Boolean,
     default: false,
@@ -29,6 +35,11 @@ const categorySchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+})
+
+categorySchema.pre(/^find/, function (next) {
+  this.find({}).populate('subCategories');
+  next()
 })
 
 categorySchema.index({
