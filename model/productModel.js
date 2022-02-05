@@ -53,6 +53,7 @@ const productSchema = new mongoose.Schema({
   colorsList: [{ type: Map }],
   variantList: [{ type: Map }],
   customVariants: [{ type: Map }],
+  specifications: [{ type: Map }],
   metaDescription: { type: String },
   metaTitle: { type: String },
   metaKeyword: { type: String },
@@ -68,6 +69,9 @@ const productSchema = new mongoose.Schema({
   
   rating: {type: Number, default: 0,},
   numberOfRatings: {type: Number, default: 0,},
+
+  lowestPrice:{type: Number,},
+  highestPrice: {type: Number,},
 })
 
 productSchema.index({

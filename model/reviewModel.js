@@ -1,6 +1,10 @@
 const mongoose = require('mongoose')
 
 const reviewSchema = new mongoose.Schema({
+  store: {
+    type: mongoose.Schema.ObjectId,
+    ref: "Store",
+  },
   customer: {
     type: mongoose.Schema.ObjectId,
     ref: 'Customer',
@@ -22,7 +26,7 @@ const reviewSchema = new mongoose.Schema({
     },
   ],
   video: { type: String },
-  visibile: { type: Boolean, default: true },
+  visible: { type: Boolean, default: true },
   isTestemonial: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now() },
   updatedAt: { type: Date },
