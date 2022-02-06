@@ -72,6 +72,8 @@ const productSchema = new mongoose.Schema({
 
   lowestPrice:{type: Number,},
   highestPrice: {type: Number,},
+
+  featured: {type: Boolean, default: false,},
 })
 
 productSchema.index({

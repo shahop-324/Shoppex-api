@@ -15,8 +15,38 @@ const filterObj = (obj, ...allowedFields) => {
 exports.addProduct = catchAsync(async (req, res, next) => {
   console.log(req.body)
 
+  // TODO => Calculate lowest and highest price
+
+  if (!req.body.discountedPrice) {
+    req.body.discountedPrice = req.body.price
+  }
+
+  let prices = [req.body.price]
+
+  req.body.variantList.forEach((element) => {
+    prices.push(element.price * 1)
+  })
+
+  req.body.customVariants.forEach((element) => {
+    element.options.forEach((item) => {
+      prices.push(item.price * 1)
+    })
+  })
+
+  // Now prices array contains all prices => just find min and max and you will have lowest and highest prices
+
+  lowest = prices.reduce(function (p, v) {
+    return p < v ? p : v
+  })
+
+  highest = prices.reduce(function (p, v) {
+    return p > v ? p : v
+  })
+
   const newProduct = await Product.create({
     ...req.body,
+    lowestPrice: lowest,
+    highestPrice: highest,
     store: req.store._id,
   })
 
@@ -40,6 +70,34 @@ exports.addProduct = catchAsync(async (req, res, next) => {
 })
 
 exports.updateProduct = catchAsync(async (req, res, next) => {
+  // TODO => Calculate lowest and highest price
+
+  if (!req.body.discountedPrice) {
+    req.body.discountedPrice = req.body.price
+  }
+
+  let prices = [req.body.price]
+
+  req.body.variantList.forEach((element) => {
+    prices.push(element.price * 1)
+  })
+
+  req.body.customVariants.forEach((element) => {
+    element.options.forEach((item) => {
+      prices.push(item.price * 1)
+    })
+  })
+
+  // Now prices array contains all prices => just find min and max and you will have lowest and highest prices
+
+  lowest = prices.reduce(function (p, v) {
+    return p < v ? p : v
+  })
+
+  highest = prices.reduce(function (p, v) {
+    return p > v ? p : v
+  })
+
   console.log(req.body)
   const productDoc = await Product.findById(req.params.productId)
 
@@ -73,7 +131,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
 
   const updatedProduct = await Product.findByIdAndUpdate(
     req.params.productId,
-    { ...req.body },
+    { ...req.body, lowestPrice: lowest, highestPrice: highest },
     { new: true, validateModifiedOnly: true },
   )
 
