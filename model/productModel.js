@@ -74,6 +74,19 @@ const productSchema = new mongoose.Schema({
   highestPrice: {type: Number,},
 
   featured: {type: Boolean, default: false,},
+  views: {
+    type: Number,
+    default: 0,
+  },
+  orders: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: 'Order',
+    },
+  ],
+  createdAt: { type: Date, default: Date.now() },
+  updatedAt: { type: Date },
+  freeDelivery: {type: Boolean, default: false,},
 })
 
 productSchema.index({
