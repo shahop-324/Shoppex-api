@@ -7,6 +7,7 @@ const StoreSubName = require('../model/StoreSubNameModel')
 const User = require('../model/userModel')
 const StorePages = require('../model/StorePages')
 const StaffInvitation = require('../model/staffInvitationModel')
+const Product = require('../model/productModel')
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {}
@@ -473,6 +474,22 @@ exports.updateStoreOtherInfo = catchAsync(async (req, res, next) => {
     maxDeliveryDistance,
     showShopInsideDeliveryZoneOnly,
   } = req.body
+
+  // * DONE => Map over all products of this store and determine if they qualify for free delivery or not
+
+  const storeDoc = await Store.findById(req.store._id)
+
+  const freeDeliveryThreshold = storeDoc.freeDeliveryAbove
+
+  const storeDocs = await Product.find({ store: req.store._id })
+
+  storeDocs.forEach(async (el) => {
+    if (el.highestPrice * 1 >= freeDeliveryThreshold * 1) {
+      el.freeDelivery = true
+    }
+
+    await el.save({ new: true, validateModifiedOnly: true })
+  })
 
   const updatedStore = await Store.findByIdAndUpdate(
     req.store._id,

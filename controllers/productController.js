@@ -3,6 +3,7 @@ const Catalouge = require('../model/catalougeModel')
 // Add, Edit, Delete, Get => Product
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
+const Store = require('../model/StoreModel')
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {}
@@ -15,7 +16,8 @@ const filterObj = (obj, ...allowedFields) => {
 exports.addProduct = catchAsync(async (req, res, next) => {
   console.log(req.body)
 
-  // TODO => Calculate lowest and highest price
+  // * DONE => Calculate if it qualifies for delivery or not
+  // * DONE => Calculate lowest and highest price
 
   if (!req.body.discountedPrice) {
     req.body.discountedPrice = req.body.price
@@ -43,11 +45,21 @@ exports.addProduct = catchAsync(async (req, res, next) => {
     return p > v ? p : v
   })
 
+  let qualifyForFreeDelivery = false;
+
+  const storeDoc = await Store.findById(req.store._id);
+  const freeDeliveryThreshold = storeDoc.freeDeliveryAbove;
+
+  if(highestPrice*1 >= freeDeliveryThreshold*1) {
+    qualifyForFreeDelivery = true;
+  }
+
   const newProduct = await Product.create({
     ...req.body,
     lowestPrice: lowest,
     highestPrice: highest,
     store: req.store._id,
+    freeDelivery: qualifyForFreeDelivery,
   })
 
   newProduct.updatedAt = Date.now()
@@ -70,7 +82,8 @@ exports.addProduct = catchAsync(async (req, res, next) => {
 })
 
 exports.updateProduct = catchAsync(async (req, res, next) => {
-  // TODO => Calculate lowest and highest price
+  // * DONE => Calculate lowest and highest price
+  // * DONE => Calculate if it qualifies for delivery or not
 
   if (!req.body.discountedPrice) {
     req.body.discountedPrice = req.body.price
@@ -124,6 +137,13 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
   }
 
   productDoc.updatedAt = Date.now()
+
+  const storeDoc = await Store.findById(productDoc.store);
+  const freeDeliveryThreshold = storeDoc.freeDeliveryAbove;
+
+  if(highestPrice*1 >= freeDeliveryThreshold*1) {
+    productDoc.freeDelivery = true;
+  }
 
   // then update rest of the things
 

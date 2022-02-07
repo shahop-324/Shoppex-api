@@ -66,13 +66,10 @@ const productSchema = new mongoose.Schema({
   totalOrders: { type: Number, default: 0 },
   coins: { type: Number, default: 0 },
   brand: {type: String,},
-  
   rating: {type: Number, default: 0,},
   numberOfRatings: {type: Number, default: 0,},
-
   lowestPrice:{type: Number,},
   highestPrice: {type: Number,},
-
   featured: {type: Boolean, default: false,},
   views: {
     type: Number,
@@ -87,6 +84,7 @@ const productSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now() },
   updatedAt: { type: Date },
   freeDelivery: {type: Boolean, default: false,},
+  priceDeterminingVariant: {type: String,},
 })
 
 productSchema.index({
