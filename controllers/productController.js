@@ -25,10 +25,6 @@ exports.addProduct = catchAsync(async (req, res, next) => {
 
   let prices = [req.body.price]
 
-  req.body.variantList.forEach((element) => {
-    prices.push(element.price * 1)
-  })
-
   req.body.customVariants.forEach((element) => {
     element.options.forEach((item) => {
       prices.push(item.price * 1)
@@ -50,7 +46,7 @@ exports.addProduct = catchAsync(async (req, res, next) => {
   const storeDoc = await Store.findById(req.store._id);
   const freeDeliveryThreshold = storeDoc.freeDeliveryAbove;
 
-  if(highestPrice*1 >= freeDeliveryThreshold*1) {
+  if(highest*1 >= freeDeliveryThreshold*1) {
     qualifyForFreeDelivery = true;
   }
 
@@ -90,10 +86,6 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
   }
 
   let prices = [req.body.price]
-
-  req.body.variantList.forEach((element) => {
-    prices.push(element.price * 1)
-  })
 
   req.body.customVariants.forEach((element) => {
     element.options.forEach((item) => {
@@ -141,7 +133,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
   const storeDoc = await Store.findById(productDoc.store);
   const freeDeliveryThreshold = storeDoc.freeDeliveryAbove;
 
-  if(highestPrice*1 >= freeDeliveryThreshold*1) {
+  if(highest*1 >= freeDeliveryThreshold*1) {
     productDoc.freeDelivery = true;
   }
 
