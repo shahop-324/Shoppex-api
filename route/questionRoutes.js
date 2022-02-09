@@ -3,10 +3,14 @@ const router = express.Router()
 const authController = require('../controllers/authController')
 const questionController = require('../controllers/questionsController')
 
-router.get(
-  '/questions/getAll',
+router.get('/getAll', authController.protect, questionController.fetchQuestions)
+
+router.patch(
+  '/update/:id',
   authController.protect,
-  questionController.fetchQuestions,
+  questionController.updateQuestion,
 )
+
+router.delete('/delete/:id', authController.protect, questionController.deleteQuestion)
 
 module.exports = router

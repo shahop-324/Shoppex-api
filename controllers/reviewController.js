@@ -3,10 +3,30 @@ const apiFeatures = require('../utils/apiFeatures')
 const Review = require('../model/reviewModel')
 
 exports.fetchReviews = catchAsync(async (req, res, next) => {
-  const query = Review.find({ store: req.store._id })
+  let reviews = await Review.find({ store: req.store._id })
 
-  const features = new apiFeatures(query, req.query).textFilter()
-  const reviews = await features.query
+  if (req?.query?.text) {
+    switch (req.query.text) {
+      case 'Accepted':
+        reviews = reviews.filter((el) => el.accepted)
+        break
+      case 'Rejected':
+        reviews = reviews.filter((el) => !el.accepted)
+        break
+      case 'Featured':
+        reviews = reviews.filter((el) => el.featured)
+        break
+      case 'Hidden':
+        reviews = reviews.filter((el) => el.hidden)
+        break
+      case 'Pinned':
+        reviews = reviews.filter((el) => el.pinned)
+        break
+
+      default:
+        break
+    }
+  }
 
   res.status(200).json({
     status: 'success',
@@ -30,10 +50,22 @@ exports.createReview = catchAsync(async (req, res, next) => {
 })
 
 exports.updateReview = catchAsync(async (req, res, next) => {
-  const updatedReview = await Review.findByIdAndUpdate(req.params.id, {
-    ...req.body,
-    updatedAt: Date.now(),
-  })
+  let updatedReview = await Review.findByIdAndUpdate(
+    req.params.id,
+    {
+      ...req.body,
+      updatedAt: Date.now(),
+    },
+    { new: true, validateModifiedOnly: true },
+  )
+
+  if (req.body.accepted) {
+    updatedReview.audited = true
+    updatedReview = await updatedReview.save({
+      new: true,
+      validateModifiedOnly: true,
+    })
+  }
 
   res.status(200).json({
     status: 'success',

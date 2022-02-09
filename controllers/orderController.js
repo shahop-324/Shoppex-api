@@ -1,5 +1,6 @@
 const Order = require('../model/OrdersModel')
 const catchAsync = require('../utils/catchAsync')
+const apiFeatures = require('../utils/apiFeatures');
 
 exports.createOrder = catchAsync(async (req, res, next) => {
   const {
@@ -62,9 +63,11 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
 })
 
 exports.getOrders = catchAsync(async (req, res, next) => {
-  const { id } = req.params
 
-  const orders = await Order.find({ store: storeId })
+  const query = Order.find({ store: req.store._id })
+
+  const features = new apiFeatures(query, req.query).textFilter()
+  const orders = await features.query
 
   res.status(200).json({
     status: 'success',

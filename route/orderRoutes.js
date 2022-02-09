@@ -1,9 +1,11 @@
 const express = require('express')
 const router = express.Router()
 
-const authController = require("../controllers/authController");
-const orderController = require("../controllers/orderController");
+const authController = require('../controllers/authController')
+const orderController = require('../controllers/orderController')
 
-router.get('/recent', authController.protect, orderController.getRecentOrders);
+router.get('/recent', authController.protect, orderController.getRecentOrders)
 
-module.exports = router;
+router.get('/getAll', authController.protect, orderController.getOrders)
+
+module.exports = router

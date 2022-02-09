@@ -3,10 +3,30 @@ const apiFeatures = require('../utils/apiFeatures')
 const Question = require('../model/QuestionModel')
 
 exports.fetchQuestions = catchAsync(async (req, res, next) => {
-  const query = Question.find({ store: req.store._id })
+  let questions = await Question.find({ store: req.store._id })
 
-  const features = new apiFeatures(query, req.query).textFilter()
-  const questions = await features.query
+  if (req?.query?.text) {
+    switch (req.query.text) {
+      case 'Answered':
+        questions = questions.filter((el) => el.answer)
+        break
+      case 'Unanswered':
+        questions = questions.filter((el) => !el.answer)
+        break
+      case 'Featured':
+        questions = questions.filter((el) => el.featured)
+        break
+      case 'Hidden':
+        questions = questions.filter((el) => el.hidden)
+        break
+      case 'Pinned':
+        questions = questions.filter((el) => el.pinned)
+        break
+
+      default:
+        break
+    }
+  }
 
   res.status(200).json({
     status: 'success',
@@ -30,11 +50,20 @@ exports.createQuestion = catchAsync(async (req, res, next) => {
 })
 
 exports.updateQuestion = catchAsync(async (req, res, next) => {
-  const updatedQuestion = await Question.findByIdAndUpdate(
+  let updatedQuestion = await Question.findByIdAndUpdate(
     req.params.id,
     { ...req.body, updatedAt: Date.now() },
     { new: true, validateModifiedOnly: true },
   )
+
+  if (req.body.answer) {
+    updatedQuestion.answeredBy = req.user._id
+    updatedQuestion.answeredAt = Date.now()
+    updatedQuestion = await updatedQuestion.save({
+      new: true,
+      validateModifiedOnly: true,
+    })
+  }
 
   res.status(200).json({
     status: 'success',
