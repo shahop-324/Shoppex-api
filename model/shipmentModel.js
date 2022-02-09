@@ -7,7 +7,11 @@ const shipmentSchema = new mongoose.Schema({
   },
   order: {
     type: mongoose.Schema.ObjectId,
-    ref: 'Buyer',
+    ref: 'Order',
+  },
+  customer: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Customer',
   },
   orderRef: {
     type: String,
@@ -31,6 +35,15 @@ const shipmentSchema = new mongoose.Schema({
     ],
   },
   createdAt: { type: Date, default: Date.now() },
+  carrier: {
+    type: String,
+    enum: ['Delhivery', 'Shiprocket', 'Self'],
+  },
+})
+
+shipmentSchema.pre(/^find/, function (next) {
+  this.find({}).populate('customer').populate('order')
+  next()
 })
 
 shipmentSchema.index({

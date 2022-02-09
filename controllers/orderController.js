@@ -1,6 +1,8 @@
 const Order = require('../model/OrdersModel')
+const Product = require('../model/productModel')
+const Customer = require('../model/CustomerModel')
 const catchAsync = require('../utils/catchAsync')
-const apiFeatures = require('../utils/apiFeatures');
+const apiFeatures = require('../utils/apiFeatures')
 
 exports.createOrder = catchAsync(async (req, res, next) => {
   const {
@@ -63,7 +65,6 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
 })
 
 exports.getOrders = catchAsync(async (req, res, next) => {
-
   const query = Order.find({ store: req.store._id })
 
   const features = new apiFeatures(query, req.query).textFilter()
@@ -77,9 +78,59 @@ exports.getOrders = catchAsync(async (req, res, next) => {
 })
 
 exports.getAbondonedCarts = catchAsync(async (req, res, next) => {
-  const { id } = req.params
+  const customers = await Customer.find({ store: req.store._id }).select(
+    '+cart',
+  )
 
-  const abondonedCarts = await AbondonedCart.find({ store: storeId })
+  const products = await Product.find({ store: req.store._id })
+
+  let abondonedCarts = customers
+    .filter((el) => el?.cart !== undefined && el?.cart?.length > 0)
+    .map((el) => ({
+      cart: el?.cart.map((item) => {
+        const prod = products.find((p) => {
+          return p._id.toString() === item.product.toString()
+        })
+        // console.log(products);
+        console.log(item.product.toString())
+        // console.log(prod)
+        return {
+          qty: item.quantity,
+          itemTotal: item.quantity * item.pricePerUnit,
+          name: prod.productName,
+          id: prod._id,
+        }
+      }),
+      name: el?.name,
+      customerId: el._id,
+      contact: el?.phone,
+      updatedAt: el?.cartUpdatedAt || Date.now(),
+    }))
+
+  abondonedCarts = abondonedCarts.map((el) => {
+    const { name, cart, customerId, contact, updatedAt } = el
+
+    let amount = 0
+
+    cart.forEach((el) => {
+      amount = amount + el.itemTotal
+    })
+
+    return {
+      cart,
+      name,
+      customerId,
+      contact,
+      updatedAt,
+      amount,
+    }
+  })
+
+  // * Customer name DONE
+  // * Customer Contact DONE
+  // * Products with qty, name & _id, DONE
+  // * Total Amount of cart DONE
+  // * Last Updated time of cart DONE
 
   res.status(200).json({
     status: 'success',
