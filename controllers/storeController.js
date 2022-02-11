@@ -519,10 +519,10 @@ exports.updateStoreOtherInfo = catchAsync(async (req, res, next) => {
 // Update Theme
 
 exports.updateStoreTheme = catchAsync(async (req, res, next) => {
-  const { theme } = req.body
+  const { theme } = req.params
 
   const updatedStore = await Store.findByIdAndUpdate(
-    req.params.id,
+    req.store._id,
     {
       theme,
     },
@@ -751,3 +751,17 @@ exports.updateGeneralStoreInfo = catchAsync(async (req, res, next) => {
 // Add staff member
 // Directly add if user with same email is already on platform
 // and create a invitation if not already present
+
+exports.updateStore = catchAsync(async (req, res, next) => {
+  const updatedStore = await Store.findByIdAndUpdate(
+    req.store._id,
+    { ...req.body },
+    { new: true, validateModifiedOnly: true },
+  )
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Store Updated successfully!',
+    data: updatedStore,
+  })
+})

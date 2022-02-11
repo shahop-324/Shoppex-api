@@ -190,8 +190,78 @@ const storeSchema = new mongoose.Schema({
   walletAmount: {
     type: Number,
   },
-  theme: { type: String, default: 'Lite', },
+  theme: { type: String, default: 'Lite' },
   themesUnlocked: { type: Boolean, default: false },
+
+  // Store Theme Booleans
+
+  showTrendingProducts: {
+    type: Boolean,
+    default: true,
+  },
+  showTopPicks: {
+    type: Boolean,
+    default: true,
+  },
+  showBestSeller: {
+    type: Boolean,
+    default: true,
+  },
+  showCustomerReviews: {
+    type: Boolean,
+    default: true,
+  },
+  showRecommendations: {
+    type: Boolean,
+    default: true,
+  },
+  showShopByCategory: {
+    type: Boolean,
+    default: true,
+  },
+  showNewArrivals: {
+    type: Boolean,
+    default: true,
+  },
+  showTopRatedProducts: {
+    type: Boolean,
+    default: true,
+  },
+  flashDeals: [
+    {
+      type: Map,
+    },
+  ],
+  dealOfTheDay: [
+    {
+      type: Map,
+    },
+  ],
+  dealOfTheWeek: [
+    {
+      type: Map,
+    },
+  ],
+  dealOfTheMonth: [
+    {
+      type: Map,
+    },
+  ],
+  bigDiscounts: [
+    {
+      type: Map,
+    },
+  ],
+  featuredProducts: [
+    {
+      type: Map,
+    },
+  ],
+  topCategories: [
+    {
+      type: Map,
+    },
+  ],
 })
 
 const Store = mongoose.model('Store', storeSchema)

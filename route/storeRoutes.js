@@ -92,4 +92,6 @@ router.patch('/checkout-form/delete/:fieldId', authController.protect, storeCont
 
 router.patch('/other-info/update', authController.protect, storeController.updateStoreOtherInfo);
 router.patch('/ambience/update', authController.protect, storeController.updateStoreAmbience);
+router.patch('/updateTheme/:theme', authController.protect, storeController.updateStoreTheme);
+router.patch('/update', authController.protect, storeController.updateStore);
 module.exports = router

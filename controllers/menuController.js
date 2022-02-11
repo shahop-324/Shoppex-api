@@ -28,7 +28,8 @@ exports.updateMenuItem = catchAsync(async (req, res, next) => {
   })
 })
 exports.deleteMenuItem = catchAsync(async (req, res, next) => {
-  await Menu.findByIdAndDelete(req.params.menuId)
+  await Menu.findByIdAndDelete(req.params.menuId);
+//   Delete all other menu items which are this menu items children
   res.status(200).json({
     status: 'success',
     message: 'Menu Deleted Successfully!',
