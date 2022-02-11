@@ -37,6 +37,8 @@ const reviewRoutes = require('./route/reviewRoutes')
 const questionRoutes = require('./route/questionRoutes')
 const marketingRoutes = require('./route/marketingRoutes')
 const divisionRoutes = require('./route/divisionRoutes')
+const razorpayRoutes = require('./route/razorpayRoutes');
+const menuRoutes = require('./route/menuRoutes');
 
 const { application } = require('express')
 
@@ -132,6 +134,8 @@ app.use('/v1/review', reviewRoutes)
 app.use('/v1/questions', questionRoutes)
 app.use('/v1/marketing', marketingRoutes)
 app.use('/v1/division', divisionRoutes);
+app.use('/v1/razorpay', razorpayRoutes);
+app.use('/v1/menu', menuRoutes);
 
 const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET)
 
