@@ -111,10 +111,6 @@ const storeSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  customers: {
-    type: Number,
-    default: 0,
-  },
   storeViews: {
     type: Number,
     default: 0,

@@ -151,3 +151,48 @@ exports.getRecentOrders = catchAsync(async (req, res, next) => {
     message: 'successfully found latest orders',
   })
 })
+
+exports.acceptOrder = catchAsync(async (req, res, next) => {
+  const acceptedOrder = await Order.findByIdAndUpdate(
+    req.body.id,
+    { status: 'Accepted', updatedAt: Date.now() },
+    { new: true, validateModifiedOnly: true },
+  )
+
+  //  ! TODO Send email, SMS and whatsapp communication that order has been accepted
+  res.status(200).json({
+    status: 'success',
+    data: acceptedOrder,
+    message: 'Order Accepted Successfully!',
+  })
+})
+
+exports.cancelOrder = catchAsync(async (req, res, next) => {
+  const cancelledOrder = await Order.findByIdAndUpdate(
+    req.body.id,
+    { status: 'Cancelled', orderStatus: 'cancelled', updatedAt: Date.now() },
+    { new: true, validateModifiedOnly: true },
+  )
+
+  //  ! TODO Send email, SMS and whatsapp communication that order has been accepted
+  res.status(200).json({
+    status: 'success',
+    data: cancelledOrder,
+    message: 'Order Cancelled Successfully!',
+  })
+})
+
+exports.rejectOrder = catchAsync(async (req, res, next) => {
+  const rejectedOrder = await Order.findByIdAndUpdate(
+    req.body.id,
+    { status: 'Rejected', orderStatus: 'cancelled', updatedAt: Date.now() },
+    { new: true, validateModifiedOnly: true },
+  )
+
+  //  ! TODO Send email, SMS and whatsapp communication that order has been accepted
+  res.status(200).json({
+    status: 'success',
+    data: rejectedOrder,
+    message: 'Order Rejected Successfully!',
+  })
+})

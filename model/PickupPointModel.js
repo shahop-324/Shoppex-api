@@ -18,18 +18,21 @@ const pickupPointSchema = new mongoose.Schema({
   contactPersonName: { type: String },
   contactEmail: { type: String },
   operational: { type: Boolean, default: true },
-});
+  delhivery_data: {
+    type: Map,
+  },
+})
 
 pickupPointSchema.index({
-    addressType: 'text',
-    pickupPointName: 'text',
-    state: 'text',
-    city: 'text',
-    landmark: 'text',
-    contactPersonName: 'text',
-    contactEmail: 'text',
-    phone: 'text',
-    address: 'text',
+  addressType: 'text',
+  pickupPointName: 'text',
+  state: 'text',
+  city: 'text',
+  landmark: 'text',
+  contactPersonName: 'text',
+  contactEmail: 'text',
+  phone: 'text',
+  address: 'text',
 })
 
 const PickupPoint = new mongoose.model('PickupPoint', pickupPointSchema)

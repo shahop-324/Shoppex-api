@@ -8,6 +8,14 @@ router.get('/recent', authController.protect, orderController.getRecentOrders)
 
 router.get('/getAll', authController.protect, orderController.getOrders)
 
-router.get('/getAbondonedCarts', authController.protect, orderController.getAbondonedCarts);
+router.get(
+  '/getAbondonedCarts',
+  authController.protect,
+  orderController.getAbondonedCarts,
+)
+
+router.patch('/accept', authController.protect, orderController.acceptOrder)
+router.patch('/cancel', authController.protect, orderController.cancelOrder)
+router.patch('/reject', authController.protect, orderController.rejectOrder)
 
 module.exports = router
