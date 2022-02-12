@@ -56,6 +56,10 @@ const checkoutFieldSchema = new mongoose.Schema({
 })
 
 const storeSchema = new mongoose.Schema({
+  owner: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+  },
   setupCompleted: {
     type: Boolean,
     default: false,
@@ -189,12 +193,11 @@ const storeSchema = new mongoose.Schema({
   // Wallet
   walletAmount: {
     type: Number,
+    default: 0,
   },
   theme: { type: String, default: 'Lite' },
   themesUnlocked: { type: Boolean, default: false },
-
   // Store Theme Booleans
-
   showTrendingProducts: {
     type: Boolean,
     default: true,

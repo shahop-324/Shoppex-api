@@ -1,6 +1,6 @@
 const Store = require('../model/StoreModel')
 const catchAsync = require('../utils/catchAsync')
-
+const jwt = require('jsonwebtoken')
 const slugify = require('slugify')
 const { nanoid } = require('nanoid')
 const StoreSubName = require('../model/StoreSubNameModel')
@@ -8,6 +8,10 @@ const User = require('../model/userModel')
 const StorePages = require('../model/StorePages')
 const StaffInvitation = require('../model/staffInvitationModel')
 const Product = require('../model/productModel')
+
+// this function will return you jwt token
+const signToken = (userId, storeId) =>
+  jwt.sign({ userId, storeId }, process.env.JWT_SECRET)
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {}
@@ -765,3 +769,112 @@ exports.updateStore = catchAsync(async (req, res, next) => {
     data: updatedStore,
   })
 })
+
+exports.createNew = catchAsync(async (req, res, next) => {
+  // Create a new store and update user doc and send new sign in token
+
+  const newStore = await Store.create({
+    owner: req.user._id,
+    ...req.body,
+    setupCompleted: true,
+  })
+  // Check if there is no previously assigned subname then assign new one
+
+  const subName = nanoid()
+
+  // Create a new subname Doc for this store
+
+  await StoreSubName.create({
+    subName,
+    store: req.store._id,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  })
+
+  const updatedStore = await Store.findByIdAndUpdate(
+    newStore._id,
+    { subName: subName },
+    { new: true, validateModifiedOnly: true },
+  )
+
+  const userDoc = await User.findById(req.user._id).populate(
+    'stores',
+    'storeName logo _id',
+  )
+
+  userDoc.stores.push(updatedStore._id)
+
+  const updatedUser = await userDoc.save({
+    new: true,
+    validateModifiedOnly: true,
+  })
+
+  // Sign new token
+
+  const token = signToken(req.user._id, updatedStore._id)
+
+  res.status(200).json({
+    status: 'success',
+    store: updatedStore,
+    user: updatedUser,
+    token: token,
+    permissions: [
+      'Order',
+      'Catalouge',
+      'Delivery',
+      'Customer',
+      'Dining',
+      'Marketing',
+      'Payment',
+      'Discount',
+      'Manage',
+      'Design',
+      'Integration',
+      'Reviews',
+      'Questions',
+      'Referral',
+      'Wallet',
+      'Reports',
+    ],
+    message: 'New Store Created Successfully!',
+  })
+})
+
+exports.switchStore = catchAsync(async (req, res, next) => {
+  const storeId = req.params.storeId
+  const userId = req.user._id
+
+  const storeDoc = await Store.findById(storeId)
+
+  const userDoc = await User.findById(userId)
+
+  const token = signToken(userDoc._id, storeDoc._id)
+
+  res.status(200).json({
+    status: 'success',
+    store: storeDoc,
+    user: userDoc,
+    token: token,
+    permissions: [
+      'Order',
+      'Catalouge',
+      'Delivery',
+      'Customer',
+      'Dining',
+      'Marketing',
+      'Payment',
+      'Discount',
+      'Manage',
+      'Design',
+      'Integration',
+      'Reviews',
+      'Questions',
+      'Referral',
+      'Wallet',
+      'Reports',
+    ],
+    message: 'Store Switched successfully!',
+  })
+})
+
+// While logging in store also send permissions along with token & Populate name, image of store in user

@@ -10,6 +10,7 @@ router.get(
   storeController.getStoreDetails,
 )
 router.post('/setup', authController.protect, storeController.setupStore) // For first time store setup
+router.post('/createNew', authController.protect, storeController.createNew) // Create new store
 router.patch(
   '/update/paymentSettings',
   authController.protect,
@@ -67,31 +68,84 @@ router.patch(
   storeController.updateGeneralStoreInfo,
 )
 
-router.patch('/general/guest-checkout', authController.protect, storeController.updateGuestCheckout);
+router.patch(
+  '/general/guest-checkout',
+  authController.protect,
+  storeController.updateGuestCheckout,
+)
 
-router.patch('/notification/update', authController.protect, storeController.updateNotifications);
+router.patch(
+  '/notification/update',
+  authController.protect,
+  storeController.updateNotifications,
+)
 
-router.patch('/social-links/update', authController.protect, storeController.updateSocialLinks);
+router.patch(
+  '/social-links/update',
+  authController.protect,
+  storeController.updateSocialLinks,
+)
 
 // Staff
-router.post('/staff/create', authController.protect, storeController.addStaffMember);
+router.post(
+  '/staff/create',
+  authController.protect,
+  storeController.addStaffMember,
+)
 
-router.patch('/staff/update/:email', authController.protect, storeController.editStaffMember);
+router.patch(
+  '/staff/update/:email',
+  authController.protect,
+  storeController.editStaffMember,
+)
 
-router.patch('/staff/delete/:email', authController.protect, storeController.removeStaffMember);
+router.patch(
+  '/staff/delete/:email',
+  authController.protect,
+  storeController.removeStaffMember,
+)
 
 // Checkout form fields
 
-router.post('/checkout-form/create', authController.protect, storeController.addCheckoutField)
+router.post(
+  '/checkout-form/create',
+  authController.protect,
+  storeController.addCheckoutField,
+)
 
-router.patch('/checkout-form/update/:fieldId', authController.protect, storeController.editCheckoutField);
+router.patch(
+  '/checkout-form/update/:fieldId',
+  authController.protect,
+  storeController.editCheckoutField,
+)
 
-router.patch('/checkout-form/delete/:fieldId', authController.protect, storeController.deleteCheckoutField);
+router.patch(
+  '/checkout-form/delete/:fieldId',
+  authController.protect,
+  storeController.deleteCheckoutField,
+)
 
 // Store other info
 
-router.patch('/other-info/update', authController.protect, storeController.updateStoreOtherInfo);
-router.patch('/ambience/update', authController.protect, storeController.updateStoreAmbience);
-router.patch('/updateTheme/:theme', authController.protect, storeController.updateStoreTheme);
-router.patch('/update', authController.protect, storeController.updateStore);
+router.patch(
+  '/other-info/update',
+  authController.protect,
+  storeController.updateStoreOtherInfo,
+)
+router.patch(
+  '/ambience/update',
+  authController.protect,
+  storeController.updateStoreAmbience,
+)
+router.patch(
+  '/updateTheme/:theme',
+  authController.protect,
+  storeController.updateStoreTheme,
+)
+router.patch('/update', authController.protect, storeController.updateStore)
+router.post(
+  '/switch/:storeId',
+  authController.protect,
+  storeController.switchStore,
+)
 module.exports = router

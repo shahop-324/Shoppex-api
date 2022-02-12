@@ -10,7 +10,7 @@ const otpGenerator = require('otp-generator')
 const sgMail = require('@sendgrid/mail')
 sgMail.setApiKey(process.env.SENDGRID_KEY)
 const StoreSubName = require('../model/StoreSubNameModel')
-const { slugify } = require('slugify')
+const slugify = require('slugify')
 const { nanoid } = require('nanoid')
 
 // this function will return you jwt token
@@ -20,7 +20,14 @@ const signToken = (userId, storeId) =>
 // Register user
 
 exports.register = catchAsync(async (req, res, next) => {
-  const { firstName, lastName, shopName, email, password } = req.body
+  const {
+    firstName,
+    lastName,
+    shopName,
+    email,
+    password,
+    referralCode,
+  } = req.body
 
   // Check if there is any account with same email => if yes then throw error
 
@@ -47,6 +54,7 @@ exports.register = catchAsync(async (req, res, next) => {
     shopName,
     email,
     password,
+    referralCode,
   })
 
   // Generate OTP
@@ -203,7 +211,23 @@ exports.verifyOTPForRegistration = catchAsync(async (req, res, next) => {
       email: user.email,
       password: user.password,
       phone: user.phone,
+      refCode: user.referralCode,
     })
+
+    // ! Must Check who referred this user and keep track of referredBy referredUsers and upgradedByRefUsers
+    let referrer
+
+    if (user.referralCode) {
+      referrer = await User.findOne({ referralCode: user.referralCode })
+      if (referrer) {
+        //
+        referrer.referredUsers.push(newUser._id)
+        await referrer.save({ new: true, validateModifiedOnly: true })
+
+        newUser.referredBy = referrer._id
+        await newUser.save({ new: true, validateModifiedOnly: true })
+      }
+    }
 
     // ! Must check that if there is any pending invitation for this member using email then add to that store
 
@@ -236,9 +260,9 @@ exports.verifyOTPForRegistration = catchAsync(async (req, res, next) => {
         'Reviews',
         'Reports',
       ],
-    });
+    })
 
-    await newStore.save({new: true, validateModifiedOnly: true});
+    await newStore.save({ new: true, validateModifiedOnly: true })
 
     // Create a subname for store and create a subname doc for this store
 
@@ -272,10 +296,16 @@ exports.verifyOTPForRegistration = catchAsync(async (req, res, next) => {
     newUser.stores.push(newStore._id)
     // save store, user and subname doc
 
-    const updatedUser = await newUser.save({
+    let updatedUser = await newUser.save({
       new: true,
       validateModifiedOnly: true,
     })
+
+    updatedUser = await User.findById(updatedUser._id).populate(
+      'stores',
+      'storeName logo _id',
+    )
+
     await newSubNameDoc.save({ new: true, validateModifiedOnly: true })
     const updatedStore = await newStore.save({
       new: true,
@@ -296,6 +326,24 @@ exports.verifyOTPForRegistration = catchAsync(async (req, res, next) => {
       token,
       user: updatedUser,
       store: updatedStore,
+      permissions: [
+        'Order',
+        'Catalouge',
+        'Delivery',
+        'Customer',
+        'Dining',
+        'Marketing',
+        'Payment',
+        'Discount',
+        'Manage',
+        'Design',
+        'Integration',
+        'Reviews',
+        'Questions',
+        'Referral',
+        'Wallet',
+        'Reports',
+      ],
     })
   } catch (error) {
     console.log(error)
@@ -317,7 +365,9 @@ exports.loginUser = catchAsync(async (req, res, next) => {
     return
   }
 
-  const user = await User.findOne({ email: email }).select('+password')
+  const user = await User.findOne({ email: email })
+    .select('+password')
+    .populate('stores', 'storeName logo _id')
 
   if (!user || !(await user.correctPassword(password, user.password))) {
     res.status(400).json({
@@ -328,12 +378,37 @@ exports.loginUser = catchAsync(async (req, res, next) => {
     return
   }
 
+  //  Find user permissions by checking if user is in store team members => if yes then get permissions from that else he/she is the admin
+  // Send the first store user is part of as store doc
+
+  const store = await Store.findById(user.stores[0])
+
   const token = signToken(user._id, user.stores[0])
 
   res.status(200).json({
     status: 'success',
     message: 'Logged in successfully!',
     token,
+    store,
+    user,
+    permissions: [
+      'Order',
+      'Catalouge',
+      'Delivery',
+      'Customer',
+      'Dining',
+      'Marketing',
+      'Payment',
+      'Discount',
+      'Manage',
+      'Design',
+      'Integration',
+      'Reviews',
+      'Questions',
+      'Referral',
+      'Wallet',
+      'Reports',
+    ],
   })
 })
 
@@ -432,5 +507,39 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     createSendToken(user, 200, req, res)
   } catch (error) {
     console.log(error)
+  }
+})
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  // 1) Get user from collection
+  const user = await User.findById(req.user._id).select('+password')
+
+  // 2) Check if POSTED current password is correct
+  if (!(await user.correctPassword(req.body.oldPass, user.password))) {
+    res.status(400).json({
+      status: 'Failed',
+      message: 'Your current password is wrong',
+      wrongPassword: true,
+    })
+
+    return
+  } else {
+    // 3) If so, update password
+    user.password = req.body.newPass
+    user.passwordConfirm = req.body.confirmPass
+    user.passwordChangedAt = Date.now()
+    await user.save()
+    // User.findByIdAndUpdate will NOT work as intended!
+
+    // 4) Log user in, send JWT
+    const token = signToken(req.user._id, req.store._id)
+
+    // Send email to this user's registered email informing about current password change
+
+    res.status(200).json({
+      status: 'success',
+      token: token,
+      message: 'Password changed successfully!',
+    })
   }
 })

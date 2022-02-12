@@ -9,3 +9,17 @@ exports.getUserDetails = catchAsync(async (req, res, next) => {
     message: 'Successfully found user document',
   })
 })
+
+exports.update = catchAsync(async (req, res, next) => {
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user._id,
+    { ...req.body, updatedAt: Date.now() },
+    { new: true, validateModifiedOnly: true },
+  )
+
+  res.status(200).json({
+    status: 'success',
+    message: 'User Profile Updated successfully!',
+    data: updatedUser,
+  })
+})

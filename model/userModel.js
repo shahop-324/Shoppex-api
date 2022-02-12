@@ -18,6 +18,9 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
   },
+  passwordConfirm: {
+    type: String,
+  },
   passwordChangedAt: {
     type: Date,
   },
@@ -27,6 +30,10 @@ const userSchema = new mongoose.Schema({
       ref: 'Store',
     },
   ],
+  image: {
+    type: String,
+  },
+
   referralCode: {
     type: String,
     default: otpGenerator.generate(8, {
@@ -35,6 +42,59 @@ const userSchema = new mongoose.Schema({
       lowerCaseAlphabets: false,
     }),
   },
+  refCode: {
+    // This is the referral code used by this user to sign up on qwikshop
+    type: String,
+  },
+  referredBy: {
+    // This is the id of a user who referred this person to sign up on qwikshop
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+  },
+  referredUsers: [
+    {
+      // These are users who have successfully signed up via this user's referral
+      type: mongoose.Schema.ObjectId,
+      ref: 'User',
+    },
+  ],
+  upgradedByRefUsers: [
+    {
+      // These are users who have successfully signed up via this user's referral and also upgraded to a premium plan
+      type: mongoose.Schema.ObjectId,
+      ref: 'User',
+    },
+  ],
+  plan: {
+    type: String,
+    enum: ['Trial', 'Monthly', 'Yearly', 'Lifetime'],
+    default: 'Trial',
+  },
+  upgraded: {
+    type: Boolean,
+    defauult: false,
+  },
+  joinedAt: {
+    type: Date,
+    default: Date.now(),
+  },
+  updatedAt: {
+    type: Date,
+  },
+});
+
+userSchema.pre(/^find/, function (next) {
+  this.find({})
+    .populate('stores')
+    .populate(
+      'referredUsers',
+      'firstName lastName email phone joinedAt upgraded plan',
+    )
+    .populate(
+      'upgradedByRefUsers',
+      'firstName lastName email phone joinedAt upgraded plan',
+    )
+  next()
 })
 
 userSchema.methods.correctPassword = async function (

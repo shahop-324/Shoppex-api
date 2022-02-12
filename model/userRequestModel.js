@@ -26,6 +26,9 @@ const userRequestSchema = new mongoose.Schema({
   otp: {
     type: String,
   },
+  referralCode: {
+    type: String,
+  },
 })
 
 userRequestSchema.pre('save', async function (next) {

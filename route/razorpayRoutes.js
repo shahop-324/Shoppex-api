@@ -5,4 +5,8 @@ const razorpayController = require("../controllers/razorpayController");
 
 router.post('/createSubscription/:plan_id', authController.protect, razorpayController.createSubscription);
 
+router.post('/createWalletOrder', authController.protect, razorpayController.createWalletOrder);
+
+router.post('/paymentRecieved', razorpayController.processPayment);
+
 module.exports = router

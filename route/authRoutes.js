@@ -13,4 +13,6 @@ router.post('/login', authController.loginUser);
 
 router.post('/resend-email-otp', authController.resendEmailVerificationOTP);
 
+router.patch('/update-password', authController.protect, authController.updatePassword);
+
 module.exports = router;
