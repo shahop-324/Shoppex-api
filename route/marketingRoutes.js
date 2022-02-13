@@ -9,4 +9,6 @@ router.get(
   marketingController.fetchCampaigns,
 )
 
+
+router.post('/create/email', authController.protect, marketingController.createMailCampaign);
 module.exports = router

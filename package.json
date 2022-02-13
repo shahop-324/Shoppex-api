@@ -33,6 +33,7 @@
     "otp-generator": "^4.0.0",
     "query-string": "^7.0.1",
     "querystring": "^0.2.1",
+    "randomstring": "^1.2.2",
     "razorpay": "^2.8.0",
     "slugify": "^1.6.5",
     "superagent": "^6.1.0",

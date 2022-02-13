@@ -1,6 +1,9 @@
 const mongoose = require('mongoose')
 
 const marketingSchema = new mongoose.Schema({
+  campaignId: {
+    type: String,
+  },
   store: {
     type: mongoose.Schema.ObjectId,
     ref: 'Store',
@@ -10,7 +13,7 @@ const marketingSchema = new mongoose.Schema({
   },
   channel: {
     type: String,
-    enum: ['sms', 'mail'],
+    enum: ['sms', 'email'],
   },
   amount: {
     type: Number,
@@ -21,11 +24,12 @@ const marketingSchema = new mongoose.Schema({
       ref: 'Customer',
     },
   ],
-  message: {type: String,},
-  html: {type: String,},
-  design: {type: String,},
+  message: { type: String },
+  html: { type: String },
+  design: { type: String },
   createdAt: { type: Date, default: Date.now() },
   updatedAt: { type: Date },
+  status: { type: String, enum: ['Draft', 'Sent'], default: 'Draft' },
 })
 
 const Marketing = new mongoose.model('Marketing', marketingSchema)

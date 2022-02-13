@@ -1,6 +1,7 @@
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
 const Marketing = require('../model/MarketingModel')
+const randomstring = require('randomstring')
 
 const sgMail = require('@sendgrid/mail')
 sgMail.setApiKey(process.env.SENDGRID_KEY)
@@ -43,10 +44,24 @@ exports.createSMSCampaign = catchAsync(async (req, res, next) => {
 })
 
 exports.createMailCampaign = catchAsync(async (req, res, next) => {
-  const newCampaign = await Marketing.create({
+  let newCampaign = await Marketing.create({
+    campaignId: `camp_${randomstring.generate({
+      length: 10,
+      charset: 'alphabetic',
+    })}`,
     store: req.store._id,
-    ...req.body,
+    name: req.body.name,
+    channel: 'email',
+    createdAt: Date.now(),
+    amount: req.body.customers.length * 1.5,
+    status: 'Darft',
   })
+
+  for (let element of req.body.customers) {
+    newCampaign.customers.push(element)
+  }
+
+  await newCampaign.save({ new: true, validateModifiedOnly: true })
 
   res.status(200).json({
     status: 'success',
