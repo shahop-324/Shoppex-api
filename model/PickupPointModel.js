@@ -8,6 +8,9 @@ const pickupPointSchema = new mongoose.Schema({
   pickupPointName: {
     type: String,
   },
+  warehouse_name: {
+    type: String,
+  },
   country: { type: Map },
   state: { type: String },
   city: { type: String },

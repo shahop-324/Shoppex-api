@@ -39,6 +39,7 @@
     "superagent": "^6.1.0",
     "twilio": "^3.72.0",
     "util": "^0.12.4",
+    "uuid": "^8.3.2",
     "validator": "^13.7.0",
     "xss-clean": "^0.1.1"
   }

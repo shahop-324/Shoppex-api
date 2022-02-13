@@ -16,4 +16,8 @@ router.patch('/shipment/update/:shipmentId', authController.protect, deliveryCon
 // Fetch Shipment
 router.get('/shipment/getAll', authController.protect, deliveryController.getShipments);
 
+// Assign Courier to delhivery
+
+router.post('/shipment/assignDelhivery', authController.protect, deliveryController.assignDelhivery);
+
 module.exports = router;
