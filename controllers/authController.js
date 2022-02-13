@@ -458,6 +458,61 @@ exports.protect = catchAsync(async (req, res, next) => {
   next()
 })
 
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  // 1) Get user based on POSTed email
+  const user = await User.findOne({ email: req.body.email })
+
+  if (!user) {
+    return next(
+      new AppError(
+        'There is no user with email address or you signed up with google.',
+        404,
+      ),
+    )
+  }
+
+  // 2) Generate the random reset token
+  const resetToken = user.createPasswordResetToken()
+  await user.save({ validateBeforeSave: false })
+
+  // 3) Send it to user's email
+  try {
+    const resetURL = `http://localhost:4000/auth/update-password/?token=${resetToken}`
+
+    // Send Grid is implemented here
+
+    const msg = {
+      to: user.email, // Change to your recipient
+      from: 'security@letstream.live', // Change to your verified sender
+      subject: 'Your Password Reset Link',
+      text: `use this link to reset your password. This link is valid for only 10 min ${resetURL}`,
+      // html: PasswordResetLink(
+      //   user.firstName,
+      //   `https://www.letstream.live/resetPassword/${resetToken}`
+      // ),
+    }
+
+    sgMail
+      .send(msg)
+      .then(() => {
+        res.status(200).json({
+          status: 'success',
+          message: 'Token sent to email!',
+        })
+      })
+      .catch((error) => {})
+  } catch (err) {
+    user.passwordResetToken = undefined
+    user.passwordResetExpires = undefined
+    await user.save({ validateBeforeSave: false })
+
+    return next(
+      new AppError('There was an error sending the email. Try again later!'),
+      500,
+    )
+  }
+})
+
 // Reset password
 exports.resetPassword = catchAsync(async (req, res, next) => {
   try {
@@ -476,8 +531,9 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     if (!user) {
       return next(new AppError('Token is invalid or has expired', 400))
     }
-    user.password = req.body.password
-    user.passwordConfirm = req.body.passwordConfirm
+    console.log(req.body)
+    user.password = await bcrypt.hash(req.body.new_pass, 12)
+    user.passwordConfirm = await bcrypt.hash(req.body.pass_confirm, 12)
     user.passwordResetToken = undefined
     user.passwordResetExpires = undefined
     await user.save()
@@ -490,7 +546,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
       subject: 'Your Password has been changed.',
       text:
         'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@letstream.live',
-      html: PasswordChanged(user.firstName),
+      // html: PasswordChanged(user.firstName),
     }
 
     sgMail
@@ -504,8 +560,38 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
     // 3) Update changedPasswordAt property for the user
     // 4) Log the user in, send JWT
-    createSendToken(user, 200, req, res)
+    const token = signToken(user._id, user.stores[0])
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Password changed successfully!',
+      token,
+      store: user.stores[0],
+      user,
+      permissions: [
+        'Order',
+        'Catalouge',
+        'Delivery',
+        'Customer',
+        'Dining',
+        'Marketing',
+        'Payment',
+        'Discount',
+        'Manage',
+        'Design',
+        'Integration',
+        'Reviews',
+        'Questions',
+        'Referral',
+        'Wallet',
+        'Reports',
+      ],
+    })
   } catch (error) {
+    res.status(400).json({
+      status: 'error',
+      message: 'Failed to change password, Please try again',
+    })
     console.log(error)
   }
 })

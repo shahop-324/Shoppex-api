@@ -81,6 +81,12 @@ const userSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
   },
+  passwordResetToken: {
+    type: String,
+  },
+  passwordResetExpires: {
+    type: Date,
+  },
 });
 
 userSchema.pre(/^find/, function (next) {
@@ -96,6 +102,7 @@ userSchema.pre(/^find/, function (next) {
     )
   next()
 })
+
 
 userSchema.methods.correctPassword = async function (
   candidatePassword,
@@ -116,6 +123,19 @@ userSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
   // FALSE MEANS NOT CHANGED
   return false
 }
+
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  return resetToken;
+};
 
 const User = mongoose.model('User', userSchema)
 module.exports = User

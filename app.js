@@ -39,6 +39,7 @@ const marketingRoutes = require('./route/marketingRoutes')
 const divisionRoutes = require('./route/divisionRoutes')
 const razorpayRoutes = require('./route/razorpayRoutes');
 const menuRoutes = require('./route/menuRoutes');
+const transactionRoutes = require('./route/transactionRoutes');
 const walletRoutes = require("./route/walletRoutes");
 
 const { application } = require('express')
@@ -138,6 +139,7 @@ app.use('/v1/division', divisionRoutes);
 app.use('/v1/razorpay', razorpayRoutes);
 app.use('/v1/menu', menuRoutes);
 app.use('/v1/wallet', walletRoutes);
+app.use('/v1/transaction', transactionRoutes);
 
 const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET)
 
