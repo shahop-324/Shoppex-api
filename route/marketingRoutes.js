@@ -9,6 +9,16 @@ router.get(
   marketingController.fetchCampaigns,
 )
 
+router.post(
+  '/create/email',
+  authController.protect,
+  marketingController.createMailCampaign,
+)
 
-router.post('/create/email', authController.protect, marketingController.createMailCampaign);
+router.patch(
+  '/update/mail/:id',
+  authController.protect,
+  marketingController.updateMailCampaign,
+)
+
 module.exports = router

@@ -145,3 +145,15 @@ exports.fetchCampaigns = catchAsync(async (req, res, next) => {
     message: 'Campaigns found successfully!',
   })
 })
+
+
+exports.updateMailCampaign = catchAsync(async(req, res, next) => {
+ const updatedMailCampaign = await Marketing.findByIdAndUpdate(req.params.id, {...req.body, updatedAt: Date.now()}, {new: true, validateModifiedOnly: true});
+
+ res.status(200).json({
+   status: "success",
+   message: "Email Template saved successfully!",
+   data: updatedMailCampaign,
+ })
+
+})
