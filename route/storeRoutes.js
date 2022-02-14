@@ -148,4 +148,9 @@ router.post(
   authController.protect,
   storeController.switchStore,
 )
+
+router.post('/updateHeroBanners', authController.protect, storeController.updateHeroBanner);
+router.post('/updateCustomBanners', authController.protect, storeController.updateCustomBanner);
+router.post('/updateImageBanners', authController.protect, storeController.updateImageBanner);
+router.post('/updateCustomSections', authController.protect, storeController.updateCustomSections);
 module.exports = router

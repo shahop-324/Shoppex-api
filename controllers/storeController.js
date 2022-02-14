@@ -878,3 +878,72 @@ exports.switchStore = catchAsync(async (req, res, next) => {
 })
 
 // While logging in store also send permissions along with token & Populate name, image of store in user
+
+exports.updateHeroBanner = catchAsync(async (req, res, next) => {
+  const storeDoc = await Store.findById(req.store._id)
+
+  const banners = req.body.banners.map((el) => ({ ...el, file: null }))
+
+  storeDoc.heroBanners = banners
+  const updatedStoreDoc = await storeDoc.save({
+    new: true,
+    validateModifiedOnly: true,
+  })
+
+  res.status(200).json({
+    status: 'success',
+    data: updatedStoreDoc,
+    message: 'Hero Banners Updated successfully!',
+  })
+})
+exports.updateCustomBanner = catchAsync(async (req, res, next) => {
+  const storeDoc = await Store.findById(req.store._id)
+
+  const banners = req.body.banners.map((el) => ({ ...el, file: null }))
+
+  storeDoc.customBanners = banners
+  const updatedStoreDoc = await storeDoc.save({
+    new: true,
+    validateModifiedOnly: true,
+  })
+
+  res.status(200).json({
+    status: 'success',
+    data: updatedStoreDoc,
+    message: 'Custom Banners Updated successfully!',
+  })
+})
+exports.updateImageBanner = catchAsync(async (req, res, next) => {
+  const storeDoc = await Store.findById(req.store._id)
+
+  const banners = req.body.banners.map((el) => ({ ...el, file: null }))
+
+  storeDoc.imageBanners = banners
+  const updatedStoreDoc = await storeDoc.save({
+    new: true,
+    validateModifiedOnly: true,
+  })
+
+  res.status(200).json({
+    status: 'success',
+    data: updatedStoreDoc,
+    message: 'Image Banners Updated successfully!',
+  })
+})
+exports.updateCustomSections = catchAsync(async (req, res, next) => {
+  const storeDoc = await Store.findById(req.store._id)
+
+  const sections = req.body.sections
+
+  storeDoc.customSections = sections
+  const updatedStoreDoc = await storeDoc.save({
+    new: true,
+    validateModifiedOnly: true,
+  })
+
+  res.status(200).json({
+    status: 'success',
+    data: updatedStoreDoc,
+    message: 'Custom Sections Updated successfully!',
+  })
+})

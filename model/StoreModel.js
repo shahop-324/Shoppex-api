@@ -58,7 +58,7 @@ const checkoutFieldSchema = new mongoose.Schema({
 const storeSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.ObjectId,
-    ref: "User",
+    ref: 'User',
   },
   setupCompleted: {
     type: Boolean,
@@ -261,6 +261,53 @@ const storeSchema = new mongoose.Schema({
       type: Map,
     },
   ],
+  heroBanners: [
+    {
+      type: Map,
+    },
+  ],
+  customBanners: [
+    {
+      type: Map,
+    },
+  ],
+  imageBanners: [
+    {
+      type: Map,
+    },
+  ],
+  customSections: [
+    {
+      type: Map,
+    },
+  ],
+  GAPropertyId: {
+    type: String,
+  },
+  GMCVerificationCode: {
+    type: String,
+  },
+  GSCVerificationCode: {
+    type: String,
+  },
+  WhatsAppNumber: {
+    type: String,
+  },
+  IntercomAppId: {
+    type: String,
+  },
+  adWordsConversionId: {
+    type: String,
+  },
+  adWordsConversionLabel: {
+    type: String,
+  },
+  FacebookPixelId: {
+    type: String,
+  },
+  FBDomainVerificationCode: {
+    type: String,
+  },
 })
 
 const Store = mongoose.model('Store', storeSchema)
