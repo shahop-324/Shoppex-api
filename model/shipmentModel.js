@@ -19,7 +19,7 @@ const shipmentSchema = new mongoose.Schema({
   carrier: {
     type: String,
   },
-  trackingLink: { type: String },
+  AWB: { type: String }, // WayBill Number
   expectedDelivery: { type: Date },
   charge: { type: Number },
   status: {
