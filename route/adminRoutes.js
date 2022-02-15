@@ -16,4 +16,8 @@ router.post(
   adminController.createBlog,
 )
 
+router.post('/payout/create', authController.protectAdmin, adminController.createPayout);
+
+router.post('/refund/resolve/:id', authController.protect, adminController.resolveRefund)
+
 module.exports = router

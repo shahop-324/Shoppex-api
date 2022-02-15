@@ -57,7 +57,9 @@ exports.fetchPayouts = catchAsync(async (req, res, next) => {
 })
 
 // Create Payout
-exports.createPayout = catchAsync(async (req, res, next) => {})
+exports.createPayout = catchAsync(async (req, res, next) => {
+  // TODO
+})
 
 // Fetch Refunds
 exports.fetchRefunds = catchAsync(async (req, res, next) => {
@@ -69,4 +71,6 @@ exports.fetchRefunds = catchAsync(async (req, res, next) => {
   })
 })
 // Update Refund
-exports.updateRefund = catchAsync(async (req, res, next) => {})
+exports.resolveRefund = catchAsync(async (req, res, next) => {
+  // TODO
+})
