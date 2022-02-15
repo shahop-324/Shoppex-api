@@ -419,37 +419,45 @@ exports.loginUser = catchAsync(async (req, res, next) => {
 // Login Admin
 
 exports.loginAdmin = catchAsync(async (req, res, next) => {
-  const { email, password } = req.body
 
-  console.log(email, password)
+  try{
+    const { email, password } = req.body
 
-  if (!email || !password) {
-    res.status(400).json({
-      status: 'error',
-      message: 'Both email and password are required',
+    console.log(email, password)
+  
+    if (!email || !password) {
+      res.status(400).json({
+        status: 'error',
+        message: 'Both email and password are required',
+      })
+      return
+    }
+  
+    const admin = await Admin.findOne({ email: email }).select('+password')
+  
+    if (!admin || !(password === admin.password)) {
+      res.status(400).json({
+        status: 'error',
+        message: 'Email or password is incorrect',
+      })
+  
+      return
+    }
+  
+    const token = signAdminToken(admin._id)
+  
+    res.status(200).json({
+      status: 'success',
+      message: 'Logged in successfully!',
+      token,
+      admin,
     })
-    return
+  }
+  catch(error){
+    console.log(error);
   }
 
-  const admin = await Admin.findOne({ email: email }).select('+password')
-
-  if (!admin || !(password === admin.password)) {
-    res.status(400).json({
-      status: 'error',
-      message: 'Email or password is incorrect',
-    })
-
-    return
-  }
-
-  const token = signAdminToken(admin._id)
-
-  res.status(200).json({
-    status: 'success',
-    message: 'Logged in successfully!',
-    token,
-    admin,
-  })
+  
 })
 
 // Protect Admin

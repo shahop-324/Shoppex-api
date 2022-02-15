@@ -11,6 +11,8 @@ router.post('/verify-email', authController.verifyOTPForRegistration);
 
 router.post('/login', authController.loginUser);
 
+router.post('/admin/login', authController.loginAdmin);
+
 router.post('/resend-email-otp', authController.resendEmailVerificationOTP);
 
 router.patch('/update-password', authController.protect, authController.updatePassword);
