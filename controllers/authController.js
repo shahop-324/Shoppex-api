@@ -12,10 +12,14 @@ sgMail.setApiKey(process.env.SENDGRID_KEY)
 const StoreSubName = require('../model/StoreSubNameModel')
 const slugify = require('slugify')
 const { nanoid } = require('nanoid')
+const Admin = require('../model/adminModel')
 
 // this function will return you jwt token
 const signToken = (userId, storeId) =>
   jwt.sign({ userId, storeId }, process.env.JWT_SECRET)
+
+const signAdminToken = (adminId) =>
+  jwt.sign({ adminId }, process.env.JWT_SECRET)
 
 // Register user
 
@@ -410,6 +414,91 @@ exports.loginUser = catchAsync(async (req, res, next) => {
       'Reports',
     ],
   })
+})
+
+// Login Admin
+
+exports.loginAdmin = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body
+
+  console.log(email, password)
+
+  if (!email || !password) {
+    res.status(400).json({
+      status: 'error',
+      message: 'Both email and password are required',
+    })
+    return
+  }
+
+  const admin = await Admin.findOne({ email: email }).select('+password')
+
+  if (!admin || !(password === admin.password)) {
+    res.status(400).json({
+      status: 'error',
+      message: 'Email or password is incorrect',
+    })
+
+    return
+  }
+
+  const token = signAdminToken(admin._id)
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Logged in successfully!',
+    token,
+    admin,
+  })
+})
+
+// Protect Admin
+
+exports.protectAdmin = catchAsync(async (req, res, next) => {
+  // 1) Getting token and check if it's there
+  let token
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1]
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt
+  }
+
+  if (!token) {
+    return next(
+      new AppError(`You are not logged in! Please log in to get access.`, 401),
+    )
+  }
+  // 2) Verification of token
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
+
+  // 3) Check if user & store still exists
+  const freshAdmin = await Admin.findById(decoded.adminId)
+
+  if (!freshAdmin) {
+    return next(
+      new AppError(
+        'The admin belonging to this token does no longer exists.',
+        401,
+      ),
+    )
+  }
+  // 4) Check if user changed password after the token was issued
+  if (freshAdmin.changedPasswordAfter(decoded.iat)) {
+    return next(
+      new AppError(
+        'This Admin has recently changed password! Please log in again.',
+        401,
+      ),
+    )
+  }
+
+  // * ACCESS GRANTED
+  // GRANT ACCESS TO PROTECTED ROUTE
+  req.admin = freshAdmin
+  next()
 })
 
 // Protect
