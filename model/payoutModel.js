@@ -5,6 +5,22 @@ const payoutSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'Store',
   },
+  amount: {
+    type: Number,
+  },
+  currency: {
+    type: String,
+    enum: ['INR'],
+    default: 'INR',
+  },
+  method: {
+    type: String,
+  },
+  payoutId: { type: String },
+  createdBy: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Admin',
+  },
   createdAt: {
     type: Date,
     default: Date.now(),
