@@ -316,6 +316,10 @@ const storeSchema = new mongoose.Schema({
   FBDomainVerificationCode: {
     type: String,
   },
+  mailchimpInstalled: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const Store = mongoose.model('Store', storeSchema)

@@ -214,43 +214,6 @@ app.post('/v1/oauth/mailchimp/callback', (req, res, next) => {
               message: 'Mailchimp connected successfully!',
               data: updatedStore,
             })
-
-            // Community.findById(communityId)
-            //   .then((community) => {
-            //     const isConnectedMailChimp = community.isConnectedMailChimp;
-
-            //     if (isConnectedMailChimp) {
-            //       //
-            //       res.status(200).json({
-            //         status: "success",
-            //         data: community,
-            //       });
-            //     } else {
-            //       MailChimp.create({
-            //         communityId: community._id,
-            //         accessToken,
-            //         server: metadataResponse.data.dc,
-
-            //         apiEndPoint: metadataResponse.data.api_endpoint,
-            //       })
-            //         .then(async () => {
-            //           community.isConnectedMailChimp = true;
-            //           // const [a] = community;
-            //           const updatedCommunity = await community.save({
-            //             new: true,
-
-            //             validateModifiedOnly: true,
-            //           });
-
-            //           res.status(200).json({
-            //             status: "success",
-            //             data: updatedCommunity,
-            //           });
-            //         })
-            //         .catch((error) => next(error));
-            //     }
-            //   })
-            //   .catch((error) => next(error));
           })
           .catch((error) => next(error))
       })
