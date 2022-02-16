@@ -166,6 +166,7 @@ const storeSchema = new mongoose.Schema({
   facebookLink: { type: String },
   instagramLink: { type: String },
   twitterLink: { type: String },
+  youtubeLink: {type: String,},
   // Ambience
   mode: { type: String, default: 'light' },
   primaryColor: { type: String, default: '#2065D1' },
