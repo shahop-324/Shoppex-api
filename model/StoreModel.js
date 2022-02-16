@@ -294,6 +294,13 @@ const storeSchema = new mongoose.Schema({
   WhatsAppNumber: {
     type: String,
   },
+  WAOTP: {
+    type: String,
+  },
+  WAVerified: {
+    type: Boolean,
+    default: false,
+  },
   IntercomAppId: {
     type: String,
   },

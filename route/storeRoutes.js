@@ -153,4 +153,6 @@ router.post('/updateHeroBanners', authController.protect, storeController.update
 router.post('/updateCustomBanners', authController.protect, storeController.updateCustomBanner);
 router.post('/updateImageBanners', authController.protect, storeController.updateImageBanner);
 router.post('/updateCustomSections', authController.protect, storeController.updateCustomSections);
+router.post('/updateWhatsAppNumber', authController.protect, storeController.updateWhatsAppNumber);
+router.post('/verifyWhatsAppNumber', authController.protect, storeController.verifyWhatsAppNumber);
 module.exports = router

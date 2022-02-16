@@ -13,6 +13,14 @@ const session = require('cookie-session')
 var request = require('superagent')
 const querystring = require('querystring')
 const { promisify } = require('util')
+const Mailchimp = require('./model/MailchimpModel')
+const Store = require('./model/StoreModel')
+
+const MAILCHIMP_CLIENT_ID = '919814706970'
+const MAILCHIMP_CLIENT_SECRET =
+  '3837302297576b7845b5ced8bd4691bb69ac7b8c5f90645887'
+
+const OAUTH_CALLBACK = `http://127.0.0.1:4000/connect-mailchimp`
 
 const globalErrorHandler = require('./controllers/errController')
 const catchAsync = require('./utils/catchAsync')
@@ -37,11 +45,11 @@ const reviewRoutes = require('./route/reviewRoutes')
 const questionRoutes = require('./route/questionRoutes')
 const marketingRoutes = require('./route/marketingRoutes')
 const divisionRoutes = require('./route/divisionRoutes')
-const razorpayRoutes = require('./route/razorpayRoutes');
-const menuRoutes = require('./route/menuRoutes');
-const transactionRoutes = require('./route/transactionRoutes');
-const walletRoutes = require("./route/walletRoutes");
-const adminRoutes = require('./route/adminRoutes');
+const razorpayRoutes = require('./route/razorpayRoutes')
+const menuRoutes = require('./route/menuRoutes')
+const transactionRoutes = require('./route/transactionRoutes')
+const walletRoutes = require('./route/walletRoutes')
+const adminRoutes = require('./route/adminRoutes')
 
 const { application } = require('express')
 
@@ -138,12 +146,118 @@ app.use('/v1/customer', customerRoutes)
 app.use('/v1/review', reviewRoutes)
 app.use('/v1/questions', questionRoutes)
 app.use('/v1/marketing', marketingRoutes)
-app.use('/v1/division', divisionRoutes);
-app.use('/v1/razorpay', razorpayRoutes);
-app.use('/v1/menu', menuRoutes);
-app.use('/v1/wallet', walletRoutes);
-app.use('/v1/transaction', transactionRoutes);
-app.use('/v1/admin', adminRoutes);
+app.use('/v1/division', divisionRoutes)
+app.use('/v1/razorpay', razorpayRoutes)
+app.use('/v1/menu', menuRoutes)
+app.use('/v1/wallet', walletRoutes)
+app.use('/v1/transaction', transactionRoutes)
+app.use('/v1/admin', adminRoutes)
+
+app.get('/v1/auth/mailchimp', (req, res, next) => {
+  res.redirect(
+    `https://login.mailchimp.com/oauth2/authorize?${querystring.stringify({
+      response_type: 'code',
+      client_id: MAILCHIMP_CLIENT_ID,
+      redirect_uri: OAUTH_CALLBACK,
+    })}`,
+  )
+})
+
+app.post('/v1/oauth/mailchimp/callback', (req, res, next) => {
+  try {
+    const storeId = req.body.storeId
+
+    console.log(storeId, 'This is store Id')
+
+    let accessToken = null
+    const config = {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    }
+    const parameters = {
+      grant_type: 'authorization_code',
+      code: req.body.code,
+      client_id: MAILCHIMP_CLIENT_ID,
+      client_secret: MAILCHIMP_CLIENT_SECRET,
+      redirect_uri: OAUTH_CALLBACK,
+    }
+
+    axios
+      .post(
+        'https://login.mailchimp.com/oauth2/token',
+        qs.stringify(parameters),
+        config,
+      )
+      .then((response) => {
+        accessToken = response.data.access_token
+
+        axios
+          .get('https://login.mailchimp.com/oauth2/metadata', {
+            headers: {
+              Authorization: `OAuth ${accessToken}`,
+            },
+          })
+          .then(async (metadataResponse) => {
+            console.log(metadataResponse.data)
+
+            Mailchimp.create({ ...metadataResponse.data, store: storeId })
+
+            // Update store => Mark Mailchimp Installed => true
+
+            const updatedStore = await Store.findByIdAndUpdate(
+              storeId,
+              { mailchimpInstalled: true },
+              { new: true, validateModifiedOnly: true },
+            )
+
+            res.status(200).json({
+              status: 'success',
+              message: 'Mailchimp connected successfully!',
+              data: updatedStore,
+            })
+
+            // Community.findById(communityId)
+            //   .then((community) => {
+            //     const isConnectedMailChimp = community.isConnectedMailChimp;
+
+            //     if (isConnectedMailChimp) {
+            //       //
+            //       res.status(200).json({
+            //         status: "success",
+            //         data: community,
+            //       });
+            //     } else {
+            //       MailChimp.create({
+            //         communityId: community._id,
+            //         accessToken,
+            //         server: metadataResponse.data.dc,
+
+            //         apiEndPoint: metadataResponse.data.api_endpoint,
+            //       })
+            //         .then(async () => {
+            //           community.isConnectedMailChimp = true;
+            //           // const [a] = community;
+            //           const updatedCommunity = await community.save({
+            //             new: true,
+
+            //             validateModifiedOnly: true,
+            //           });
+
+            //           res.status(200).json({
+            //             status: "success",
+            //             data: updatedCommunity,
+            //           });
+            //         })
+            //         .catch((error) => next(error));
+            //     }
+            //   })
+            //   .catch((error) => next(error));
+          })
+          .catch((error) => next(error))
+      })
+  } catch (error) {
+    console.log(error)
+  }
+})
 
 const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET)
 
