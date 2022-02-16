@@ -9,6 +9,17 @@ const refundSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'Order',
   },
+  customer: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Customer',
+  },
+  amount: {
+    type: Number,
+  },
+  resolved: {
+    type: Boolean,
+    default: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now(),

@@ -27,5 +27,10 @@ const payoutSchema = new mongoose.Schema({
   },
 })
 
+payoutSchema.pre(/^find/, function (next) {
+  this.find({}).populate('createdBy');
+  next()
+})
+
 const Payout = new mongoose.model('Payout', payoutSchema)
 module.exports = Payout

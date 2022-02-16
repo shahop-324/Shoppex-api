@@ -6,6 +6,13 @@ const Refund = require('../model/refundModel')
 const Store = require('../model/StoreModel')
 const randomstring = require('randomstring')
 
+const sgMail = require('@sendgrid/mail')
+sgMail.setApiKey(process.env.SENDGRID_KEY)
+
+const accountSid = process.env.TWILIO_ACCOUNT_SID
+const authToken = process.env.TWILIO_AUTH_TOKEN
+const client = require('twilio')(accountSid, authToken)
+
 // Create Admin
 exports.createAdmin = catchAsync(async (req, res, next) => {
   const { firstName, lastName, email, phone, password } = req.body
@@ -134,7 +141,7 @@ exports.resolveRefund = catchAsync(async (req, res, next) => {
 
   client.messages
     .create({
-      body: `Dear ${Updated_refund.customer.name}, Your Refund of Rs. ${Updated_refund.amount} for Order #${Updated_refund.orderId} placed via ${Updated_refund.store.name} has been made successfully Proccessed. Thanks, ${Updated_refund.store.name} Team.`,
+      body: `Dear ${Updated_refund.customer.name}, Your Refund of Rs. ${Updated_refund.amount} for Order #${Updated_refund.order._id} placed via ${Updated_refund.store.name} has been made successfully Proccessed. Thanks, ${Updated_refund.store.name} Team.`,
       from: '+1 775 535 7258',
       to: Updated_refund.customer.phone,
     })
