@@ -155,4 +155,7 @@ router.post('/updateImageBanners', authController.protect, storeController.updat
 router.post('/updateCustomSections', authController.protect, storeController.updateCustomSections);
 router.post('/updateWhatsAppNumber', authController.protect, storeController.updateWhatsAppNumber);
 router.post('/verifyWhatsAppNumber', authController.protect, storeController.verifyWhatsAppNumber);
+router.patch('/updateGA', authController.protect, storeController.updateGA);
+router.patch('/updateGMC', authController.protect, storeController.updateGMC);
+router.patch('/updateGSC', authController.protect, storeController.updateGSC);
 module.exports = router

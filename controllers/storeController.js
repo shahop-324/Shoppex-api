@@ -8,6 +8,7 @@ const User = require('../model/userModel')
 const StorePages = require('../model/StorePages')
 const StaffInvitation = require('../model/staffInvitationModel')
 const Product = require('../model/productModel')
+const Mailchimp = require('../model/MailchimpModel');
 const randomString = require('random-string')
 
 const sgMail = require('@sendgrid/mail')
@@ -1028,4 +1029,222 @@ exports.updateCustomSections = catchAsync(async (req, res, next) => {
     data: updatedStoreDoc,
     message: 'Custom Sections Updated successfully!',
   })
+})
+
+exports.updateGA = catchAsync(async (req, res, next) => {
+  const storeDoc = await Store.findById(req.store._id)
+
+  if (!req.body.uninstall) {
+    // Update GA and set as GAInstalled => true
+
+    storeDoc.GAMeasurementId = req.body.measurementId
+    storeDoc.GAInstalled = true
+
+    const updatedStoreDoc = await storeDoc.save({
+      new: true,
+      validateModifiedOnly: true,
+    })
+    res.status(200).json({
+      status: 'success',
+      message: 'Google analytics installed successfully!',
+      data: updatedStoreDoc,
+    })
+  } else {
+    // Set GA to undefined and mark as uninstalled
+    storeDoc.GAMeasurementId = undefined
+    storeDoc.GAInstalled = false
+
+    const updatedStoreDoc = await storeDoc.save({
+      new: true,
+      validateModifiedOnly: true,
+    })
+    res.status(200).json({
+      status: 'success',
+      message: 'Google analytics uninstalled successfully!',
+      data: updatedStoreDoc,
+    })
+  }
+})
+exports.updateGMC = catchAsync(async (req, res, next) => {
+  const storeDoc = await Store.findById(req.store._id)
+
+  if (!req.body.uninstall) {
+    // Update GA and set as GAInstalled => true
+
+    storeDoc.GMCVerificationCode = req.body.code
+    storeDoc.GMCInstalled = true
+
+    const updatedStoreDoc = await storeDoc.save({
+      new: true,
+      validateModifiedOnly: true,
+    })
+    res.status(200).json({
+      status: 'success',
+      message: 'Google Merchant Center installed successfully!',
+      data: updatedStoreDoc,
+    })
+  } else {
+    // Set GA to undefined and mark as uninstalled
+    storeDoc.GMCVerificationCode = undefined
+    storeDoc.GMCInstalled = false
+
+    const updatedStoreDoc = await storeDoc.save({
+      new: true,
+      validateModifiedOnly: true,
+    })
+    res.status(200).json({
+      status: 'success',
+      message: 'Google Merchant Center uninstalled successfully!',
+      data: updatedStoreDoc,
+    })
+  }
+})
+exports.updateGSC = catchAsync(async (req, res, next) => {
+  const storeDoc = await Store.findById(req.store._id)
+
+  if (!req.body.uninstall) {
+    // Update GSC and set as GAInstalled => true
+
+    storeDoc.GSCVerificationCode = req.body.code
+    storeDoc.GSCInstalled = true
+
+    const updatedStoreDoc = await storeDoc.save({
+      new: true,
+      validateModifiedOnly: true,
+    })
+    res.status(200).json({
+      status: 'success',
+      message: 'Google Search Console installed successfully!',
+      data: updatedStoreDoc,
+    })
+  } else {
+    // Set GSC to undefined and mark as uninstalled
+    storeDoc.GSCVerificationCode = undefined
+    storeDoc.GSCInstalled = false
+
+    const updatedStoreDoc = await storeDoc.save({
+      new: true,
+      validateModifiedOnly: true,
+    })
+    res.status(200).json({
+      status: 'success',
+      message: 'Google Search Console uninstalled successfully!',
+      data: updatedStoreDoc,
+    })
+  }
+})
+exports.updateIntercom = catchAsync(async (req, res, next) => {
+  const storeDoc = await Store.findById(req.store._id)
+
+  if (!req.body.uninstall) {
+    // Update Intercom App Id and set as IntercomInstalled => true
+
+    storeDoc.IntercomAppId = req.body.appId
+    storeDoc.IntercomInstalled = true
+
+    const updatedStoreDoc = await storeDoc.save({
+      new: true,
+      validateModifiedOnly: true,
+    })
+    res.status(200).json({
+      status: 'success',
+      message: 'Intercom installed successfully!',
+      data: updatedStoreDoc,
+    })
+  } else {
+    // Set GSC to undefined and mark as uninstalled
+    storeDoc.IntercomAppId = undefined
+    storeDoc.IntercomInstalled = false
+
+    const updatedStoreDoc = await storeDoc.save({
+      new: true,
+      validateModifiedOnly: true,
+    })
+    res.status(200).json({
+      status: 'success',
+      message: 'Intercom uninstalled successfully!',
+      data: updatedStoreDoc,
+    })
+  }
+})
+exports.updateAdwords = catchAsync(async (req, res, next) => {
+  const storeDoc = await Store.findById(req.store._id)
+
+  if (!req.body.uninstall) {
+    // Update Adwords and set as AdwordsInstalled => true
+
+    storeDoc.adWordsVerificationCode = req.body.code
+    storeDoc.adWordsInstalled = true
+
+    const updatedStoreDoc = await storeDoc.save({
+      new: true,
+      validateModifiedOnly: true,
+    })
+    res.status(200).json({
+      status: 'success',
+      message: 'Google Adowrds installed successfully!',
+      data: updatedStoreDoc,
+    })
+  } else {
+    // Set adWordsVerificationCode to undefined and mark as uninstalled
+    storeDoc.adWordsVerificationCode  = undefined
+    storeDoc.adWordsInstalled = false
+
+    const updatedStoreDoc = await storeDoc.save({
+      new: true,
+      validateModifiedOnly: true,
+    })
+    res.status(200).json({
+      status: 'success',
+      message: 'Google Adwords uninstalled successfully!',
+      data: updatedStoreDoc,
+    })
+  }
+})
+exports.updateFBPixel = catchAsync(async (req, res, next) => {
+  const storeDoc = await Store.findById(req.store._id)
+
+  if (!req.body.uninstall) {
+    // Update FacebookPixelId and set as PixelInstalled => true
+
+    storeDoc.FacebookPixelId = req.body.code
+    storeDoc.PixelInstalled = true
+
+    const updatedStoreDoc = await storeDoc.save({
+      new: true,
+      validateModifiedOnly: true,
+    })
+    res.status(200).json({
+      status: 'success',
+      message: 'Facebook Pixel installed successfully!',
+      data: updatedStoreDoc,
+    })
+  } else {
+    // Set FacebookPixelId to undefined and mark as uninstalled
+    storeDoc.FacebookPixelId = undefined
+    storeDoc.PixelInstalled = false
+
+    const updatedStoreDoc = await storeDoc.save({
+      new: true,
+      validateModifiedOnly: true,
+    })
+    res.status(200).json({
+      status: 'success',
+      message: 'Facebook Pixel uninstalled successfully!',
+      data: updatedStoreDoc,
+    })
+  }
+})
+
+exports.uninstallMailchimp = catchAsync(async(req, res, next) => {
+  await Mailchimp.findOneAndDelete({store: req.store._id});
+
+  const updatedStore = await Store.findByIdAndUpdate(req.store._id, {mailchimpInstalled: false,}, {new: true, validateModifiedOnly: true});
+
+  res.status(200).json({
+    status: "success",
+    message: "WhatsApp Chat Uninstalled Successfully!",
+    data: updatedStore,
+  })
+
 })

@@ -166,7 +166,7 @@ const storeSchema = new mongoose.Schema({
   facebookLink: { type: String },
   instagramLink: { type: String },
   twitterLink: { type: String },
-  youtubeLink: {type: String,},
+  youtubeLink: { type: String },
   // Ambience
   mode: { type: String, default: 'light' },
   primaryColor: { type: String, default: '#2065D1' },
@@ -282,15 +282,18 @@ const storeSchema = new mongoose.Schema({
       type: Map,
     },
   ],
-  GAPropertyId: {
+  GAMeasurementId: {
     type: String,
   },
+  GAInstalled: { type: Boolean, default: false },
   GMCVerificationCode: {
     type: String,
   },
+  GMCInstalled: {type: Boolean, default: false,},
   GSCVerificationCode: {
     type: String,
   },
+  GSCInstalled: {type: Boolean, default: false,},
   WhatsAppNumber: {
     type: String,
   },
@@ -304,17 +307,23 @@ const storeSchema = new mongoose.Schema({
   IntercomAppId: {
     type: String,
   },
-  adWordsConversionId: {
+  IntercomInstalled: {
+    type: Boolean,
+    default: false,
+  },
+  adWordsVerificationCode: {
     type: String,
   },
-  adWordsConversionLabel: {
-    type: String,
-  },
+ adWordsInstalled: {
+  type: Boolean,
+  default: false,
+ },
   FacebookPixelId: {
     type: String,
   },
-  FBDomainVerificationCode: {
-    type: String,
+  PixelInstalled: {
+    type: Boolean,
+    default: false,
   },
   mailchimpInstalled: {
     type: Boolean,
