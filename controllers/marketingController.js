@@ -233,7 +233,7 @@ exports.sendSMSCampaign = catchAsync(async (req, res, next) => {
         .then((message) => {
           console.log(message.sid)
           console.log(`Successfully sent Campaign SMS to ${element}`)
-          contacts.push(customerDoc?.phone)
+          contacts.push(customerDoc.phone)
         })
         .catch((e) => {
           console.log(e)
