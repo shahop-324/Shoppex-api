@@ -220,14 +220,14 @@ exports.sendSMSCampaign = catchAsync(async (req, res, next) => {
   campaignDoc.customers.forEach(async (element) => {
     const customerDoc = await Customer.findById(element)
 
-    if (customerDoc?.phone && !contacts.includes(customerDoc?.phone)) {
+    if (customerDoc.phone && !contacts.includes(customerDoc.phone)) {
       // Send SMS here
 
       client.messages
         .create({
           body: campaignDoc.message,
           from: '+1 775 535 7258',
-          to: customerDoc?.phone,
+          to: customerDoc.phone,
         })
 
         .then((message) => {

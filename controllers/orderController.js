@@ -87,7 +87,7 @@ exports.getAbondonedCarts = catchAsync(async (req, res, next) => {
   let abondonedCarts = customers
     .filter((el) => el.cart !== undefined && el.cart.length > 0)
     .map((el) => ({
-      cart: el?.cart.map((item) => {
+      cart: el.cart.map((item) => {
         const prod = products.find((p) => {
           return p._id.toString() === item.product.toString()
         })
@@ -101,10 +101,10 @@ exports.getAbondonedCarts = catchAsync(async (req, res, next) => {
           id: prod._id,
         }
       }),
-      name: el?.name,
+      name: el.name,
       customerId: el._id,
-      contact: el?.phone,
-      updatedAt: el?.cartUpdatedAt || Date.now(),
+      contact: el.phone,
+      updatedAt: el.cartUpdatedAt || Date.now(),
     }))
 
   abondonedCarts = abondonedCarts.map((el) => {

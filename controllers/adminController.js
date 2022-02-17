@@ -98,7 +98,7 @@ exports.createPayout = catchAsync(async (req, res, next) => {
     .create({
       body: `Dear QwikShop Seller, Your Payment of Rs. ${amount} for store ${store_doc.name} has been made successfully via registered ${method}. Thanks, QwikShop team.`,
       from: '+1 775 535 7258',
-      to: store_doc?.phone,
+      to: store_doc.phone,
     })
 
     .then((message) => {

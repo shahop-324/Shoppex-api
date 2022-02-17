@@ -5,7 +5,7 @@ const Question = require('../model/QuestionModel')
 exports.fetchQuestions = catchAsync(async (req, res, next) => {
   let questions = await Question.find({ store: req.store._id })
 
-  if (req?.query?.text) {
+  if (req.query.text) {
     switch (req.query.text) {
       case 'Answered':
         questions = questions.filter((el) => el.answer)

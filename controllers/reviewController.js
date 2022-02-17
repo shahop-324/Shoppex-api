@@ -5,7 +5,7 @@ const Review = require('../model/reviewModel')
 exports.fetchReviews = catchAsync(async (req, res, next) => {
   let reviews = await Review.find({ store: req.store._id })
 
-  if (req?.query?.text) {
+  if (req.query.text) {
     switch (req.query.text) {
       case 'Accepted':
         reviews = reviews.filter((el) => el.accepted)

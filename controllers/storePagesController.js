@@ -51,7 +51,7 @@ exports.editStorePage = catchAsync(async (req, res, next) => {
 
   const storePage = await StorePages.findById(pageId)
 
-  const prevSlug = storePage?.slug
+  const prevSlug = storePage.slug
 
   const { html, name, designJSON, } = req.body
 
