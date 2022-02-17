@@ -325,6 +325,9 @@ const storeSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  mailchimpKey: {
+    type: String,
+  },
   mailchimpInstalled: {
     type: Boolean,
     default: false,
