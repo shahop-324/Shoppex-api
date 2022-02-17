@@ -20,7 +20,7 @@ const MAILCHIMP_CLIENT_ID = '919814706970'
 const MAILCHIMP_CLIENT_SECRET =
   '3837302297576b7845b5ced8bd4691bb69ac7b8c5f90645887'
 
-const OAUTH_CALLBACK = `http://127.0.0.1:4000/connect-mailchimp`
+const OAUTH_CALLBACK = `https://app.qwikshop.online/connect-mailchimp`
 
 const globalErrorHandler = require('./controllers/errController')
 const catchAsync = require('./utils/catchAsync')
@@ -70,6 +70,8 @@ app.use(
       'https://letstream.live',
       'https://zapier.com',
       'https://www.zapier.com',
+      'https://www.qwikshop.online',
+      'https://www.app.qwikshop.online'
     ],
     methods: ['GET', 'PATCH', 'POST', 'DELETE', 'PUT'],
     credentials: true,

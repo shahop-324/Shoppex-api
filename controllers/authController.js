@@ -583,7 +583,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   // 3) Send it to user's email
   try {
-    const resetURL = `http://localhost:4000/auth/update-password/?token=${resetToken}`
+    const resetURL = `https://qwikshop.online/auth/update-password/?token=${resetToken}`
 
     // Send Grid is implemented here
 
