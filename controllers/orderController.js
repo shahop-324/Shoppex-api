@@ -85,7 +85,7 @@ exports.getAbondonedCarts = catchAsync(async (req, res, next) => {
   const products = await Product.find({ store: req.store._id })
 
   let abondonedCarts = customers
-    .filter((el) => el?.cart !== undefined && el?.cart?.length > 0)
+    .filter((el) => el.cart !== undefined && el.cart.length > 0)
     .map((el) => ({
       cart: el?.cart.map((item) => {
         const prod = products.find((p) => {
