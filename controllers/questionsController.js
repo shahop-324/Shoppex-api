@@ -1,6 +1,6 @@
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
-const Question = require('../model/QuestionModel')
+const Question = require('../model/questionModel')
 
 exports.fetchQuestions = catchAsync(async (req, res, next) => {
   let questions = await Question.find({ store: req.store._id })

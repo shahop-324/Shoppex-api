@@ -1,4 +1,4 @@
-const Category = require('../model/CategoryModel')
+const Category = require('../model/categoryModel')
 const Product = require('../model/productModel')
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')

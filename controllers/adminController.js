@@ -3,7 +3,7 @@ const Admin = require('../model/adminModel')
 const Blog = require('../model/blogModel')
 const Payout = require('../model/payoutModel')
 const Refund = require('../model/refundModel')
-const Store = require('../model/StoreModel')
+const Store = require('../model/storeModel')
 const randomstring = require('randomstring')
 
 const sgMail = require('@sendgrid/mail')

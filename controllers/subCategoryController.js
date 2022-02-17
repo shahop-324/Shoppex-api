@@ -1,8 +1,8 @@
-const SubCategory = require('../model/SubCategoryModel')
+const SubCategory = require('../model/subCategoryModel')
 const Product = require('../model/productModel')
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
-const Category = require('../model/CategoryModel')
+const Category = require('../model/categoryModel')
 // Add, Edit, Delete, Get => SubCategory
 
 const filterObj = (obj, ...allowedFields) => {

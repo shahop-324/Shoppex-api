@@ -1,4 +1,4 @@
-const Discount = require('../model/DiscountModel')
+const Discount = require('../model/discountModel')
 const apiFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync')
 

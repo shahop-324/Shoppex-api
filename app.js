@@ -13,8 +13,8 @@ const session = require('cookie-session')
 var request = require('superagent')
 const querystring = require('querystring')
 const { promisify } = require('util')
-const Mailchimp = require('./model/MailchimpModel')
-const Store = require('./model/StoreModel')
+const Mailchimp = require('./model/mailchimpModel')
+const Store = require('./model/storeModel')
 
 const MAILCHIMP_CLIENT_ID = '919814706970'
 const MAILCHIMP_CLIENT_SECRET =

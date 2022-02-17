@@ -1,5 +1,5 @@
 const catchAsync = require('../utils/catchAsync')
-const Menu = require('../model/MenuModel')
+const Menu = require('../model/menuModel')
 
 exports.createMenuItem = catchAsync(async (req, res, next) => {
   const newMenuItem = await Menu.create({

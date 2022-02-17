@@ -3,7 +3,7 @@ const Catalouge = require('../model/catalougeModel')
 // Add, Edit, Delete, Get => Product
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
-const Store = require('../model/StoreModel')
+const Store = require('../model/storeModel')
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {}

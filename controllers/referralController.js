@@ -1,6 +1,6 @@
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
-const Referral = require('../model/ReferralModel')
+const Referral = require('../model/referralModel')
 
 exports.fetchReferrals = catchAsync(async (req, res, next) => {
   const query = Referral.find({ store: req.store._id })

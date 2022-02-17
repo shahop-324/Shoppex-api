@@ -1,5 +1,5 @@
-const Customer = require('../model/CustomerModel')
-const SMSCommunication = require('../model/SMSCommunicationsModel')
+const Customer = require('../model/customerModel')
+const SMSCommunication = require('../model/sMSCommunicationsModel')
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
 

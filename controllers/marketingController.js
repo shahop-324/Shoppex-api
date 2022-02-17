@@ -1,12 +1,12 @@
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
-const Marketing = require('../model/MarketingModel')
+const Marketing = require('../model/marketingModel')
 const randomstring = require('randomstring')
-const Customer = require('../model/CustomerModel')
-const WalletTransaction = require('../model/WalletTransactionModel')
+const Customer = require('../model/customerModel')
+const WalletTransaction = require('../model/walletTransactionModel')
 
 const sgMail = require('@sendgrid/mail')
-const Store = require('../model/StoreModel')
+const Store = require('../model/storeModel')
 sgMail.setApiKey(process.env.SENDGRID_KEY)
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID

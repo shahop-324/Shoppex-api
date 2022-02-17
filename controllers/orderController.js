@@ -1,6 +1,6 @@
 const Order = require('../model/ordersModel')
 const Product = require('../model/productModel')
-const Customer = require('../model/CustomerModel')
+const Customer = require('../model/customerModel')
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
 

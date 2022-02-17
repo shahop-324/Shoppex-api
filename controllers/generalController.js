@@ -1,5 +1,5 @@
 const catchAsync = require('../utils/catchAsync')
-const StoreSubName = require('../model/StoreSubNameModel')
+const StoreSubName = require('../model/storeSubNameModel')
 
 exports.getSubnames = catchAsync(async (req, res, next) => {
   const subnames = await StoreSubName.find({})

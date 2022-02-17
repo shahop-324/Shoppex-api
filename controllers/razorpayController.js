@@ -2,8 +2,8 @@ const catchAsync = require('../utils/catchAsync')
 const Razorpay = require('razorpay')
 const crypto = require('crypto')
 const { v4: uuidv4 } = require('uuid')
-const Store = require("../model/StoreModel");
-const WalletTransaction = require('../model/WalletTransactionModel')
+const Store = require("../model/storeModel");
+const WalletTransaction = require('../model/walletTransactionModel')
 
 const razorpay = new Razorpay({
   key_id: 'rzp_live_g0GDGz1KSIjfGz',

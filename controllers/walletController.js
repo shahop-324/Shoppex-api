@@ -1,5 +1,5 @@
 const catchAsync = require('../utils/catchAsync')
-const WalletTransaction = require('../model/WalletTransactionModel')
+const WalletTransaction = require('../model/walletTransactionModel')
 
 exports.getTransactions = catchAsync(async (req, res, next) => {
   const transactions = await WalletTransaction.find({ store: req.store._id })

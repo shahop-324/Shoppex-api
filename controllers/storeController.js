@@ -1,14 +1,14 @@
-const Store = require('../model/StoreModel')
+const Store = require('../model/storeModel')
 const catchAsync = require('../utils/catchAsync')
 const jwt = require('jsonwebtoken')
 const slugify = require('slugify')
 const { nanoid } = require('nanoid')
-const StoreSubName = require('../model/StoreSubNameModel')
+const StoreSubName = require('../model/storeSubNameModel')
 const User = require('../model/userModel')
-const StorePages = require('../model/StorePages')
+const StorePages = require('../model/storePages')
 const StaffInvitation = require('../model/staffInvitationModel')
 const Product = require('../model/productModel')
-const Mailchimp = require('../model/MailchimpModel');
+const Mailchimp = require('../model/mailchimpModel');
 const randomString = require('random-string')
 
 const sgMail = require('@sendgrid/mail')

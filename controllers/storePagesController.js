@@ -1,6 +1,6 @@
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
-const StorePages = require('../model/StorePages')
+const StorePages = require('../model/storePages')
 const slugify = require('slugify')
 
 // Add Page

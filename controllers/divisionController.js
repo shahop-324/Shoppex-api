@@ -1,8 +1,8 @@
-const Division = require('../model/DivisionModel')
+const Division = require('../model/divisionModel')
 const Product = require('../model/productModel')
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
-const SubCategory = require('../model/SubCategoryModel')
+const SubCategory = require('../model/subCategoryModel')
 // Add, Edit, Delete, Get => Division
 
 const filterObj = (obj, ...allowedFields) => {
