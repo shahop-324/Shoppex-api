@@ -1,4 +1,4 @@
-const Order = require('../model/OrdersModel')
+const Order = require('../model/ordersModel')
 const Product = require('../model/productModel')
 const Customer = require('../model/CustomerModel')
 const catchAsync = require('../utils/catchAsync')

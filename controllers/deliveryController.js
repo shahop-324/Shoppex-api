@@ -1,6 +1,6 @@
 const PickupPoint = require('../model/PickupPointModel')
 const Store = require('../model/StoreModel')
-const Order = require('../model/OrdersModel')
+const Order = require('../model/ordersModel')
 const Shipment = require('../model/shipmentModel')
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
