@@ -780,6 +780,66 @@ exports.updateStore = catchAsync(async (req, res, next) => {
 })
 
 exports.updateWhatsAppNumber = catchAsync(async (req, res, next) => {
+
+  if(req.body.uninstall) {
+    // Set WA Number to undefined and mark as uninstalled
+    const updatedStore = await Store.findByIdAndUpdate(
+      req.store._id,
+      { WhatsAppNumber: undefined, WAVerified: false },
+      { new: true, validateModifiedOnly: true },
+    )
+
+    res.status(200).json({
+      status: 'success',
+      data: updatedStore,
+      message: 'WhatsApp Uninstalled successfully!',
+    })
+
+
+  } else {
+     // Update Number in store database and Generate a verification OTP and send on the requested number
+  // Set WhatsApp Verified Status to false
+
+  const WAOTP = randomString({
+    length: 6,
+    numeric: true,
+    letters: false,
+    special: false,
+    exclude: ['a', 'b', '1'],
+  })
+
+  const updatedStore = await Store.findByIdAndUpdate(
+    req.store._id,
+    { WhatsAppNumber: req.body.phone, WAOTP, WAVerified: false },
+    { new: true, validateModifiedOnly: true },
+  )
+
+  // Send SMS Notification
+
+  client.messages
+    .create({
+      body: `${WAOTP} is your OTP to Confirm your WhatsApp Number with QwikShop.`,
+      from: '+1 775 535 7258',
+      to: req.body.phone,
+    })
+
+    .then((message) => {
+      console.log(message.sid)
+      console.log(`Successfully sent SMS`)
+    })
+    .catch((e) => {
+      console.log(e)
+      console.log(`Failed to send SMS`)
+    })
+
+  res.status(200).json({
+    status: 'success',
+    data: updatedStore,
+    message: 'WhatsApp Number updated, Please verify via OTP',
+  })
+
+  }
+
   // Update Number in store database and Generate a verification OTP and send on the requested number
   // Set WhatsApp Verified Status to false
 

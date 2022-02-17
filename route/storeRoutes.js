@@ -158,5 +158,8 @@ router.post('/verifyWhatsAppNumber', authController.protect, storeController.ver
 router.patch('/updateGA', authController.protect, storeController.updateGA);
 router.patch('/updateGMC', authController.protect, storeController.updateGMC);
 router.patch('/updateGSC', authController.protect, storeController.updateGSC);
+router.patch('/updateIntercom', authController.protect, storeController.updateIntercom);
+router.patch('/updatePixel', authController.protect, storeController.updateFBPixel);
+router.patch('/updateAdwords', authController.protect, storeController.updateAdwords);
 router.patch('/uninstallMailchimp', authController.protect, storeController.uninstallMailchimp);
 module.exports = router

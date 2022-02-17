@@ -13,6 +13,7 @@ const StoreSubName = require('../model/StoreSubNameModel')
 const slugify = require('slugify')
 const { nanoid } = require('nanoid')
 const Admin = require('../model/adminModel')
+const AppError = require("../utils/appError")
 
 // this function will return you jwt token
 const signToken = (userId, storeId) =>
@@ -322,6 +323,8 @@ exports.verifyOTPForRegistration = catchAsync(async (req, res, next) => {
     // Create and send login token for this user
     const token = signToken(newUser._id, newUser.stores[0])
 
+    console.log(token)
+
     // TODO => Send welcome email to this user (P5)
 
     res.status(200).json({
@@ -387,7 +390,13 @@ exports.loginUser = catchAsync(async (req, res, next) => {
 
   const store = await Store.findById(user.stores[0])
 
-  const token = signToken(user._id, user.stores[0])
+const storeId = user.stores[0]._id;
+
+console.log(storeId);
+
+  const token = signToken(user._id, storeId)
+
+  console.log(token)
 
   res.status(200).json({
     status: 'success',
@@ -657,7 +666,9 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
     // 3) Update changedPasswordAt property for the user
     // 4) Log the user in, send JWT
-    const token = signToken(user._id, user.stores[0])
+    const token = signToken(user._id, user.stores[0]._id)
+
+    console.log(token)
 
     res.status(200).json({
       status: 'success',
@@ -716,6 +727,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 
     // 4) Log user in, send JWT
     const token = signToken(req.user._id, req.store._id)
+    console.log(token)
 
     // Send email to this user's registered email informing about current password change
 
