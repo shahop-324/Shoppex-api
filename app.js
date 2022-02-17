@@ -73,7 +73,9 @@ app.use(
       'https://www.qwikshop.online',
       'https://www.app.qwikshop.online',
       'https://qwikshop.online',
-      'https://app.qwikshop.online'
+      'https://app.qwikshop.online',
+      'https://www.admin.qwikshop.online',
+      'https://admin.qwikshop.online'
     ],
     methods: ['GET', 'PATCH', 'POST', 'DELETE', 'PUT'],
     credentials: true,
