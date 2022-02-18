@@ -5,6 +5,7 @@ const orderSchema = new mongoose.Schema({
   store: { type: mongoose.Schema.ObjectId, ref: 'Store' },
   customer: { type: mongoose.Schema.ObjectId, ref: 'Customer' },
   shipment: { type: mongoose.Schema.ObjectId, ref: 'Shipment' },
+  referral: {type: mongoose.Schema.ObjectId, ref: 'Referral'},
   createdAt: { type: Date, default: Date.now() },
   shippingAddress: { type: Map },
   billingAddress: { type: Map },
@@ -21,7 +22,6 @@ const orderSchema = new mongoose.Schema({
   },
   orderStatus: {
     type: String,
-    default: 'packaging',
     enum: ['packaging', 'shipping', 'delivering', 'complete', 'cancelled'],
   },
   status: {
@@ -55,21 +55,13 @@ const orderSchema = new mongoose.Schema({
     },
   ],
   givenProducts: [
-    {
-      product: { type: mongoose.Schema.ObjectId, ref: 'Product' },
-      quantity: { type: Number },
-      variants: [
-        {
-          index: { type: String },
-          quantity: { type: Number },
-          selectedOption: { type: String },
-        },
-      ], // {type: String or index of variant available types, value: index of variant},
-      color: { type: String },
-      pricePerUnit: { type: Number },
-      availableQuantity: { type: Number },
-    },
+    {type: Map,}
   ],
+  freeProducts: [{
+    productId: { type: mongoose.Schema.ObjectId, ref: 'Product' },
+    quantity: { type: Number },
+   
+  },],
   charges: { type: Map },
   appliedCoins: { type: Number, default: 0 },
   paymentMode: { type: String },
@@ -84,7 +76,7 @@ const orderSchema = new mongoose.Schema({
 })
 
 orderSchema.pre(/^find/, function (next) {
-  this.find({}).populate('customer')
+  this.find({}).populate('customer').populate('referral')
   next()
 })
 

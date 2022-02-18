@@ -1,6 +1,7 @@
 const Order = require('../model/ordersModel')
 const Product = require('../model/productModel')
 const Customer = require('../model/customerModel')
+const Refund = require('../model/refundModel');
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
 
@@ -153,9 +154,11 @@ exports.getRecentOrders = catchAsync(async (req, res, next) => {
 })
 
 exports.acceptOrder = catchAsync(async (req, res, next) => {
+  //  Move order to packaging state
+
   const acceptedOrder = await Order.findByIdAndUpdate(
     req.body.id,
-    { status: 'Accepted', updatedAt: Date.now() },
+    { status: 'Accepted', orderStatus: 'packaging', updatedAt: Date.now() },
     { new: true, validateModifiedOnly: true },
   )
 
@@ -168,11 +171,31 @@ exports.acceptOrder = catchAsync(async (req, res, next) => {
 })
 
 exports.cancelOrder = catchAsync(async (req, res, next) => {
+  // Mark order as cancelled => Create a refund if any amount was paid online and reverse coins in order
+
   const cancelledOrder = await Order.findByIdAndUpdate(
     req.body.id,
     { status: 'Cancelled', orderStatus: 'cancelled', updatedAt: Date.now() },
     { new: true, validateModifiedOnly: true },
   )
+
+  const customerDoc = await Customer.findById(cancelledOrder.customer._id)
+
+  customerDoc.coins = (
+    customerDoc.coins -
+    (cancelledOrder.coinsEarned || 0) +
+    (cancelledOrder.coinsUsed || 0)
+  ).toFixed(0)
+
+  await customerDoc.save({new: true, validateModifiedOnly: true});
+
+  await Refund.create({
+    store: cancelledOrder.store,
+    customer: cancelledOrder.customer._id,
+    order: cancelledOrder._id,
+    amount: cancelledOrder.charges.total,
+    createdAt: Date.now(),
+  })
 
   //  ! TODO Send email, SMS and whatsapp communication that order has been accepted
   res.status(200).json({
@@ -183,11 +206,31 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
 })
 
 exports.rejectOrder = catchAsync(async (req, res, next) => {
+  // Mark order as cancelled => Create a refund if any amount was paid online and reverse coins in order
+
   const rejectedOrder = await Order.findByIdAndUpdate(
     req.body.id,
     { status: 'Rejected', orderStatus: 'cancelled', updatedAt: Date.now() },
     { new: true, validateModifiedOnly: true },
   )
+
+  const customerDoc = await Customer.findById(rejectedOrder.customer._id)
+
+  customerDoc.coins = (
+    customerDoc.coins -
+    (rejectedOrder.coinsEarned || 0) +
+    (rejectedOrder.coinsUsed || 0)
+  ).toFixed(0)
+
+  await customerDoc.save({new: true, validateModifiedOnly: true});
+
+  await Refund.create({
+    store: rejectedOrder.store,
+    customer: rejectedOrder.customer._id,
+    order: rejectedOrder._id,
+    amount: rejectedOrder.charges.total,
+    createdAt: Date.now(),
+  })
 
   //  ! TODO Send email, SMS and whatsapp communication that order has been accepted
   res.status(200).json({
