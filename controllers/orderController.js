@@ -1,9 +1,13 @@
 const Order = require('../model/ordersModel')
 const Product = require('../model/productModel')
 const Customer = require('../model/customerModel')
-const Refund = require('../model/refundModel');
+const Refund = require('../model/refundModel')
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
+const Shipment = require('../model/shipmentModel')
+
+const randomstring = require('randomstring')
+const WalletTransaction = require('../model/walletTransactionModel')
 
 exports.createOrder = catchAsync(async (req, res, next) => {
   const {
@@ -179,6 +183,14 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
     { new: true, validateModifiedOnly: true },
   )
 
+  // Mark corresponding shipment as cancelled
+
+  const cancelledShipment = await Shipment.findByIdAndUpdate(
+    cancelledOrder.shipment,
+    { status: 'Cancelled' },
+    { new: true, validateModifiedOnly: true },
+  )
+
   const customerDoc = await Customer.findById(cancelledOrder.customer._id)
 
   customerDoc.coins = (
@@ -187,7 +199,7 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
     (cancelledOrder.coinsUsed || 0)
   ).toFixed(0)
 
-  await customerDoc.save({new: true, validateModifiedOnly: true});
+  await customerDoc.save({ new: true, validateModifiedOnly: true })
 
   await Refund.create({
     store: cancelledOrder.store,
@@ -201,6 +213,7 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     data: cancelledOrder,
+    shipment: cancelledShipment,
     message: 'Order Cancelled Successfully!',
   })
 })
@@ -214,6 +227,14 @@ exports.rejectOrder = catchAsync(async (req, res, next) => {
     { new: true, validateModifiedOnly: true },
   )
 
+  // Mark corresponding shipment as cancelled
+
+  const rejectedShipment = await Shipment.findByIdAndUpdate(
+    rejectedOrder.shipment,
+    { status: 'Cancelled' },
+    { new: true, validateModifiedOnly: true },
+  )
+
   const customerDoc = await Customer.findById(rejectedOrder.customer._id)
 
   customerDoc.coins = (
@@ -222,7 +243,7 @@ exports.rejectOrder = catchAsync(async (req, res, next) => {
     (rejectedOrder.coinsUsed || 0)
   ).toFixed(0)
 
-  await customerDoc.save({new: true, validateModifiedOnly: true});
+  await customerDoc.save({ new: true, validateModifiedOnly: true })
 
   await Refund.create({
     store: rejectedOrder.store,
@@ -236,6 +257,78 @@ exports.rejectOrder = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     data: rejectedOrder,
+    shipment: rejectedShipment,
     message: 'Order Rejected Successfully!',
   })
+})
+
+exports.askForReview = catchAsync(async (req, res, next) => {
+  // Check if we have more than 1.5 in our wallet then only allow to send message
+
+  const storeDoc = await Store.findById(req.store._id)
+
+  if (storeDoc.walletAmount > 1.5) {
+    // Find customer and order and ask for review
+
+    const orderDoc = await Order.findById(req.params.orderId)
+
+    const storeDoc = await Store.findById(orderDoc.store)
+
+    const customer = orderDoc.customer
+
+    if (customer.phone && !contacts.includes(customer.phone)) {
+      // Send SMS here
+
+      client.messages
+        .create({
+          body: `Dear Customer, Please provide your review for your order ID ${orderDoc.ref.toUpperCase()} which was placed via ${
+            storeDoc.name
+          }. Thanks.`,
+          from: '+1 775 535 7258',
+          to: customer.phone,
+        })
+
+        .then(async (message) => {
+          console.log(message.sid)
+          console.log(`Successfully sent SMS asking for review.`)
+
+          // deduct amount from wallet
+
+          storeDoc.walletAmount = storeDoc.walletAmount - 1.5
+
+          await storeDoc.save({ new: true, validateModifiedOnly: true })
+
+          await WalletTransaction.create({
+            store: req.store._id,
+            transactionId: `pay_${randomstring.generate({
+              length: 10,
+              charset: 'alphabetic',
+            })}`,
+            type: 'Debit',
+            amount: 1.5,
+            reason: 'Asked for review',
+            timestamp: Date.now(),
+          })
+
+          res.status(200).json({
+            status: 'success',
+            message: 'Asked for review successfully!',
+          })
+        })
+        .catch((e) => {
+          console.log(e)
+          console.log(`Failed to send SMS asking for review.`)
+          res.status(200).json({
+            status: 'success',
+            message: 'Failed to Ask for review, Please try again',
+          })
+        })
+    }
+  } else {
+    res.status(400).json({
+      status: 'failed',
+      message:
+        "You don't have enough wallet balance to ask for review via SMS. Please recharge your wallet.",
+    })
+  }
 })

@@ -133,6 +133,7 @@ exports.sendEmailCampaign = catchAsync(async (req, res, next) => {
     amount: campaignDoc.amount,
     reason: 'Email Campaign',
     timestamp: Date.now(),
+    store: req.store._id,
   })
 
   campaignDoc.status = 'Sent'
@@ -205,6 +206,7 @@ exports.sendSMSCampaign = catchAsync(async (req, res, next) => {
     amount: campaignDoc.amount,
     reason: 'SMS Campaign',
     timestamp: Date.now(),
+    store: req.store._id,
   })
 
   campaignDoc.status = 'Sent'

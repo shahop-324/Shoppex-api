@@ -3,6 +3,9 @@ const SMSCommunication = require('../model/sMSCommunicationsModel')
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
 
+const randomstring = require('randomstring')
+const WalletTransaction = require('../model/walletTransactionModel')
+
 const accountSid = process.env.TWILIO_ACCOUNT_SID
 const authToken = process.env.TWILIO_AUTH_TOKEN
 const client = require('twilio')(accountSid, authToken)
@@ -22,7 +25,7 @@ exports.addNewCustomer = catchAsync(async (req, res, next) => {
 
 exports.giveCoinsToCustomer = catchAsync(async (req, res, next) => {
   const customer = await Customer.findById(req.body.id)
-  customer.coins = customer.coins*1 + req.body.coins*1
+  customer.coins = customer.coins * 1 + req.body.coins * 1
   const updatedCustomer = customer.save({
     new: true,
     validateModifiedOnly: true,
@@ -88,49 +91,75 @@ exports.importCustomers = catchAsync(async (req, res, next) => {
 exports.sendSMSToCustomer = catchAsync(async (req, res, next) => {
   // Send sms and create a copy of communication in SMSCommunications
 
-  const { message, id } = req.body
+  // Check if we have more than 1.5 in our wallet then only allow to send message
 
-  const customer = await Customer.findById(id)
+  const storeDoc = await Store.findById(req.store._id)
 
-  console.log(customer, message);
+  if (storeDoc.walletAmount > 1.5) {
+    const { message, id } = req.body
 
-//   res.status(200).json({
-//     status: "success",
-// message: "This is a test",
-//   })
+    const customer = await Customer.findById(id)
 
-  client.messages
-    .create({
-      body: message,
-      from: '+1 775 535 7258',
-      to: customer.phone,
-    })
+    console.log(customer, message)
 
-    .then(async (message) => {
-      console.log(message.sid)
-      console.log(
-        `Message Sent successfully to ${customer.name} on mobile ${customer.phone}.`,
-      )
-      await SMSCommunication.create({
-        store: req.store._id,
-        user: req.user._id,
-        customer: id,
-        message: req.body.message,
-        createdAt: Date.now(),
+    client.messages
+      .create({
+        body: message,
+        from: '+1 775 535 7258',
+        to: customer.phone,
       })
-      res.status(200).json({
-        status: 'success',
-        message: 'SMS sent successfully!',
+
+      .then(async (message) => {
+        console.log(message.sid)
+        console.log(
+          `Message Sent successfully to ${customer.name} on mobile ${customer.phone}.`,
+        )
+        await SMSCommunication.create({
+          store: req.store._id,
+          user: req.user._id,
+          customer: id,
+          message: req.body.message,
+          createdAt: Date.now(),
+        })
+
+        // deduct amount from wallet
+
+        storeDoc.walletAmount = storeDoc.walletAmount - 1.5
+
+        await storeDoc.save({ new: true, validateModifiedOnly: true })
+
+        await WalletTransaction.create({
+          transactionId: `pay_${randomstring.generate({
+            length: 10,
+            charset: 'alphabetic',
+          })}`,
+          type: 'Debit',
+          amount: 1.5,
+          reason: 'SMS Communication',
+          timestamp: Date.now(),
+          store: req.store._id,
+        })
+
+        res.status(200).json({
+          status: 'success',
+          message: 'SMS sent successfully!',
+        })
       })
-    })
-    .catch((e) => {
-      console.log(e)
-      console.log(
-        `Failed to send SMS to ${customer.name} on mobile ${customer.phone}`,
-      )
-      res.status(400).json({
-        status: 'error',
-        message: 'Failed to send SMS, Please try again.',
+      .catch((e) => {
+        console.log(e)
+        console.log(
+          `Failed to send SMS to ${customer.name} on mobile ${customer.phone}`,
+        )
+        res.status(400).json({
+          status: 'error',
+          message: 'Failed to send SMS, Please try again.',
+        })
       })
+  } else {
+    res.status(400).json({
+      status: 'failed',
+      message:
+        "You don't have enough wallet balance to send SMS. Please recharge your wallet.",
     })
+  }
 })
