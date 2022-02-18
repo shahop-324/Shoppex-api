@@ -7,6 +7,17 @@ const referralController = require('../controllers/referralController')
 router.get('/getAll', authController.protect, referralController.fetchReferrals)
 
 router.post(
+  '/fetchReferralPurchases',
+  authController.protect,
+  referralController.fetchReferralPurchases,
+)
+router.patch(
+  '/updateReferralPurchase/:id',
+  authController.protect,
+  referralController.updateReferralPurchase,
+)
+
+router.post(
   '/create',
   authController.protect,
   referralController.addNewReferral,

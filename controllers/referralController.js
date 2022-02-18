@@ -1,6 +1,7 @@
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
 const Referral = require('../model/referralModel')
+const ReferralPurchases = require('../model/referralPurchaseModel')
 
 exports.fetchReferrals = catchAsync(async (req, res, next) => {
   const query = Referral.find({ store: req.store._id })
@@ -65,5 +66,33 @@ exports.deleteMultipleReferral = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     message: 'Referrers Removed Successfully!',
+  })
+})
+
+exports.fetchReferralPurchases = catchAsync(async (req, res, next) => {
+  const purchases = await ReferralPurchases.find({ store: req.store._id })
+    .populate('customer')
+    .populate('order')
+
+  console.log(purchases)
+
+  res.status(200).json({
+    status: 'success',
+    data: purchases,
+    message: 'Purchases found successfully!',
+  })
+})
+
+exports.updateReferralPurchase = catchAsync(async (req, res, next) => {
+  const updatedPurchase = await ReferralPurchases.findByIdAndUpdate(
+    req.params.id,
+    { paid: true },
+    { validateModifiedOnly: true, new: true },
+  )
+
+  res.status(200).json({
+    status: 'success',
+    data: updatedPurchase,
+    message: 'Marked as Paid successfully!',
   })
 })
