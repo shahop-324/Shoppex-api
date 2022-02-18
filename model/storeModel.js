@@ -332,6 +332,14 @@ const storeSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  currentPlan: {
+    type: String,
+    default: 'free',
+  },
+  transaction_charge: {
+    type: Number,
+    default: 4,
+  }
 })
 
 const Store = mongoose.model('Store', storeSchema)
