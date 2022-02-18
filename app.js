@@ -50,6 +50,8 @@ const menuRoutes = require('./route/menuRoutes')
 const transactionRoutes = require('./route/transactionRoutes')
 const walletRoutes = require('./route/walletRoutes')
 const adminRoutes = require('./route/adminRoutes')
+const payoutRoutes = require("./route/payoutRoutes");
+const refundRoutes = require("./route/refundRoutes");
 
 const { application } = require('express')
 
@@ -158,6 +160,8 @@ app.use('/v1/menu', menuRoutes)
 app.use('/v1/wallet', walletRoutes)
 app.use('/v1/transaction', transactionRoutes)
 app.use('/v1/admin', adminRoutes)
+app.use('/v1/payout', payoutRoutes);
+app.use('/v1/refund', refundRoutes);
 
 app.get('/v1/auth/mailchimp', (req, res, next) => {
   res.redirect(

@@ -7,6 +7,7 @@ const Store = require('../model/storeModel')
 const randomstring = require('randomstring')
 
 const sgMail = require('@sendgrid/mail')
+const Customer = require('../model/customerModel')
 sgMail.setApiKey(process.env.SENDGRID_KEY)
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID
@@ -120,7 +121,7 @@ exports.createPayout = catchAsync(async (req, res, next) => {
 
 // Fetch Refunds
 exports.fetchRefunds = catchAsync(async (req, res, next) => {
-  const refunds = await Refund.find({})
+  const refunds = await Refund.find({}).populate('order').populate('customer');
   res.status(200).json({
     status: 'success',
     data: refunds,
@@ -137,7 +138,9 @@ exports.resolveRefund = catchAsync(async (req, res, next) => {
     req.params.id,
     { resolved: true },
     { new: true, validateModifiedOnly: true },
-  )
+  ).populate('customer').populate('order').populate('store');
+
+  
 
   client.messages
     .create({
@@ -154,13 +157,6 @@ exports.resolveRefund = catchAsync(async (req, res, next) => {
       console.log(e)
       console.log(`Failed to send SMS Notification`)
     })
-
-  res.status(200).json({
-    status: 'success',
-    payout: new_payout,
-    store: updatedStore,
-    message: 'Payout Created successfully!',
-  })
 
   res.status(200).json({
     status: 'success',

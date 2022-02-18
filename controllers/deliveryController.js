@@ -190,6 +190,31 @@ exports.getPickupPoints = catchAsync(async (req, res, next) => {
 exports.updateShipment = catchAsync(async (req, res, next) => {
   const { shipmentId } = req.params
 
+  if (req.body.status === 'Delivered') {
+    // Mark Payment as completed and add money to on Hold for seller
+
+    const shipmentDoc = await Shipment.findById(shipmentId)
+
+    const orderDoc = await Order.findById(shipment.order._id)
+
+    const storeDoc = await Store.findById(shipmentDoc.store)
+
+    orderDoc.paidAmount = orderDoc.charges.total
+    orderDoc.amountToConfirm = 0
+
+    await orderDoc.save({ new: true, validateModifiedOnly: true })
+
+    if (shipmentDoc.carrier !== 'Self') {
+      storeDoc.amountOnHold = (
+        storeDoc.amountOnHold * 1 +
+        orderDoc.charges.total * 1 -
+        orderDoc.coinsUsed * 1
+      ).toFixed(2)
+
+      await storeDoc.save({ new: true, validateModifiedOnly: true })
+    }
+  }
+
   const updatedShipment = await Shipment.findByIdAndUpdate(
     shipmentId,
     {

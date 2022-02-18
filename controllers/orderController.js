@@ -5,9 +5,13 @@ const Refund = require('../model/refundModel')
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
 const Shipment = require('../model/shipmentModel')
+const Store = require('../model/storeModel');
 
 const randomstring = require('randomstring')
 const WalletTransaction = require('../model/walletTransactionModel')
+const accountSid = process.env.TWILIO_ACCOUNT_SID
+const authToken = process.env.TWILIO_AUTH_TOKEN
+const client = require('twilio')(accountSid, authToken)
 
 exports.createOrder = catchAsync(async (req, res, next) => {
   const {
@@ -276,7 +280,7 @@ exports.askForReview = catchAsync(async (req, res, next) => {
 
     const customer = orderDoc.customer
 
-    if (customer.phone && !contacts.includes(customer.phone)) {
+    if (customer.phone) {
       // Send SMS here
 
       client.messages
@@ -323,6 +327,12 @@ exports.askForReview = catchAsync(async (req, res, next) => {
             message: 'Failed to Ask for review, Please try again',
           })
         })
+    }
+    else {
+      res.status(200).json({
+        status: 'success',
+        message: 'Failed to Ask for review, customer has not provided their Mobile number. Please update customer.',
+      })
     }
   } else {
     res.status(400).json({
