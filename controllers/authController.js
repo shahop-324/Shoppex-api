@@ -81,7 +81,7 @@ exports.register = catchAsync(async (req, res, next) => {
 
   const msg = {
     to: email, // Change to your recipient
-    from: 'welcome@letstream.live', // Change to your verified sender
+    from: 'welcome@qwikshop.online', // Change to your verified sender
     subject: `Welcome to QwikShop`,
     text: `Hello, welcome to QwikShop. This is your OTP for verifying your email: ${otp}`,
     // html: WelcomeToBluemeet(newUser.firtsName),
@@ -154,7 +154,7 @@ exports.resendEmailVerificationOTP = catchAsync(async (req, res, next) => {
 
   const msg = {
     to: email, // Change to your recipient
-    from: 'welcome@letstream.live', // Change to your verified sender
+    from: 'welcome@qwikshop.online', // Change to your verified sender
     subject: `Verify your QwikShop Account Email`,
     text: `Here is your OTP for verifying your email: ${otp}`,
     // html: WelcomeToBluemeet(newUser.firtsName),
@@ -589,7 +589,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
     const msg = {
       to: user.email, // Change to your recipient
-      from: 'security@letstream.live', // Change to your verified sender
+      from: 'security@qwikshop.online', // Change to your verified sender
       subject: 'Your Password Reset Link',
       text: `use this link to reset your password. This link is valid for only 10 min ${resetURL}`,
       // html: PasswordResetLink(
@@ -648,10 +648,10 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
     const msg = {
       to: user.email, // Change to your recipient
-      from: 'security@letstream.live', // Change to your verified sender
+      from: 'security@qwikshop.online', // Change to your verified sender
       subject: 'Your Password has been changed.',
       text:
-        'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@letstream.live',
+        'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
       // html: PasswordChanged(user.firstName),
     }
 

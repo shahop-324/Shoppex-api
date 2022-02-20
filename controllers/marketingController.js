@@ -154,7 +154,7 @@ exports.sendEmailCampaign = catchAsync(async (req, res, next) => {
 
       const msg = {
         to: customerDoc.email, // Change to your recipient
-        from: 'marketing@letstream.live', // Change to your verified sender
+        from: 'marketing@qwikshop.online', // Change to your verified sender
         subject: campaignDoc.name,
         // text: `Here we can send plain text mail to our user.`,
         html: emailHTML,
