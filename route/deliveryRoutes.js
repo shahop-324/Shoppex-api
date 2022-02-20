@@ -18,6 +18,11 @@ router.get('/shipment/getAll', authController.protect, deliveryController.getShi
 
 // Assign Courier to delhivery
 
-router.post('/shipment/assignDelhivery', authController.protect, deliveryController.assignDelhivery);
+router.post('/shipment/assignShiprocket', authController.protect, deliveryController.assignShiprocket);
+
+router.post('/shipment/requestPickup/:shipmentId', authController.protect, deliveryController.requestPickup);
+router.post('/shipment/generateInvoice/:shipmentId', deliveryController.generateInvoice);
+router.post('/shipment/generateLabel/:shipmentId', deliveryController.generateLabel);
+router.post('/shipment/generateManifest/:shipmentId', deliveryController.generateManifest);
 
 module.exports = router;

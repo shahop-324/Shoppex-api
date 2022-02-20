@@ -21,7 +21,7 @@ const pickupPointSchema = new mongoose.Schema({
   contactPersonName: { type: String },
   contactEmail: { type: String },
   operational: { type: Boolean, default: true },
-  delhivery_data: {
+  shiprocket_data: {
     type: Map,
   },
 })
