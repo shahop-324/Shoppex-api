@@ -1207,6 +1207,11 @@ exports.assignSelfShipping = catchAsync(async (req, res, next) => {
 
 // ! THIS IS MOST IMPORTANT => Setup Webhook to update shipment status and send realtime mail & SMS notification
 
-
-
 // Cancel order , Reject order => Create refund if online payment was maid and reverse coins  & Notify customer
+
+exports.getTrackingUpdate = catchAsync(async(req, res, next) => {
+  res.status(200).json({
+    status: "success",
+    message: "We are able to recieve update on this endpoint",
+  })
+})

@@ -25,4 +25,6 @@ router.post('/shipment/generateInvoice/:shipmentId', deliveryController.generate
 router.post('/shipment/generateLabel/:shipmentId', deliveryController.generateLabel);
 router.post('/shipment/generateManifest/:shipmentId', deliveryController.generateManifest);
 
+router.post('/shipment/getTrackingUpdate', deliveryController.getTrackingUpdate);
+
 module.exports = router;
