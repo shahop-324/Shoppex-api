@@ -77,7 +77,11 @@ app.use(
       'https://qwikshop.online',
       'https://app.qwikshop.online',
       'https://www.admin.qwikshop.online',
-      'https://admin.qwikshop.online'
+      'https://admin.qwikshop.online',
+      'https://app.shiprocket.in',
+      'https://api.shiprocket.in',
+      'https://www.app.shiprocket.in',
+      'https://www.api.shiprocket.in',
     ],
     methods: ['GET', 'PATCH', 'POST', 'DELETE', 'PUT'],
     credentials: true,
