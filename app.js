@@ -82,6 +82,8 @@ app.use(
       'https://api.shiprocket.in',
       'https://www.app.shiprocket.in',
       'https://www.api.shiprocket.in',
+      'https://shiprocket.in',
+      'https://www.shiprocket.in'
     ],
     methods: ['GET', 'PATCH', 'POST', 'DELETE', 'PUT'],
     credentials: true,
