@@ -75,8 +75,8 @@ exports.createPayout = catchAsync(async (req, res, next) => {
 
   const store_doc = await Store.findById(storeId)
 
-  store_doc.amountPaid = store_doc.amountPaid + amount
-  store_doc.amountOnHold = store_doc.amountOnHold - amount
+  store_doc.amountPaid = store_doc.amountPaid*1 + amount*1
+  store_doc.amountOnHold = store_doc.amountOnHold*1 - amount*1
 
   const updatedStore = await store_doc.save({
     new: true,

@@ -188,8 +188,6 @@ exports.verifyOTPForRegistration = catchAsync(async (req, res, next) => {
 
     const user = await UserRequest.findOne({ email: email }).select('+otp')
 
-    console.log(user)
-
     if (!user || !otp) {
       // Bad request
       res.status(400).json({
@@ -241,7 +239,7 @@ exports.verifyOTPForRegistration = catchAsync(async (req, res, next) => {
     // Create new store with given shopName and assign it to user
 
     const newStore = await Store.create({
-      name: user.shopName,
+      storeName: user.shopName,
     })
 
     newStore.team.push({
@@ -583,7 +581,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   // 3) Send it to user's email
   try {
-    const resetURL = `https://qwikshop.online/auth/update-password/?token=${resetToken}`
+    // const resetURL = `https://app.qwikshop.online/auth/update-password/?token=${resetToken}`
+    const resetURL = `http://localhost:4000/auth/update-password/?token=${resetToken}`
 
     // Send Grid is implemented here
 
@@ -666,6 +665,9 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
     // 3) Update changedPasswordAt property for the user
     // 4) Log the user in, send JWT
+
+    // DO THIS ONLY 
+
     const token = signToken(user._id, user.stores[0]._id)
 
     console.log(token)
@@ -705,6 +707,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 })
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
+  console.log(req.body)
   // 1) Get user from collection
   const user = await User.findById(req.user._id).select('+password')
 
@@ -719,8 +722,8 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
     return
   } else {
     // 3) If so, update password
-    user.password = req.body.newPass
-    user.passwordConfirm = req.body.confirmPass
+    user.password = await bcrypt.hash(req.body.pass, 12); 
+    user.passwordConfirm = await bcrypt.hash(req.body.passConfirm, 12);
     user.passwordChangedAt = Date.now()
     await user.save()
     // User.findByIdAndUpdate will NOT work as intended!

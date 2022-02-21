@@ -2,7 +2,7 @@ const catchAsync = require('../utils/catchAsync')
 const Razorpay = require('razorpay')
 const crypto = require('crypto')
 const { v4: uuidv4 } = require('uuid')
-const Store = require("../model/storeModel");
+const Store = require('../model/storeModel')
 const WalletTransaction = require('../model/walletTransactionModel')
 
 const razorpay = new Razorpay({
@@ -35,8 +35,8 @@ exports.createSubscription = catchAsync(async (req, res, next) => {
 exports.createWalletOrder = catchAsync(async (req, res, next) => {
   const { amount, type } = req.body
 
-  const storeId = req.store._id;
-  const userId = req.user._id;
+  const storeId = req.store._id
+  const userId = req.user._id
 
   const newOrder = razorpay.orders.create(
     {
@@ -46,6 +46,7 @@ exports.createWalletOrder = catchAsync(async (req, res, next) => {
       receipt: uuidv4(),
       notes: {
         // Here we can place notes for our reference
+        type: 'wallet-recharge',
         amount,
         storeId,
         userId,
@@ -106,41 +107,41 @@ exports.processPayment = catchAsync(async (req, res, next) => {
 
     console.log(payObject)
 
-    // Create a wallet Credit transaction and update store wallet total money
+    if (payObject.notes.type === 'wallet-recharge') {
+      // Create a wallet Credit transaction and update store wallet total money
 
-   const storeDoc = await Store.findById(notes.storeId);
+      const storeDoc = await Store.findById(notes.storeId)
 
-   storeDoc.walletAmount = storeDoc.walletAmount + (amount/100).toFixed(0);
+      storeDoc.walletAmount = storeDoc.walletAmount + (amount / 100).toFixed(0)
 
-   await storeDoc.save({new: true, validateModifiedOnly: true});
+      await storeDoc.save({ new: true, validateModifiedOnly: true })
 
-    await WalletTransaction.create({
-      transactionId: id,
-      type: "Credit",
-      amount: (amount/100).toFixed(0),
-      reason: "Wallet recharge",
-      timestamp: created_at,
-      store: notes.storeId,
-      user: notes.userId,
-      status,
-      currency,
-      wallet,
-      bank,
-      method,
-      international,
-      invoice_id,
-      card_id,
-      notes,
-      fee,
-      tax,
-    })
+      await WalletTransaction.create({
+        transactionId: id,
+        type: 'Credit',
+        amount: (amount / 100).toFixed(0),
+        reason: 'Wallet recharge',
+        timestamp: created_at,
+        store: notes.storeId,
+        user: notes.userId,
+        status,
+        currency,
+        wallet,
+        bank,
+        method,
+        international,
+        invoice_id,
+        card_id,
+        notes,
+        fee,
+        tax,
+      })
 
-    res.status(200).json({
-      status: "success",
-      message: "Payment processed successfully!"
-    })
-
-
+      res.status(200).json({
+        status: 'success',
+        message: 'Payment processed successfully!',
+      })
+    }
   } else {
     // This is not genuine => Just pass it
   }

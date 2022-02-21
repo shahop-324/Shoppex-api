@@ -12,6 +12,7 @@ const Mailchimp = require('../model/mailchimpModel');
 const randomString = require('random-string')
 
 const sgMail = require('@sendgrid/mail')
+const { LexRuntime } = require('aws-sdk')
 sgMail.setApiKey(process.env.SENDGRID_KEY)
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID
@@ -83,7 +84,7 @@ exports.setupStore = catchAsync(async (req, res, next) => {
     )
   }
 
-  const updatedStore = await Store.findByIdAndUpdate(
+  let updatedStore = await Store.findByIdAndUpdate(
     req.store._id,
     {
       setupCompleted: true,
@@ -97,10 +98,13 @@ exports.setupStore = catchAsync(async (req, res, next) => {
       gstin,
       category: category.label,
       phone,
-      logo: image.path,
     },
     { new: true, validateModifiedOnly: true },
   )
+
+  updatedStore.setupCompleted = true;
+
+  updatedStore = await updatedStore.save({new: true, validateModifiedOnly: true});
 
   res.status(200).json({
     status: 'success',
@@ -923,12 +927,32 @@ exports.createNew = catchAsync(async (req, res, next) => {
   })
   // Check if there is no previously assigned subname then assign new one
 
-  const subName = nanoid()
+  let finalSubName;
+
+  let slugName = slugify(req.body.storeName.toLowerCase())
+    let alternateSubname = nanoid()
+    let isAvailable = true
+
+    const subNameDocs = await StoreSubName.find({})
+
+    for (let element of subNameDocs) {
+      if (element.subName === slugName) {
+        isAvailable = false
+      }
+    }
+
+    if (isAvailable) {
+      finalSubName = slugName
+      newStore.subName = slugName
+    } else {
+      finalSubName = alternateSubname
+      newStore.subName = alternateSubname
+    }
 
   // Create a new subname Doc for this store
 
   await StoreSubName.create({
-    subName,
+    subName: finalSubName,
     store: req.store._id,
     createdAt: Date.now(),
     updatedAt: Date.now(),
@@ -936,7 +960,7 @@ exports.createNew = catchAsync(async (req, res, next) => {
 
   const updatedStore = await Store.findByIdAndUpdate(
     newStore._id,
-    { subName: subName },
+    { subName: finalSubName },
     { new: true, validateModifiedOnly: true },
   )
 
