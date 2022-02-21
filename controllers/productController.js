@@ -4,6 +4,8 @@ const Catalouge = require('../model/catalougeModel')
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
 const Store = require('../model/storeModel')
+const SubCategory = require('../model/subCategoryModel')
+const Division = require('../model/divisionModel')
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {}
@@ -15,6 +17,12 @@ const filterObj = (obj, ...allowedFields) => {
 
 exports.addProduct = catchAsync(async (req, res, next) => {
   console.log(req.body)
+
+  // Category, SubCategory & Division => Find and update them
+
+  const shopCategory = req.body.category
+  const shopSubCategory = req.body.subCategory
+  const shopDivision = req.body.division
 
   // * DONE => Calculate if it qualifies for delivery or not
   // * DONE => Calculate lowest and highest price
@@ -41,13 +49,13 @@ exports.addProduct = catchAsync(async (req, res, next) => {
     return p > v ? p : v
   })
 
-  let qualifyForFreeDelivery = false;
+  let qualifyForFreeDelivery = false
 
-  const storeDoc = await Store.findById(req.store._id);
-  const freeDeliveryThreshold = storeDoc.freeDeliveryAbove;
+  const storeDoc = await Store.findById(req.store._id)
+  const freeDeliveryThreshold = storeDoc.freeDeliveryAbove
 
-  if(highest*1 >= freeDeliveryThreshold*1) {
-    qualifyForFreeDelivery = true;
+  if (highest * 1 >= freeDeliveryThreshold * 1) {
+    qualifyForFreeDelivery = true
   }
 
   const newProduct = await Product.create({
@@ -57,6 +65,41 @@ exports.addProduct = catchAsync(async (req, res, next) => {
     store: req.store._id,
     freeDelivery: qualifyForFreeDelivery,
   })
+
+  if (shopCategory) {
+    newProduct.shopCategory = shopCategory
+    // Add this product id to this category
+
+    const categoryDoc = await Category.findById(shopCategory.get('value'))
+
+    categoryDoc.products.push(newProduct._id)
+
+    await categoryDoc.save({ new: true, validateModifiedOnly: true })
+  }
+
+  if (shopSubCategory) {
+    newProduct.shopSubCategory = shopSubCategory
+    // Add this product id to this subCategory
+
+    const subCategoryDoc = await SubCategory.findById(
+      shopSubCategory.get('value'),
+    )
+
+    subCategoryDoc.products.push(newProduct._id)
+
+    await subCategoryDoc.save({ new: true, validateModifiedOnly: true })
+  }
+
+  if (shopDivision) {
+    newProduct.shopDivision = shopDivision
+    // Add this product id to this division
+
+    const divisionDoc = await Division.findById(shopDivision.get('value'))
+
+    divisionDoc.products.push(newProduct._id)
+
+    await divisionDoc.save({ new: true, validateModifiedOnly: true })
+  }
 
   newProduct.updatedAt = Date.now()
   await newProduct.save({ new: true, validateModifiedOnly: true })
@@ -80,6 +123,12 @@ exports.addProduct = catchAsync(async (req, res, next) => {
 exports.updateProduct = catchAsync(async (req, res, next) => {
   // * DONE => Calculate lowest and highest price
   // * DONE => Calculate if it qualifies for delivery or not
+
+  // Category, SubCategory & Division => Find and update them
+
+  const shopCategory = req.body.category
+  const shopSubCategory = req.body.subCategory
+  const shopDivision = req.body.division
 
   if (!req.body.discountedPrice) {
     req.body.discountedPrice = req.body.price
@@ -106,6 +155,79 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
   console.log(req.body)
   const productDoc = await Product.findById(req.params.productId)
 
+  if (productDoc.shopCategory) {
+    // Remove this product from prev shopCategory and add to new
+
+    const categoryDoc = await Category.findById(
+      productDoc.shopCategory.get('value'),
+    )
+
+    categoryDoc.products = categoryDoc.products.filter(
+      (el) => el._id.toString() !== productDoc._id.toString(),
+    )
+
+    await categoryDoc.save({ new: true, validateModifiedOnly: true })
+  }
+
+  if (productDoc.shopSubCategory) {
+    // Remove this product from prev shopSubCategory and add to new
+
+    const subCategoryDoc = await SubCategory.findById(
+      productDoc.shopSubCategory.get('value'),
+    )
+
+    subCategoryDoc.products = subCategoryDoc.products.filter(
+      (el) => el._id.toString() !== productDoc._id.toString(),
+    )
+
+    await subCategoryDoc.save({ new: true, validateModifiedOnly: true })
+  }
+
+  if (productDoc.shopDivision) {
+    // Remove this product from prev shopDivision and add to new
+
+    const divisionDoc = await Division.findById(
+      productDoc.shopDivision.get('value'),
+    )
+
+    divisionDoc.products = divisionDoc.products.filter(
+      (el) => el._id.toString() !== productDoc._id.toString(),
+    )
+
+    await divisionDoc.save({ new: true, validateModifiedOnly: true })
+  }
+
+  if (shopCategory) {
+    productDoc.shopCategory = shopCategory
+
+    const newCategoryDoc = await Category.findById(shopCategory.get('value'))
+
+    newCategoryDoc.products.push(newProduct._id)
+
+    await newCategoryDoc.save({ new: true, validateModifiedOnly: true })
+  }
+
+  if (shopSubCategory) {
+    productDoc.shopSubCategory = shopSubCategory
+
+    const newSubCategoryDoc = await SubCategory.findById(
+      shopSubCategory.get('value'),
+    )
+
+    newSubCategoryDoc.products.push(newProduct._id)
+
+    await newSubCategoryDoc.save({ new: true, validateModifiedOnly: true })
+  }
+  if (shopDivision) {
+    productDoc.shopDivision = shopDivision
+
+    const newDivisionDoc = await Division.findById(shopDivision.get('value'))
+
+    newDivisionDoc.products.push(newProduct._id)
+
+    await newDivisionDoc.save({ new: true, validateModifiedOnly: true })
+  }
+
   // exclude images that needs to be excluded
 
   productDoc.images = productDoc.images.filter(
@@ -130,11 +252,11 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
 
   productDoc.updatedAt = Date.now()
 
-  const storeDoc = await Store.findById(productDoc.store);
-  const freeDeliveryThreshold = storeDoc.freeDeliveryAbove;
+  const storeDoc = await Store.findById(productDoc.store)
+  const freeDeliveryThreshold = storeDoc.freeDeliveryAbove
 
-  if(highest*1 >= freeDeliveryThreshold*1) {
-    productDoc.freeDelivery = true;
+  if (highest * 1 >= freeDeliveryThreshold * 1) {
+    productDoc.freeDelivery = true
   }
 
   // then update rest of the things
@@ -157,6 +279,50 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
 exports.deleteProduct = catchAsync(async (req, res, next) => {
   const { productId } = req.params
 
+  const productDoc = await Product.findById(productId)
+
+  if (productDoc.shopCategory) {
+    // Remove this product from prev shopCategory and add to new
+
+    const categoryDoc = await Category.findById(
+      productDoc.shopCategory.get('value'),
+    )
+
+    categoryDoc.products = categoryDoc.products.filter(
+      (el) => el._id.toString() !== productDoc._id.toString(),
+    )
+
+    await categoryDoc.save({ new: true, validateModifiedOnly: true })
+  }
+
+  if (productDoc.shopSubCategory) {
+    // Remove this product from prev shopSubCategory and add to new
+
+    const subCategoryDoc = await SubCategory.findById(
+      productDoc.shopSubCategory.get('value'),
+    )
+
+    subCategoryDoc.products = subCategoryDoc.products.filter(
+      (el) => el._id.toString() !== productDoc._id.toString(),
+    )
+
+    await subCategoryDoc.save({ new: true, validateModifiedOnly: true })
+  }
+
+  if (productDoc.shopDivision) {
+    // Remove this product from prev shopDivision and add to new
+
+    const divisionDoc = await Division.findById(
+      productDoc.shopDivision.get('value'),
+    )
+
+    divisionDoc.products = divisionDoc.products.filter(
+      (el) => el._id.toString() !== productDoc._id.toString(),
+    )
+
+    await divisionDoc.save({ new: true, validateModifiedOnly: true })
+  }
+
   // Remove all products in this category
   await Product.findByIdAndDelete(productId)
 
@@ -169,6 +335,50 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
 
 exports.deleteMultipleProduct = catchAsync(async (req, res, next) => {
   for (let element of req.body.productIds) {
+    const productDoc = await Product.findById(element)
+
+    if (productDoc.shopCategory) {
+      // Remove this product from prev shopCategory and add to new
+
+      const categoryDoc = await Category.findById(
+        productDoc.shopCategory.get('value'),
+      )
+
+      categoryDoc.products = categoryDoc.products.filter(
+        (el) => el._id.toString() !== productDoc._id.toString(),
+      )
+
+      await categoryDoc.save({ new: true, validateModifiedOnly: true })
+    }
+
+    if (productDoc.shopSubCategory) {
+      // Remove this product from prev shopSubCategory and add to new
+
+      const subCategoryDoc = await SubCategory.findById(
+        productDoc.shopSubCategory.get('value'),
+      )
+
+      subCategoryDoc.products = subCategoryDoc.products.filter(
+        (el) => el._id.toString() !== productDoc._id.toString(),
+      )
+
+      await subCategoryDoc.save({ new: true, validateModifiedOnly: true })
+    }
+
+    if (productDoc.shopDivision) {
+      // Remove this product from prev shopDivision and add to new
+
+      const divisionDoc = await Division.findById(
+        productDoc.shopDivision.get('value'),
+      )
+
+      divisionDoc.products = divisionDoc.products.filter(
+        (el) => el._id.toString() !== productDoc._id.toString(),
+      )
+
+      await divisionDoc.save({ new: true, validateModifiedOnly: true })
+    }
+
     // Remove all products in this category
     await Product.findByIdAndDelete(element)
     // Remove this product from its category

@@ -82,7 +82,7 @@ const productSchema = new mongoose.Schema({
     },
   ],
   createdAt: { type: Date, default: Date.now() },
-  updatedAt: { type: Date },
+  updatedAt: { type: Date, default: Date.now() },
   freeDelivery: {type: Boolean, default: false,},
   priceDeterminingVariant: {type: String,},
 

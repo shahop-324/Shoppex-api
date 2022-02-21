@@ -37,10 +37,12 @@ const subCategorySchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  createdAt: { type: Date, },
+  updatedAt: { type: Date, default: Date.now() },
 })
 
 subCategorySchema.pre(/^find/, function (next) {
-  this.find({}).populate('divisions');
+  this.find({}).populate('divisions')
   next()
 })
 

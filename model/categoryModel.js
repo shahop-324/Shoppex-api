@@ -35,6 +35,8 @@ const categorySchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  createdAt: { type: Date, },
+  updatedAt: { type: Date, default: Date.now() },
 })
 
 categorySchema.pre(/^find/, function (next) {
