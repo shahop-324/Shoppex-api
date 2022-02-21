@@ -7,6 +7,8 @@ router.post('/createSubscription/:plan_id', authController.protect, razorpayCont
 
 router.post('/createWalletOrder', authController.protect, razorpayController.createWalletOrder);
 
+router.post('/createQwikShopPremiumOrder', authController.protect, razorpayController.createQwikShopPremiumOrder);
+
 router.post('/paymentRecieved', razorpayController.processPayment);
 
 module.exports = router

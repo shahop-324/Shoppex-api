@@ -32,6 +32,51 @@ exports.createSubscription = catchAsync(async (req, res, next) => {
   }
 })
 
+exports.createQwikShopPremiumOrder = catchAsync(async (req, res, next) => {
+  const { plan_id, type } = req.body
+
+  const storeId = req.store._id
+  const userId = req.user._id
+
+  let amount = 450
+
+  if (plan_id === 'plan_IxW85OSdILIwpV') {
+    amount = 450
+  }
+  if (plan_id === 'plan_IxW8v5vM36IGIQ') {
+    amount = 4500
+  }
+
+  const newOrder = razorpay.orders.create(
+    {
+      // amount: amount * 100,
+      amount: 5 * 100,
+      currency: 'INR',
+      receipt: uuidv4(),
+      notes: {
+        // Here we can place notes for our reference
+        type: 'qwikshop-plan',
+        storeId,
+        userId,
+        plan_id,
+      },
+    },
+    async (error, order) => {
+      if (error) {
+        console.log(error)
+        res.status(400).json({
+          status: 'error',
+        })
+      } else {
+        res.status(200).json({
+          status: 'success',
+          data: order,
+        })
+      }
+    },
+  )
+})
+
 exports.createWalletOrder = catchAsync(async (req, res, next) => {
   const { amount, type } = req.body
 
@@ -140,6 +185,35 @@ exports.processPayment = catchAsync(async (req, res, next) => {
       res.status(200).json({
         status: 'success',
         message: 'Payment processed successfully!',
+      })
+    }
+
+    if (payObject.notes.type === 'qwikshop-plan') {
+      const storeId = payObject.notes.storeId
+      const userId = payObject.notes.userId
+      const plan_id = payObject.notes.plan_id
+
+      const storeDoc = await Store.findById(storeId)
+
+      if (plan_id === 'plan_IxW85OSdILIwpV') {
+        storeDoc.currentPlan = 'Monthly'
+        storeDoc.currentPlanExpiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000
+        storeDoc.transaction_charge = 2
+      }
+      if (plan_id === 'plan_IxW8v5vM36IGIQ') {
+        storeDoc.currentPlan = 'Yearly'
+        storeDoc.currentPlanExpiresAt = Date.now() + 365 * 24 * 60 * 60 * 1000
+        storeDoc.transaction_charge = 1
+      }
+
+      const updatedStoreDoc = await storeDoc.save({
+        new: true,
+        validateModifiedOnly: true,
+      })
+
+      res.status(200).json({
+        status: 'success',
+        message: 'Store Plan Purchase proccessed succesfully!',
       })
     }
   } else {

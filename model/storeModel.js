@@ -289,11 +289,11 @@ const storeSchema = new mongoose.Schema({
   GMCVerificationCode: {
     type: String,
   },
-  GMCInstalled: {type: Boolean, default: false,},
+  GMCInstalled: { type: Boolean, default: false },
   GSCVerificationCode: {
     type: String,
   },
-  GSCInstalled: {type: Boolean, default: false,},
+  GSCInstalled: { type: Boolean, default: false },
   WhatsAppNumber: {
     type: String,
   },
@@ -314,10 +314,10 @@ const storeSchema = new mongoose.Schema({
   adWordsVerificationCode: {
     type: String,
   },
- adWordsInstalled: {
-  type: Boolean,
-  default: false,
- },
+  adWordsInstalled: {
+    type: Boolean,
+    default: false,
+  },
   FacebookPixelId: {
     type: String,
   },
@@ -334,12 +334,15 @@ const storeSchema = new mongoose.Schema({
   },
   currentPlan: {
     type: String,
-    default: 'free',
+    default: 'Free',
   },
   transaction_charge: {
     type: Number,
     default: 4,
-  }
+  },
+  currentPlanExpiresAt: {
+    type: Date,
+  },
 })
 
 const Store = mongoose.model('Store', storeSchema)
