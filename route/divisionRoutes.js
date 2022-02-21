@@ -8,6 +8,7 @@ router.get('/getAll', authController.protect, divisionController.getDivisions);
 router.post('/create', authController.protect, divisionController.addDivision);
 router.post('/reorder', authController.protect, divisionController.reorderDivisions);
 router.patch('/update/:divisionId', authController.protect, divisionController.updateDivision);
+router.patch('/updateStock/:divisionId', authController.protect, divisionController.updateDivisionStock);
 router.delete('/delete/:divisionId', authController.protect, divisionController.deleteDivision);
 router.delete('/deleteMultiple', authController.protect, divisionController.deleteMultipleDivision);
 

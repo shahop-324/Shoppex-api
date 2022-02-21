@@ -85,6 +85,17 @@ const productSchema = new mongoose.Schema({
   updatedAt: { type: Date },
   freeDelivery: {type: Boolean, default: false,},
   priceDeterminingVariant: {type: String,},
+
+  shopCategory: {
+    type: Map,
+  },
+  shopSubCategory: {
+    type: Map,
+  },
+  shopDivision: {
+    type: Map,
+  }
+
 })
 
 productSchema.index({

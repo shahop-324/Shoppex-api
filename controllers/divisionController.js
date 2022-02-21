@@ -38,6 +38,24 @@ exports.addDivision = catchAsync(async (req, res, next) => {
   })
 })
 
+exports.updateDivisionStock = catchAsync(async (req, res, next) => {
+  const { divisionId } = req.params
+
+  const filteredBody = filterObj(req.body, 'outOfStock', 'hidden')
+
+  const updatedDivision = await Division.findByIdAndUpdate(
+    divisionId,
+    filteredBody,
+    { new: true, validateModifiedOnly: true },
+  )
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Division stock updated successfully!',
+    data: updatedDivision,
+  })
+})
+
 exports.updateDivision = catchAsync(async (req, res, next) => {
   const { divisionId } = req.params
 
@@ -66,10 +84,17 @@ exports.updateDivision = catchAsync(async (req, res, next) => {
 exports.deleteDivision = catchAsync(async (req, res, next) => {
   const { divisionId } = req.params
 
-  // Remove all products in this sub subCategory
-  // await Product.deleteMany({ division: divisionId })
+  const storeProducts = await Product.find({ store: req.store._id })
 
-  // Remove this subCategory
+  const eligibleProducts = storeProducts.filter(
+    (el) => el.shopDivision.get('value') === divisionId,
+  )
+
+  eligibleProducts.forEach(async (element) => {
+    await Product.findByIdAndDelete(element._id)
+  })
+
+  // Remove this division
   await Division.findByIdAndDelete(divisionId)
 
   res.status(200).json({
@@ -79,13 +104,26 @@ exports.deleteDivision = catchAsync(async (req, res, next) => {
 })
 
 exports.deleteMultipleDivision = catchAsync(async (req, res, next) => {
-  for (let element of req.body.divisionIds) {
-    // Remove all products in this subCategory
-    // await Product.deleteMany({ division: element })
+  const storeProducts = await Product.find({ store: req.store._id })
 
-    // Remove this subCategory
+  for (let element of req.body.divisions) {
+    // Remove all products in this division
+
+    const eligibleProducts = storeProducts.filter(
+      (el) => el.shopDivision.get('value') === element,
+    )
+
+    eligibleProducts.forEach(async (element) => {
+      await Product.findByIdAndDelete(element._id)
+    })
+  }
+
+  // Remove these divisions
+
+  for (let element of req.body.divisions) {
     await Division.findByIdAndDelete(element)
   }
+
   res.status(200).json({
     status: 'success',
     message: 'Divisions deleted successfully!',

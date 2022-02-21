@@ -8,6 +8,7 @@ router.get('/getAll', authController.protect, subCategoryController.getSubCatego
 router.post('/create', authController.protect, subCategoryController.addSubCategory);
 router.post('/reorder', authController.protect, subCategoryController.reorderSubCategories);
 router.patch('/update/:subCategoryId', authController.protect, subCategoryController.updateSubCategory);
+router.patch('/updateStock/:subCategoryId', authController.protect, subCategoryController.updateSubCategoryStock);
 router.delete('/delete/:subCategoryId', authController.protect, subCategoryController.deleteSubCategory);
 router.delete('/deleteMultiple', authController.protect, subCategoryController.deleteMultipleSubCategory);
 

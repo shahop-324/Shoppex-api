@@ -3,6 +3,7 @@ const Product = require('../model/productModel')
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
 const Category = require('../model/categoryModel')
+const Division = require('../model/divisionModel')
 // Add, Edit, Delete, Get => SubCategory
 
 const filterObj = (obj, ...allowedFields) => {
@@ -29,12 +30,47 @@ exports.addSubCategory = catchAsync(async (req, res, next) => {
 
   categoryDoc.subCategories.push(newSubCategory._id)
 
-  await categoryDoc.save({new: true, validateModifiedOnly: true});
+  await categoryDoc.save({ new: true, validateModifiedOnly: true })
 
   res.status(200).json({
     status: 'success',
     message: 'New Sub Category Added Successfully!',
     data: newSubCategory,
+  })
+})
+
+exports.updateSubCategoryStock = catchAsync(async (req, res, next) => {
+  const { subCategoryId } = req.params
+
+  const filteredBody = filterObj(req.body, 'outOfStock', 'hidden')
+
+  const updatedSubCategory = await SubCategory.findByIdAndUpdate(
+    subCategoryId,
+    filteredBody,
+    { new: true, validateModifiedOnly: true },
+  )
+
+  // Find all divisions and do the same for all of them
+
+  const storeDivisions = await Division.find({ store: req.store._id })
+
+  const eligibleDivisions = storeDivisions.filter((el) => {
+    return el.subCategory.get('value') === subCategoryId
+  })
+
+  console.log(eligibleDivisions)
+
+  eligibleDivisions.forEach(async (e) => {
+    await Division.findByIdAndUpdate(e._id, filteredBody, {
+      new: true,
+      validateModifiedOnly: true,
+    })
+  })
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Sub Category stock updated successfully!',
+    data: updatedSubCategory,
   })
 })
 
@@ -66,8 +102,23 @@ exports.updateSubCategory = catchAsync(async (req, res, next) => {
 exports.deleteSubCategory = catchAsync(async (req, res, next) => {
   const { subCategoryId } = req.params
 
-  // Remove all products in this sub category
-  await Product.deleteMany({ subShopCategory: categoryId })
+  const storeProducts = await Product.find({store: req.store._id});
+
+  const eligibleProducts = storeProducts.filter((el) => el.shopSubCategory.get('value') === subCategoryId);
+
+  eligibleProducts.forEach(async(element) => {
+    await Product.findByIdAndDelete(element._id)
+  });
+
+  const storeDivisions = await Division.find({ store: req.store._id })
+
+  const eligibleDivisions = storeDivisions.filter(
+    (el) => el.subCategory.get('value') === subCategoryId,
+  )
+
+  eligibleDivisions.forEach(async (el) => {
+    await Division.findByIdAndDelete(el._id)
+  })
 
   // Remove this category
   await SubCategory.findByIdAndDelete(subCategoryId)
@@ -79,13 +130,40 @@ exports.deleteSubCategory = catchAsync(async (req, res, next) => {
 })
 
 exports.deleteMultipleSubCategory = catchAsync(async (req, res, next) => {
-  for (let element of req.body.subCategoryIds) {
-    // Remove all products in this subCategory
-    await Product.deleteMany({ subShopCategory: element })
 
-    // Remove this category
+  const storeProducts = await Product.find({store: req.store._id});
+
+  for (let element of req.body.subCategoryIds) {
+    // Remove all products in this SubCategory
+
+    const eligibleProducts = storeProducts.filter((el) => el.shopSubCategory.get('value') === element);
+
+    eligibleProducts.forEach(async(element) => {
+      await Product.findByIdAndDelete(element._id)
+    });
+
+  }
+
+  const storeDivisions = await Division.find({ store: req.store._id })
+
+  // Find all Sub categories & divisions and delete them as well
+
+  req.body.subCategoryIds.forEach((e) => {
+    const eligibleDivisions = storeDivisions.filter(
+      (el) => el.subCategory.get('value') === e,
+    )
+
+    eligibleDivisions.forEach(async (el) => {
+      await Division.findByIdAndDelete(el._id)
+    })
+  })
+
+  // Remove this subCategory
+
+  for (let element of req.body.subCategoryIds) {
     await SubCategory.findByIdAndDelete(element)
   }
+
   res.status(200).json({
     status: 'success',
     message: 'Sub Categories deleted successfully!',
