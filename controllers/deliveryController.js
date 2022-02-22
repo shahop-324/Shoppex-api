@@ -1203,21 +1203,35 @@ exports.createReturnOrder = catchAsync(async (req, res, next) => {
 // Assign Self shipping
 exports.assignSelfShipping = catchAsync(async (req, res, next) => {
   // just update carrier as self shipping => Notify Customer
+
+  
+
 })
 
 // ! THIS IS MOST IMPORTANT => Setup Webhook to update shipment status and send realtime mail & SMS notification
 
 // Cancel order , Reject order => Create refund if online payment was maid and reverse coins  & Notify customer
 
-exports.getTrackingUpdate = catchAsync(async(req, res, next) => {
-
+exports.getTrackingUpdate = catchAsync(async (req, res, next) => {
   // x-api-key
   // 73278ui_832uj23i823jk12u12jyOI7732y12gfy821ugvcsexcjie98y78132hh9817
+
+  const secret =
+    '73278ui_832uj23i823jk12u12jyOI7732y12gfy821ugvcsexcjie98y78132hh9817'
+
+  console.log(req.headers['x-api-key'])
+
+  const shasum = crypto.createHmac('sha256', secret)
+  shasum.update(JSON.stringify(req.body))
+  const digest = shasum.digest('hex')
+
+  console.log(digest)
+  console.log(digest === req.headers['x-api-key'])
 
   // After successful verification of Origin as Shiprocket => UPDATE shipment_status, current_status_id, etd (estimated time of delivery), scans
 
   res.status(200).json({
-    status: "success",
-    message: "We are able to recieve update on this endpoint",
+    status: 'success',
+    message: 'We are able to recieve update on this endpoint',
   })
 })

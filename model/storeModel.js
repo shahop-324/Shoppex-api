@@ -140,6 +140,7 @@ const storeSchema = new mongoose.Schema({
   favicon: { type: String },
   seoTitle: { type: String },
   seoMetaDescription: { type: String },
+  seoMetaKeywords: {type: String,},
   seoImagePreview: { type: String },
   storePincode: { type: String },
   deliveryZones: [{ type: Map }],
