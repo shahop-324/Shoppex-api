@@ -272,6 +272,8 @@ exports.assignShiprocket = catchAsync(async (req, res, next) => {
   const orderDoc = await Order.findById(shipment.order._id)
   const customerDoc = await Customer.findById(orderDoc.customer._id)
 
+  const storeDoc = await Store.findById(shipment.store)
+
   // ! NOTE => Proceed to book shipment only if store has enough money in their qwikshop wallet
 
   if (storeDoc.walletAmount * 1 > shipment.order.deliveryCharge * 1) {
@@ -289,7 +291,7 @@ exports.assignShiprocket = catchAsync(async (req, res, next) => {
 
     await orderDoc.save({ new: true, validateModifiedOnly: true })
 
-    const storeDoc = await Store.findById(shipment.store)
+    
 
     storeDoc.walletAmount =
       storeDoc.walletAmount - shipment.order.deliveryCharge
