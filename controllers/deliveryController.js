@@ -12,6 +12,9 @@ var uniqid = require('uniqid')
 const Product = require('../model/productModel')
 const Customer = require('../model/customerModel')
 
+const randomstring = require('randomstring')
+const WalletTransaction = require('../model/walletTransactionModel')
+
 const accountSid = process.env.TWILIO_ACCOUNT_SID
 const authToken = process.env.TWILIO_AUTH_TOKEN
 const client = require('twilio')(accountSid, authToken)
@@ -264,183 +267,227 @@ exports.getShipments = catchAsync(async (req, res, next) => {
 // Assign Shiprocket
 
 exports.assignShiprocket = catchAsync(async (req, res, next) => {
-  // * DONE Deduct money from wallet if(available) and if not available then ask to recharge wallet => Notify customer
-
-  // console.log(req.body.pickupPointId.value, req.body.shipmentId)
-
   const pickupPoint = await PickupPoint.findById(req.body.pickupPointId.value)
   const shipment = await Shipment.findById(req.body.shipmentId)
   const orderDoc = await Order.findById(shipment.order._id)
   const customerDoc = await Customer.findById(orderDoc.customer._id)
 
-  shipment.carrier = 'Shiprocket'
-  shipment.updatedAt = Date.now()
+  // ! NOTE => Proceed to book shipment only if store has enough money in their qwikshop wallet
 
-  await shipment.save({ new: true, validateModifiedOnly: true })
+  if (storeDoc.walletAmount * 1 > shipment.order.deliveryCharge * 1) {
+    // * DONE Deduct money from wallet if(available) and if not available then ask to recharge wallet => Notify customer
 
-  orderDoc.orderStatus = 'shipping'
-  orderDoc.status = 'Accepted'
+    // console.log(req.body.pickupPointId.value, req.body.shipmentId)
 
-  await orderDoc.save({ new: true, validateModifiedOnly: true })
+    shipment.carrier = 'Shiprocket'
+    shipment.updatedAt = Date.now()
 
-  const storeDoc = await Store.findById(shipment.store)
+    await shipment.save({ new: true, validateModifiedOnly: true })
 
-  storeDoc.walletAmount = storeDoc.walletAmount - shipment.order.deliveryCharge
+    orderDoc.orderStatus = 'shipping'
+    orderDoc.status = 'Accepted'
 
-  await storeDoc.save({ new: true, validateModifiedOnly: true })
+    await orderDoc.save({ new: true, validateModifiedOnly: true })
 
-  // console.log(pickupPoint, shipment, storeDoc)
+    const storeDoc = await Store.findById(shipment.store)
 
-  // client.messages
-  //   .create({
-  //     body: `Hi, ${shipment.customer.name}, your order #${shipment.order.ref} from ${storeDoc.name} has been booked for shipment via Delhivery. You can check your order status by visiting qwikshop.online/${storeDoc.subName}`,
-  //     from: '+1 775 535 7258',
-  //     to: shipment.customer.phone,
-  //   })
-  //   .then((message) => {
-  //     console.log(message.sid)
-  //     console.log(`Successfully sent Notification to ${shipment.customer.name}`)
-  //   })
-  //   .catch((e) => {
-  //     console.log(e)
-  //     console.log(`Failed to send Notification to ${shipment.customer.name}`)
-  //   })
+    storeDoc.walletAmount =
+      storeDoc.walletAmount - shipment.order.deliveryCharge
 
-  // Find order which is being shipped
-  // Find shipment and get related details
-  // After successful call update carrier
-  // Notify customer that their shipment has been booked
+    await storeDoc.save({ new: true, validateModifiedOnly: true })
 
-  let token = null
+    // Create a wallet transaction for booking this shipment
 
-  const options = {
-    method: 'POST',
-    url: 'https://apiv2.shiprocket.in/v1/external/auth/login',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      email: 'jyoti.shah@qwikshop.online',
-      password: 'op12345@shah',
-    }),
-  }
-  request(options, async (error, response) => {
-    if (error) throw new Error(error)
-    // console.log(response.body)
-    JSON.parse(response.body)
-    const resp = await JSON.parse(response.body)
-
-    // console.log(resp.token)
-
-    token = resp.token
-
-    // Calculate weight, length, width, height and order Items array
-    let totalWeight = 0
-
-    const allProducts = await Product.find({})
-
-    console.log(allProducts.length)
-
-    const itemsArray = orderDoc.items.map((el) => {
-      const product = allProducts.find(
-        (elm) => elm._id.toString() === el.product.toString(),
-      )
-      totalWeight = totalWeight + (product.weight || 100)
-      return {
-        name: product.productName,
-        sku: product.productSKU || 'SKU6787190',
-        units: el.quantity,
-        selling_price: Math.ceil(product.price * 1.18),
-        hsn: 441122,
-      }
+    await WalletTransaction.create({
+      transactionId: `pay_${randomstring.generate({
+        length: 10,
+        charset: 'alphabetic',
+      })}`,
+      type: 'Debit',
+      amount: shipment.order.deliveryCharge,
+      reason: 'Shipment Booking',
+      timestamp: Date.now(),
+      store: shipment.store,
     })
 
-    console.log(itemsArray)
+    // console.log(pickupPoint, shipment, storeDoc)
 
-    setTimeout(async () => {
-      var options = {
-        method: 'POST',
-        url: 'https://apiv2.shiprocket.in/v1/external/orders/create/adhoc',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          order_id: orderDoc.ref,
-          order_date: orderDoc.createdAt,
-          pickup_location: pickupPoint.warehouse_name,
-          comment: `Seller: M/s ${storeDoc.name}`,
-          billing_customer_name: orderDoc.billingAddress.get('shipping_name'),
-          billing_last_name: orderDoc.billingAddress.get('shipping_name'),
-          billing_address: orderDoc.billingAddress.get('shipping_address1'),
-          billing_city: orderDoc.billingAddress.get('shipping_city'),
-          billing_pincode: orderDoc.billingAddress.get('shipping_zip'),
-          billing_state:
-            orderDoc.billingAddress.get('shipping_state') || 'Madhya Pradesh',
-          billing_country: 'India',
-          billing_email: customerDoc.email,
-          billing_phone: customerDoc.phone,
-          shipping_is_billing: true,
-          order_items: itemsArray,
-          payment_method: orderDoc.paymentMode === 'cod' ? 'COD' : 'Prepaid',
-          sub_total: Math.ceil(orderDoc.charges.get('total') * 1),
-          length: 10,
-          breadth: 15,
-          height: 20,
-          weight: (totalWeight / 1000).toFixed(1),
-        }),
-      }
-      request(options, async (error, response) => {
-        if (error) throw new Error(error)
-        console.log(JSON.parse(response.body))
+    client.messages
+      .create({
+        body: `Hi, ${shipment.customer.name}, your order #${shipment.order.ref} from ${storeDoc.name} has been booked for shipment via Delhivery. You can check your order status by visiting qwikshop.online/${storeDoc.subName}`,
+        from: '+1 775 535 7258',
+        to: shipment.customer.phone,
+      })
+      .then((message) => {
+        console.log(message.sid)
+        console.log(
+          `Successfully sent Notification to ${shipment.customer.name}`,
+        )
+      })
+      .catch((e) => {
+        console.log(e)
+        console.log(`Failed to send Notification to ${shipment.customer.name}`)
+      })
 
-        const result = JSON.parse(response.body)
+    // Find order which is being shipped
+    // Find shipment and get related details
+    // After successful call update carrier
+    // Notify customer that their shipment has been booked
 
-        const options = {
+    let token = null
+
+    const options = {
+      method: 'POST',
+      url: 'https://apiv2.shiprocket.in/v1/external/auth/login',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: 'jyoti.shah@qwikshop.online',
+        password: 'op12345@shah',
+      }),
+    }
+    request(options, async (error, response) => {
+      if (error) throw new Error(error)
+      // console.log(response.body)
+      JSON.parse(response.body)
+      const resp = await JSON.parse(response.body)
+
+      // console.log(resp.token)
+
+      token = resp.token
+
+      // Calculate weight, length, width, height and order Items array
+      let totalWeight = 0
+
+      const allProducts = await Product.find({})
+
+      console.log(allProducts.length)
+
+      const itemsArray = orderDoc.items.map((el) => {
+        const product = allProducts.find(
+          (elm) => elm._id.toString() === el.product.toString(),
+        )
+        totalWeight = totalWeight + (product.weight || 100)
+        return {
+          name: product.productName,
+          sku: product.productSKU || 'SKU6787190',
+          units: el.quantity,
+          selling_price: Math.ceil(product.price * 1.18),
+          hsn: 441122,
+        }
+      })
+
+      console.log(itemsArray)
+
+      setTimeout(async () => {
+        var options = {
           method: 'POST',
-          url: 'https://apiv2.shiprocket.in/v1/external/courier/assign/awb',
+          url: 'https://apiv2.shiprocket.in/v1/external/orders/create/adhoc',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            shipment_id: result.shipment_id,
+            order_id: orderDoc.ref,
+            order_date: orderDoc.createdAt,
+            pickup_location: pickupPoint.warehouse_name,
+            comment: `Seller: M/s ${storeDoc.name}`,
+            billing_customer_name: orderDoc.billingAddress.get('shipping_name'),
+            billing_last_name: orderDoc.billingAddress.get('shipping_name'),
+            billing_address: orderDoc.billingAddress.get('shipping_address1'),
+            billing_city: orderDoc.billingAddress.get('shipping_city'),
+            billing_pincode: orderDoc.billingAddress.get('shipping_zip'),
+            billing_state:
+              orderDoc.billingAddress.get('shipping_state') || 'Madhya Pradesh',
+            billing_country: 'India',
+            billing_email: customerDoc.email,
+            billing_phone: customerDoc.phone,
+            shipping_is_billing: false,
+            shipping_customer_name: orderDoc.shippingAddress.get(
+              'shipping_name',
+            ),
+            shipping_last_name: orderDoc.shippingAddress.get('shipping_name'),
+            shipping_address: orderDoc.shippingAddress.get('shipping_address1'),
+            shipping_city: orderDoc.shippingAddress.get('shipping_city'),
+            shipping_pincode: orderDoc.shippingAddress.get('shipping_zip'),
+            shipping_country: 'India',
+            shipping_state:
+              orderDoc.shippingAddress.get('shipping_state') ||
+              'Madhya Pradesh',
+            shipping_email: customerDoc.email,
+            shipping_phone: customerDoc.phone,
+            order_items: itemsArray,
+            payment_method: orderDoc.paymentMode === 'cod' ? 'COD' : 'Prepaid',
+            sub_total: Math.ceil(orderDoc.charges.get('total') * 1),
+            length: 10,
+            breadth: 15,
+            height: 20,
+            weight: (totalWeight / 1000).toFixed(1),
           }),
         }
         request(options, async (error, response) => {
           if (error) throw new Error(error)
+          console.log(JSON.parse(response.body))
 
-          const awbResult = JSON.parse(response.body)
-          console.log(awbResult)
+          const result = JSON.parse(response.body)
 
-          shipment.shiprocket_order_id = result.order_id
-          shipment.shiprocket_shipment_id = result.shipment_id
-          shipment.AWB = awbResult.response.data.awb_code
+          const options = {
+            method: 'POST',
+            url: 'https://apiv2.shiprocket.in/v1/external/courier/assign/awb',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              shipment_id: result.shipment_id,
+            }),
+          }
+          request(options, async (error, response) => {
+            if (error) throw new Error(error)
 
-          shipment.pickup_time = awbResult.response.data.assigned_date_time.date
-          shipment.courier_company_id =
-            awbResult.response.data.courier_company_id
-          shipment.applied_weight = awbResult.response.data.applied_weight
-          shipment.courier_name = awbResult.response.data.courier_name
-          shipment.routing_code = awbResult.response.data.routing_code
-          shipment.invoice_no = awbResult.response.data.invoice_no
-          shipment.transporter_id = awbResult.response.data.transporter_id
-          shipment.transporter_name = awbResult.response.data.transporter_name
+            const awbResult = JSON.parse(response.body)
+            console.log(awbResult)
 
-          const updatedShipment = await shipment.save({
-            new: true,
-            validateModifiedOnly: true,
-          })
+            shipment.shiprocket_order_id = result.order_id
+            shipment.shiprocket_shipment_id = result.shipment_id
+            shipment.AWB = awbResult.response.data.awb_code
 
-          res.status(200).json({
-            status: 'success',
-            shipment: updatedShipment,
-            message: 'Shipment booked successfully!',
+            shipment.pickup_time =
+              awbResult.response.data.assigned_date_time.date
+            shipment.courier_company_id =
+              awbResult.response.data.courier_company_id
+            shipment.applied_weight = awbResult.response.data.applied_weight
+            shipment.courier_name = awbResult.response.data.courier_name
+            shipment.routing_code = awbResult.response.data.routing_code
+            shipment.invoice_no = awbResult.response.data.invoice_no
+            shipment.transporter_id = awbResult.response.data.transporter_id
+            shipment.transporter_name = awbResult.response.data.transporter_name
+
+            const updatedShipment = await shipment.save({
+              new: true,
+              validateModifiedOnly: true,
+            })
+
+            res.status(200).json({
+              status: 'success',
+              shipment: updatedShipment,
+              message: 'Shipment booked successfully!',
+            })
           })
         })
-      })
-    }, 2000)
-  })
+      }, 2000)
+    })
+  } else {
+    // Just tell the seller that they need to recharge their wallet with min Rs. shipment.order.deliveryCharge*1 to book this shipment
+
+    res.status(400).json({
+      status: 'Failed',
+      message: `You do not have enough money in your wallet, Please recharge with min. Rs.${Math.ceil(
+        shipment.order.deliveryCharge * 1,
+      ).toFixed(2)} to book this shipment.`,
+    })
+  }
 })
 
 exports.requestPickup = catchAsync(async (req, res, next) => {
@@ -1203,9 +1250,6 @@ exports.createReturnOrder = catchAsync(async (req, res, next) => {
 // Assign Self shipping
 exports.assignSelfShipping = catchAsync(async (req, res, next) => {
   // just update carrier as self shipping => Notify Customer
-
-  
-
 })
 
 // ! THIS IS MOST IMPORTANT => Setup Webhook to update shipment status and send realtime mail & SMS notification
@@ -1227,6 +1271,8 @@ exports.getTrackingUpdate = catchAsync(async (req, res, next) => {
 
   console.log(digest)
   console.log(digest === req.headers['x-api-key'])
+
+  console.log(req.body);
 
   // After successful verification of Origin as Shiprocket => UPDATE shipment_status, current_status_id, etd (estimated time of delivery), scans
 

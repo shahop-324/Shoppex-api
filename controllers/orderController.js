@@ -5,7 +5,8 @@ const Refund = require('../model/refundModel')
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
 const Shipment = require('../model/shipmentModel')
-const Store = require('../model/storeModel');
+const Store = require('../model/storeModel')
+const request = require('request')
 
 const randomstring = require('randomstring')
 const WalletTransaction = require('../model/walletTransactionModel')
@@ -54,22 +55,6 @@ exports.createOrder = catchAsync(async (req, res, next) => {
     status: 'success',
     message: 'Order created successfully!',
     data: newOrder,
-  })
-})
-
-exports.cancelOrder = catchAsync(async (req, res, next) => {
-  const { orderId } = req.body
-
-  const updatedOrder = await Order.findByIdAndUpdate(
-    orderId,
-    { isCancelled: true },
-    { new: true, validateModifiedOnly: true },
-  )
-
-  res.status(200).json({
-    status: 'success',
-    message: 'Order cancelled successfully!',
-    data: updatedOrder,
   })
 })
 
@@ -171,6 +156,7 @@ exports.acceptOrder = catchAsync(async (req, res, next) => {
   )
 
   //  ! TODO Send email, SMS and whatsapp communication that order has been accepted
+
   res.status(200).json({
     status: 'success',
     data: acceptedOrder,
@@ -181,9 +167,11 @@ exports.acceptOrder = catchAsync(async (req, res, next) => {
 exports.cancelOrder = catchAsync(async (req, res, next) => {
   // Mark order as cancelled => Create a refund if any amount was paid online and reverse coins in order
 
+  // ! Remember to give refund only if it was a prepaid order and also cancel shipment with shiprocket if it was being shipped via shiprocket => Delivery charge will also be refunded
+
   const cancelledOrder = await Order.findByIdAndUpdate(
     req.body.id,
-    { status: 'Cancelled', orderStatus: 'cancelled', updatedAt: Date.now() },
+    { status: 'Cancelled', orderStatus: 'cancelled', updatedAt: Date.now(), reasonForCancellation: req.body.reason, },
     { new: true, validateModifiedOnly: true },
   )
 
@@ -191,7 +179,7 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
 
   const cancelledShipment = await Shipment.findByIdAndUpdate(
     cancelledOrder.shipment,
-    { status: 'Cancelled' },
+    { status: 'Cancelled', reasonForCancellation: req.body.reason, },
     { new: true, validateModifiedOnly: true },
   )
 
@@ -205,64 +193,84 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
 
   await customerDoc.save({ new: true, validateModifiedOnly: true })
 
-  await Refund.create({
-    store: cancelledOrder.store,
-    customer: cancelledOrder.customer._id,
-    order: cancelledOrder._id,
-    amount: cancelledOrder.charges.total,
-    createdAt: Date.now(),
-  })
+  if (orderDoc.paymentMode !== 'cod') {
+    // Calculate total - coinsUsed === amount that needs to be refunded
+    const amountToRefund = (
+      orderDoc.charges.total - cancelledOrder.coinsUsed
+    ).toFixed(2)
 
-  //  ! TODO Send email, SMS and whatsapp communication that order has been accepted
+    if (amountToRefund * 1 > 0) {
+      await Refund.create({
+        store: cancelledOrder.store,
+        customer: cancelledOrder.customer._id,
+        order: cancelledOrder._id,
+        amount: amountToRefund,
+        createdAt: Date.now(),
+      })
+    }
+  }
+
+  // Check if shipment was booked via shiprocket than cancel that shipment via shiprocket_order_id
+
+  if (cancelledShipment.carrier === 'Shiprocket') {
+    // check if their is AWB number booked for this shipment
+    if (cancelledShipment.AWB) {
+      // Now we need to cancel this order booked via shiprocket
+
+      let token = null
+
+      const options = {
+        method: 'POST',
+        url: 'https://apiv2.shiprocket.in/v1/external/auth/login',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: 'jyoti.shah@qwikshop.online',
+          password: 'op12345@shah',
+        }),
+      }
+
+      request(options, async (error, response) => {
+        if (error) throw new Error(error)
+        // console.log(response.body)
+        JSON.parse(response.body)
+        const resp = await JSON.parse(response.body)
+
+        // console.log(resp.token)
+
+        token = resp.token
+
+        var options = {
+          method: 'POST',
+          url: 'https://apiv2.shiprocket.in/v1/external/orders/cancel',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            ids: [cancelledShipment.shiprocket_order_id],
+          }),
+        }
+        request(options, function (error, response) {
+          if (error) throw new Error(error)
+          console.log(response.body)
+
+          res.status(200).json({
+            message: 'Shipment via shiprocket has been cancelled successfully!',
+            status: 'success',
+          })
+        })
+      })
+    }
+  }
+
+  //  ! TODO Send email, SMS and whatsapp communication that order has been cancelled
   res.status(200).json({
     status: 'success',
     data: cancelledOrder,
     shipment: cancelledShipment,
     message: 'Order Cancelled Successfully!',
-  })
-})
-
-exports.rejectOrder = catchAsync(async (req, res, next) => {
-  // Mark order as cancelled => Create a refund if any amount was paid online and reverse coins in order
-
-  const rejectedOrder = await Order.findByIdAndUpdate(
-    req.body.id,
-    { status: 'Rejected', orderStatus: 'cancelled', updatedAt: Date.now() },
-    { new: true, validateModifiedOnly: true },
-  )
-
-  // Mark corresponding shipment as cancelled
-
-  const rejectedShipment = await Shipment.findByIdAndUpdate(
-    rejectedOrder.shipment,
-    { status: 'Cancelled' },
-    { new: true, validateModifiedOnly: true },
-  )
-
-  const customerDoc = await Customer.findById(rejectedOrder.customer._id)
-
-  customerDoc.coins = (
-    customerDoc.coins -
-    (rejectedOrder.coinsEarned || 0) +
-    (rejectedOrder.coinsUsed || 0)
-  ).toFixed(0)
-
-  await customerDoc.save({ new: true, validateModifiedOnly: true })
-
-  await Refund.create({
-    store: rejectedOrder.store,
-    customer: rejectedOrder.customer._id,
-    order: rejectedOrder._id,
-    amount: rejectedOrder.charges.total,
-    createdAt: Date.now(),
-  })
-
-  //  ! TODO Send email, SMS and whatsapp communication that order has been accepted
-  res.status(200).json({
-    status: 'success',
-    data: rejectedOrder,
-    shipment: rejectedShipment,
-    message: 'Order Rejected Successfully!',
   })
 })
 
@@ -327,11 +335,11 @@ exports.askForReview = catchAsync(async (req, res, next) => {
             message: 'Failed to Ask for review, Please try again',
           })
         })
-    }
-    else {
+    } else {
       res.status(200).json({
         status: 'success',
-        message: 'Failed to Ask for review, customer has not provided their Mobile number. Please update customer.',
+        message:
+          'Failed to Ask for review, customer has not provided their Mobile number. Please update customer.',
       })
     }
   } else {

@@ -16,9 +16,6 @@ const shipmentSchema = new mongoose.Schema({
   orderRef: {
     type: String,
   },
-  carrier: {
-    type: String,
-  },
   AWB: { type: String }, // WayBill Number
   expectedDelivery: { type: Date },
   charge: { type: Number },
@@ -38,6 +35,43 @@ const shipmentSchema = new mongoose.Schema({
   carrier: {
     type: String,
     enum: ['Delhivery', 'Shiprocket', 'Self'],
+  },
+  reasonForCancellation: {
+    type: String,
+  },
+
+  shiprocket_order_id: {
+    type: String,
+  },
+  shiprocket_shipment_id: {
+    type: String,
+  },
+  AWB: {
+    type: String,
+  },
+  pickup_time: {
+    type: Date,
+  },
+  courier_company_id: {
+    type: String,
+  },
+  applied_weight: {
+    type: Number,
+  },
+  courier_name: {
+    type: String,
+  },
+  routing_code: {
+    type: String,
+  },
+  invoice_no: {
+    type: String,
+  },
+  transporter_id: {
+    type: String,
+  },
+  transporter_name: {
+    type: String,
   },
 })
 

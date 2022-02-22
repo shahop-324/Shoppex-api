@@ -16,7 +16,6 @@ router.get(
 
 router.patch('/accept', authController.protect, orderController.acceptOrder)
 router.patch('/cancel', authController.protect, orderController.cancelOrder)
-router.patch('/reject', authController.protect, orderController.rejectOrder)
 router.post('/askForReview/:orderId', authController.protect, orderController.askForReview);
 
 module.exports = router

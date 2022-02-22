@@ -73,6 +73,9 @@ const orderSchema = new mongoose.Schema({
   coinsEarned: { type: Number, default: 0 },
   amountToConfirm: { type: Number },
   paidAmount: { type: Number, default: 0 },
+  reasonForCancellation: {
+    type: String,
+  },
 })
 
 orderSchema.pre(/^find/, function (next) {
