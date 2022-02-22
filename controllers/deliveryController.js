@@ -1,6 +1,7 @@
 const PickupPoint = require('../model/pickupPointModel')
 const Store = require('../model/storeModel')
 const Order = require('../model/ordersModel')
+const crypto = require('crypto')
 const Shipment = require('../model/shipmentModel')
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
@@ -215,7 +216,11 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
 
     const shipmentDoc = await Shipment.findById(shipmentId)
 
-    const orderDoc = await Order.findById(shipment.order._id)
+    const orderDoc = await Order.findByIdAndUpdate(
+      shipmentDoc.order._id,
+      { ...req.body },
+      { new: true, validateModifiedOnly: true },
+    )
 
     const storeDoc = await Store.findById(shipmentDoc.store)
 
@@ -243,9 +248,18 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
     { new: true, validateModifiedOnly: true },
   )
 
+  const updatedOrder = await Order.findByIdAndUpdate(
+    updatedShipment.order._id,
+    {
+      ...req.body,
+    },
+    { new: true, validateModifiedOnly: true },
+  )
+
   res.status(200).json({
     status: 'success',
     data: updatedShipment,
+    order: updatedOrder,
     message: 'Shipment updated successfully!',
   })
 })
@@ -290,8 +304,6 @@ exports.assignShiprocket = catchAsync(async (req, res, next) => {
     orderDoc.status = 'Accepted'
 
     await orderDoc.save({ new: true, validateModifiedOnly: true })
-
-    
 
     storeDoc.walletAmount =
       storeDoc.walletAmount - shipment.order.deliveryCharge
@@ -588,7 +600,7 @@ exports.generateManifest = catchAsync(async (req, res, next) => {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        shipment_id: [186929429],
+        shipment_id: [shipmentDoc.shiprocket_shipment_id],
       }),
     }
     request(options, function (error, response) {
@@ -639,7 +651,7 @@ exports.generateLabel = catchAsync(async (req, res, next) => {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        shipment_id: [186929429],
+        shipment_id: [shipment.shiprocket_shipment_id],
       }),
     }
     request(options, function (error, response) {
@@ -690,7 +702,7 @@ exports.generateInvoice = catchAsync(async (req, res, next) => {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        ids: [187401964],
+        ids: [shipment.shiprocket_order_id],
       }),
     }
     request(options, function (error, response) {
@@ -1249,37 +1261,151 @@ exports.createReturnOrder = catchAsync(async (req, res, next) => {
   })
 })
 
-// Assign Self shipping
-exports.assignSelfShipping = catchAsync(async (req, res, next) => {
-  // just update carrier as self shipping => Notify Customer
-})
-
 // ! THIS IS MOST IMPORTANT => Setup Webhook to update shipment status and send realtime mail & SMS notification
 
 // Cancel order , Reject order => Create refund if online payment was maid and reverse coins  & Notify customer
 
 exports.getTrackingUpdate = catchAsync(async (req, res, next) => {
-  // x-api-key
-  // 73278ui_832uj23i823jk12u12jyOI7732y12gfy821ugvcsexcjie98y78132hh9817
+  try {
+    // x-api-key
+    // 73278ui_832uj23i823jk12u12jyOI7732y12gfy821ugvcsexcjie98y78132hh9817
 
-  const secret =
-    '73278ui_832uj23i823jk12u12jyOI7732y12gfy821ugvcsexcjie98y78132hh9817'
+    const secret =
+      '73278ui_832uj23i823jk12u12jyOI7732y12gfy821ugvcsexcjie98y78132hh9817'
 
-  console.log(req.headers['x-api-key'])
+    console.log(req.headers['x-api-key'])
 
-  const shasum = crypto.createHmac('sha256', secret)
-  shasum.update(JSON.stringify(req.body))
-  const digest = shasum.digest('hex')
+    if (req.headers['x-api-key'] === secret) {
+      // This is a legit request. so process it
 
-  console.log(digest)
-  console.log(digest === req.headers['x-api-key'])
+      console.log(req.body)
 
-  console.log(req.body);
+      const shipmentDoc = await Shipment.findOne({ AWB: req.body.awb })
 
-  // After successful verification of Origin as Shiprocket => UPDATE shipment_status, current_status_id, etd (estimated time of delivery), scans
+      shipmentDoc.status = req.body.current_status
+      shipmentDoc.status_id = req.body.current_status_id
 
-  res.status(200).json({
-    status: 'success',
-    message: 'We are able to recieve update on this endpoint',
-  })
+      shipmentDoc.etd = req.body.etd
+      shipmentDoc.courier_name = req.body.courier_name
+      shipmentDoc.scans = req.body.scans
+
+      await shipmentDoc.save({ new: true, validateModifiedOnly: true })
+
+      const storeDoc = await Store.findById(shipmentDoc.store)
+      const orderDoc = await Order.findById(shipmentDoc.order._id)
+
+      orderDoc.status = req.body.current_status
+      orderDoc.status_id = req.body.current_status_id
+
+      orderDoc.etd = req.body.etd
+      orderDoc.courier_name = req.body.courier_name
+      orderDoc.scans = req.body.scans
+
+      await orderDoc.save({ new: true, validateModifiedOnly: true })
+
+      if (
+        req.body.current_status === 'Delivered' ||
+        req.body.current_status_id * 1 === 7
+      ) {
+        // Create a payout for this delivered shipment
+
+        storeDoc.amountOnHold =
+          storeDoc.amountOnHold * 1 + shipmentDoc.order.charges.total * 1 // TODO Here we need to take our commission
+
+        await storeDoc.save({ new: true, validateModifiedOnly: true })
+      }
+
+      // Sending notification update to considered seller and buyer
+
+      const sellerPhone = storeDoc.phone
+      const sellerMail = storeDoc.emailAddress
+
+      const buyerPhone = shipmentDoc.customer.phone
+      const buyerEmail = shipmentDoc.customer.email
+
+      if (buyerPhone) {
+        // Send SMS Notification to buyer
+
+        client.messages
+          .create({
+            body: `Hi ${shipmentDoc.customer.name}, your shipment from ${
+              storeDoc.storeName
+            } #${orderDoc.ref} has been ${
+              req.body.current_status
+            }. Estimated delivery time is ${new Date(
+              req.body.etd,
+            )}. You can track your order by visiting qwikshop.online/${
+              storeDoc.subName
+            }.`,
+            from: '+1 775 535 7258',
+            to: buyerPhone,
+          })
+
+          .then((message) => {
+            console.log(message.sid)
+            console.log(`Successfully sent SMS Notification to Customer.`)
+          })
+          .catch((e) => {
+            console.log(e)
+            console.log(`Failed to send SMS Notification to customer`)
+          })
+      }
+    } else {
+      res.status(400).json({
+        status: 'success',
+        message:
+          "I know you are not authentic webhook emitter, so, i won't process your request.",
+      })
+    }
+
+    // After successful verification of Origin as Shiprocket => UPDATE shipment_status, current_status_id, etd (estimated time of delivery), scans
+
+    res.status(200).json({
+      status: 'success',
+      message: 'We are able to recieve update on this endpoint',
+    })
+  } catch (error) {
+    console.log(error)
+  }
 })
+
+// Assign Self shipping
+exports.assignSelfShipping = catchAsync(async (req, res, next) => {
+  // just update carrier as self shipping => Notify Customer
+})
+
+// Staus Code	Description
+// 1	AWB Assigned
+// 2	Label Generated
+// 3	Pickup Scheduled/Generated
+// 4	Pickup Queued
+// 5	Manifest Generated
+// 6	Shipped
+// 7	Delivered
+// 8	Cancelled
+// 9	RTO Initiated
+// 10	RTO Delivered
+// 11	Pending
+// 12	Lost
+// 13	Pickup Error
+// 14	RTO Acknowledged
+// 15	Pickup Rescheduled
+// 16	Cancellation Requested
+// 17	Out For Delivery
+// 18	In Transit
+// 19	Out For Pickup
+// 20	Pickup Exception
+// 21	Undelivered
+// 22	Delayed
+// 24	Destroyed
+// 25	Damaged
+// 26	Fulfilled
+// 38	Reached Destination Hub
+// 39	Misrouted
+// 40	RTO NDR
+// 41	RTO OFD
+// 42	Picked Up
+// 43	Self FulFiled
+// 44	Disposed Off
+// 45	Cancelled Before Dispatched
+// 46	RTO In Transit

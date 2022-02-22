@@ -147,11 +147,17 @@ exports.getRecentOrders = catchAsync(async (req, res, next) => {
 })
 
 exports.acceptOrder = catchAsync(async (req, res, next) => {
-  //  Move order to packaging state
+  //  Move order to ACCEPTED state
+  //  Move shipment to ACCEPTED state
 
   const acceptedOrder = await Order.findByIdAndUpdate(
     req.body.id,
-    { status: 'Accepted', orderStatus: 'packaging', updatedAt: Date.now() },
+    { status: 'Accepted', status_id: '1', updatedAt: Date.now() },
+    { new: true, validateModifiedOnly: true },
+  )
+  const acceptedShipment = await Shipment.findByIdAndUpdate(
+    acceptedOrder.shipment._id,
+    { status: 'Accepted', status_id: '1', updatedAt: Date.now() },
     { new: true, validateModifiedOnly: true },
   )
 
@@ -171,7 +177,12 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
 
   const cancelledOrder = await Order.findByIdAndUpdate(
     req.body.id,
-    { status: 'Cancelled', orderStatus: 'cancelled', updatedAt: Date.now(), reasonForCancellation: req.body.reason, },
+    {
+      status: 'Cancelled',
+      status_id: 9,
+      updatedAt: Date.now(),
+      reasonForCancellation: req.body.reason,
+    },
     { new: true, validateModifiedOnly: true },
   )
 
@@ -179,7 +190,11 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
 
   const cancelledShipment = await Shipment.findByIdAndUpdate(
     cancelledOrder.shipment,
-    { status: 'Cancelled', reasonForCancellation: req.body.reason, },
+    {
+      status: 'Cancelled',
+      status_id: 9,
+      reasonForCancellation: req.body.reason,
+    },
     { new: true, validateModifiedOnly: true },
   )
 
@@ -193,7 +208,7 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
 
   await customerDoc.save({ new: true, validateModifiedOnly: true })
 
-  const orderDoc = cancelledOrder;
+  const orderDoc = cancelledOrder
 
   if (orderDoc.paymentMode !== 'cod') {
     // Calculate total - coinsUsed === amount that needs to be refunded

@@ -140,7 +140,7 @@ const storeSchema = new mongoose.Schema({
   favicon: { type: String },
   seoTitle: { type: String },
   seoMetaDescription: { type: String },
-  seoMetaKeywords: {type: String,},
+  seoMetaKeywords: { type: String },
   seoImagePreview: { type: String },
   storePincode: { type: String },
   deliveryZones: [{ type: Map }],
@@ -344,6 +344,15 @@ const storeSchema = new mongoose.Schema({
   currentPlanExpiresAt: {
     type: Date,
   },
+  pricePer100gm: {
+    type: Number,
+  },
+  deliveryChargeType: {
+    type: String,
+  },
+  constantDeliveryChargeBasedOn: {
+    type: String,
+  }
 })
 
 const Store = mongoose.model('Store', storeSchema)
