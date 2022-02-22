@@ -193,6 +193,8 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
 
   await customerDoc.save({ new: true, validateModifiedOnly: true })
 
+  const orderDoc = cancelledOrder;
+
   if (orderDoc.paymentMode !== 'cod') {
     // Calculate total - coinsUsed === amount that needs to be refunded
     const amountToRefund = (
