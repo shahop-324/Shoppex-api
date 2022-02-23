@@ -71,7 +71,7 @@ exports.addProduct = catchAsync(async (req, res, next) => {
     newProduct.shopCategory = shopCategory
     // Add this product id to this category
 
-    const categoryDoc = await Category.findById(shopCategory.get('value'))
+    const categoryDoc = await Category.findById(shopCategory.value)
 
     categoryDoc.products.push(newProduct._id)
 
@@ -83,7 +83,7 @@ exports.addProduct = catchAsync(async (req, res, next) => {
     // Add this product id to this subCategory
 
     const subCategoryDoc = await SubCategory.findById(
-      shopSubCategory.get('value'),
+      shopSubCategory.value,
     )
 
     subCategoryDoc.products.push(newProduct._id)
@@ -95,7 +95,7 @@ exports.addProduct = catchAsync(async (req, res, next) => {
     newProduct.shopDivision = shopDivision
     // Add this product id to this division
 
-    const divisionDoc = await Division.findById(shopDivision.get('value'))
+    const divisionDoc = await Division.findById(shopDivision.value)
 
     divisionDoc.products.push(newProduct._id)
 
@@ -160,7 +160,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
     // Remove this product from prev shopCategory and add to new
 
     const categoryDoc = await Category.findById(
-      productDoc.shopCategory.get('value'),
+      productDoc.shopCategory.value,
     )
 
     categoryDoc.products = categoryDoc.products.filter(
@@ -174,7 +174,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
     // Remove this product from prev shopSubCategory and add to new
 
     const subCategoryDoc = await SubCategory.findById(
-      productDoc.shopSubCategory.get('value'),
+      productDoc.shopSubCategory.value,
     )
 
     subCategoryDoc.products = subCategoryDoc.products.filter(
@@ -188,7 +188,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
     // Remove this product from prev shopDivision and add to new
 
     const divisionDoc = await Division.findById(
-      productDoc.shopDivision.get('value'),
+      productDoc.shopDivision.value,
     )
 
     divisionDoc.products = divisionDoc.products.filter(
@@ -201,7 +201,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
   if (shopCategory) {
     productDoc.shopCategory = shopCategory
 
-    const newCategoryDoc = await Category.findById(shopCategory.get('value'))
+    const newCategoryDoc = await Category.findById(shopCategory.value)
 
     newCategoryDoc.products.push(newProduct._id)
 
@@ -212,7 +212,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
     productDoc.shopSubCategory = shopSubCategory
 
     const newSubCategoryDoc = await SubCategory.findById(
-      shopSubCategory.get('value'),
+      shopSubCategory.value,
     )
 
     newSubCategoryDoc.products.push(newProduct._id)
@@ -222,7 +222,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
   if (shopDivision) {
     productDoc.shopDivision = shopDivision
 
-    const newDivisionDoc = await Division.findById(shopDivision.get('value'))
+    const newDivisionDoc = await Division.findById(shopDivision.value)
 
     newDivisionDoc.products.push(newProduct._id)
 
@@ -286,7 +286,7 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
     // Remove this product from prev shopCategory and add to new
 
     const categoryDoc = await Category.findById(
-      productDoc.shopCategory.get('value'),
+      productDoc.shopCategory.value,
     )
 
     categoryDoc.products = categoryDoc.products.filter(
@@ -300,7 +300,7 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
     // Remove this product from prev shopSubCategory and add to new
 
     const subCategoryDoc = await SubCategory.findById(
-      productDoc.shopSubCategory.get('value'),
+      productDoc.shopSubCategory.value,
     )
 
     subCategoryDoc.products = subCategoryDoc.products.filter(
@@ -314,7 +314,7 @@ exports.deleteProduct = catchAsync(async (req, res, next) => {
     // Remove this product from prev shopDivision and add to new
 
     const divisionDoc = await Division.findById(
-      productDoc.shopDivision.get('value'),
+      productDoc.shopDivision.value,
     )
 
     divisionDoc.products = divisionDoc.products.filter(
@@ -342,7 +342,7 @@ exports.deleteMultipleProduct = catchAsync(async (req, res, next) => {
       // Remove this product from prev shopCategory and add to new
 
       const categoryDoc = await Category.findById(
-        productDoc.shopCategory.get('value'),
+        productDoc.shopCategory.value,
       )
 
       categoryDoc.products = categoryDoc.products.filter(
@@ -356,7 +356,7 @@ exports.deleteMultipleProduct = catchAsync(async (req, res, next) => {
       // Remove this product from prev shopSubCategory and add to new
 
       const subCategoryDoc = await SubCategory.findById(
-        productDoc.shopSubCategory.get('value'),
+        productDoc.shopSubCategory.value,
       )
 
       subCategoryDoc.products = subCategoryDoc.products.filter(
@@ -370,7 +370,7 @@ exports.deleteMultipleProduct = catchAsync(async (req, res, next) => {
       // Remove this product from prev shopDivision and add to new
 
       const divisionDoc = await Division.findById(
-        productDoc.shopDivision.get('value'),
+        productDoc.shopDivision.value,
       )
 
       divisionDoc.products = divisionDoc.products.filter(
