@@ -352,7 +352,10 @@ const storeSchema = new mongoose.Schema({
   },
   constantDeliveryChargeBasedOn: {
     type: String,
-  }
+  },
+  pricePer5km: {
+    type: Number,
+  },
 })
 
 const Store = mongoose.model('Store', storeSchema)

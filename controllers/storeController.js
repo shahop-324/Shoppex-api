@@ -490,6 +490,8 @@ exports.updateStoreOtherInfo = catchAsync(async (req, res, next) => {
     minDeliveryDistance,
     maxDeliveryDistance,
     showShopInsideDeliveryZoneOnly,
+    deliveryChargeType,
+    constantDeliveryChargeBasedOn,
   } = req.body
 
   // * DONE => Map over all products of this store and determine if they qualify for free delivery or not
@@ -523,6 +525,9 @@ exports.updateStoreOtherInfo = catchAsync(async (req, res, next) => {
       minDeliveryDistance,
       maxDeliveryDistance,
       showShopInsideDeliveryZoneOnly,
+      deliveryChargeType,
+    constantDeliveryChargeBasedOn,
+    pricePer5km,
     },
     { new: true, validateModifiedOnly: true },
   )
