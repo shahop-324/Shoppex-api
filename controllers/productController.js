@@ -4,6 +4,7 @@ const Catalouge = require('../model/catalougeModel')
 const catchAsync = require('../utils/catchAsync')
 const apiFeatures = require('../utils/apiFeatures')
 const Store = require('../model/storeModel')
+const Category = require('../model/categoryModel');
 const SubCategory = require('../model/subCategoryModel')
 const Division = require('../model/divisionModel')
 
