@@ -34,6 +34,13 @@ const referralPurchaseSchema = new mongoose.Schema({
   },
 })
 
-const ReferralPurchases = new mongoose.model('ReferralPurchases', referralPurchaseSchema)
-module.exports = ReferralPurchases
+referralPurchaseSchema.pre(/^find/, function (next) {
+  this.find({}).populate('customer').populate('order')
+})
 
+const ReferralPurchase = new mongoose.model(
+  'ReferralPurchase',
+  referralPurchaseSchema,
+)
+
+module.exports = ReferralPurchase

@@ -26,7 +26,6 @@ const reviewSchema = new mongoose.Schema({
     },
   ],
   videos: [{ type: String }],
-  
   visible: { type: Boolean, default: true },
   isTestemonial: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now() },
