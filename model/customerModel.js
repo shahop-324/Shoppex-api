@@ -58,6 +58,12 @@ const customerSchema = new mongoose.Schema({
   cartUpdatedAt: {
     type: Date,
   },
+  boughtProducts: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: 'Product',
+    },
+  ],
 })
 
 customerSchema.methods.correctPassword = async function (

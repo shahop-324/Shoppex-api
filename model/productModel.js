@@ -94,7 +94,14 @@ const productSchema = new mongoose.Schema({
   },
   shopDivision: {
     type: Map,
-  }
+  },
+
+  reviewedBy: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: 'Customer',
+    },
+  ],
 
 })
 
