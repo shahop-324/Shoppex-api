@@ -81,20 +81,27 @@ exports.addPickupPoint = catchAsync(async (req, res, next) => {
 
         console.log(result);
 
+        if(result.status_code*1 === 422) {
+          res.status(400).json({
+            status: "error",
+            message: result.message,
+          })
+        }else {
+          const newPickupPoint = await PickupPoint.create({
+            store: req.store._id,
+            ...req.body,
+            warehouse_name: warehouse_name,
+            shiprocket_data: result.data,
+          })
+  
+          res.status(200).json({
+            status: 'success',
+            data: newPickupPoint,
+            message: 'New Pickup point added successfully!',
+          })
+        }
+
         // console.log(result)
-
-        const newPickupPoint = await PickupPoint.create({
-          store: req.store._id,
-          ...req.body,
-          warehouse_name: warehouse_name,
-          shiprocket_data: result.data,
-        })
-
-        res.status(200).json({
-          status: 'success',
-          data: newPickupPoint,
-          message: 'New Pickup point added successfully!',
-        })
       })
     } catch (error) {
       // console.log(error)
