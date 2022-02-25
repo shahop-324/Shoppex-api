@@ -185,5 +185,5 @@ orderSchema.index({
   note: 'text',
 })
 
-const Order = mongoose.model('Order', orderSchema)
+const Order = new mongoose.model('Order', orderSchema)
 module.exports = Order
