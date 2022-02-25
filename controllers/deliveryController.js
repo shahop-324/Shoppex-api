@@ -79,6 +79,8 @@ exports.addPickupPoint = catchAsync(async (req, res, next) => {
 
         const result = await JSON.parse(response.body)
 
+        console.log(result);
+
         // console.log(result)
 
         const newPickupPoint = await PickupPoint.create({
