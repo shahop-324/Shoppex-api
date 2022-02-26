@@ -5,6 +5,11 @@ const apiFeatures = require('../utils/apiFeatures')
 
 const randomstring = require('randomstring')
 const WalletTransaction = require('../model/walletTransactionModel')
+const WalletDebited = require('../Template/Mail/WalletDebited')
+
+
+const sgMail = require('@sendgrid/mail')
+sgMail.setApiKey(process.env.SENDGRID_KEY)
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID
 const authToken = process.env.TWILIO_AUTH_TOKEN
@@ -128,7 +133,7 @@ exports.sendSMSToCustomer = catchAsync(async (req, res, next) => {
 
         await storeDoc.save({ new: true, validateModifiedOnly: true })
 
-        await WalletTransaction.create({
+       const newTransactionDoc = await WalletTransaction.create({
           transactionId: `pay_${randomstring.generate({
             length: 10,
             charset: 'alphabetic',
@@ -138,6 +143,26 @@ exports.sendSMSToCustomer = catchAsync(async (req, res, next) => {
           reason: 'SMS Communication',
           timestamp: Date.now(),
           store: req.store._id,
+        })
+
+        // ! storeName, amount, reason, transactionId
+
+        const msg = {
+          to: storeDoc.emailAddress, // Change to your recipient
+          from: 'payments@qwikshop.online', // Change to your verified sender
+          subject: 'Your QwikShop Store Wallet has been Debited.',
+          // text:
+          //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+          html: WalletDebited(storeDoc.storeName, 1.5,'SMS Communication', newTransactionDoc.transactionId),
+        }
+    
+        sgMail
+        .send(msg)
+        .then(() => {
+          console.log('Wallet Debited Notification sent successfully!')
+        })
+        .catch((error) => {
+          console.log('Falied to send wallet debited notification.')
         })
 
         res.status(200).json({

@@ -15,10 +15,16 @@ const Customer = require('../model/customerModel')
 
 const randomstring = require('randomstring')
 const WalletTransaction = require('../model/walletTransactionModel')
+const WalletDebited = require('../Template/Mail/WalletDebited')
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID
 const authToken = process.env.TWILIO_AUTH_TOKEN
 const client = require('twilio')(accountSid, authToken)
+
+const sgMail = require('@sendgrid/mail')
+const OrderDelivered = require('../Template/Mail/OrderDelivered')
+const OrderAccepted = require('../Template/Mail/OrderAccepted')
+sgMail.setApiKey(process.env.SENDGRID_KEY)
 
 exports.addPickupPoint = catchAsync(async (req, res, next) => {
   // Create a new pickup point in delhivery api
@@ -79,21 +85,21 @@ exports.addPickupPoint = catchAsync(async (req, res, next) => {
 
         const result = await JSON.parse(response.body)
 
-        console.log(result);
+        console.log(result)
 
-        if(result.status_code*1 === 422) {
+        if (result.status_code * 1 === 422) {
           res.status(400).json({
-            status: "error",
+            status: 'error',
             message: result.message,
           })
-        }else {
+        } else {
           const newPickupPoint = await PickupPoint.create({
             store: req.store._id,
             ...req.body,
             warehouse_name: warehouse_name,
             shiprocket_data: result.data,
           })
-  
+
           res.status(200).json({
             status: 'success',
             data: newPickupPoint,
@@ -224,6 +230,7 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
     // Mark Payment as completed and add money to on Hold for seller
 
     const shipmentDoc = await Shipment.findById(shipmentId)
+    const customerDoc = shipmentDoc.customer
 
     const orderDoc = await Order.findByIdAndUpdate(
       shipmentDoc.order._id,
@@ -247,6 +254,55 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
 
       await storeDoc.save({ new: true, validateModifiedOnly: true })
     }
+
+    // ! storeName, orderId, amount, storeLink
+
+    const msg = {
+      to: storeDoc.email, // Change to your recipient
+      from: 'orders@qwikshop.online', // Change to your verified sender
+      subject: `Order #${orderDoc.ref} from store ${storeDoc.storeName} has been delivered successfully!.`,
+      // text:
+      //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+      html: OrderDelivered(
+        storeDoc.storeName,
+        orderDoc.ref,
+        orderDoc.charges.total,
+        `https://qwikshop.online/${storeDoc.subName}`,
+      ),
+    }
+
+    const customerMsg = {
+      to: customerDoc.email, // Change to your recipient
+      from: 'orders@qwikshop.online', // Change to your verified sender
+      subject: `Order #${orderDoc.ref} from store ${storeDoc.storeName} has been delivered successfully!.`,
+      // text:
+      //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+      html: OrderDelivered(
+        storeDoc.storeName,
+        orderDoc.ref,
+        orderDoc.charges.total,
+        `https://qwikshop.online/${storeDoc.subName}`,
+      ),
+    }
+
+    sgMail
+      .send(msg)
+      .then(() => {
+        console.log('Order delivered Notification sent successfully to seller')
+      })
+      .catch((error) => {
+        console.log('Falied to send Order delivered notification to seller')
+      })
+    sgMail
+      .send(customerMsg)
+      .then(() => {
+        console.log(
+          'Order delivered Notification sent successfully to customer',
+        )
+      })
+      .catch((error) => {
+        console.log('Falied to send Order delivered notification to customer')
+      })
   }
 
   const updatedShipment = await Shipment.findByIdAndUpdate(
@@ -321,7 +377,7 @@ exports.assignShiprocket = catchAsync(async (req, res, next) => {
 
     // Create a wallet transaction for booking this shipment
 
-    await WalletTransaction.create({
+    const newTransactionDoc = await WalletTransaction.create({
       transactionId: `pay_${randomstring.generate({
         length: 10,
         charset: 'alphabetic',
@@ -332,6 +388,57 @@ exports.assignShiprocket = catchAsync(async (req, res, next) => {
       timestamp: Date.now(),
       store: shipment.store,
     })
+
+    // ! storeName, amount, reason, transactionId => WALLET DEBITED
+
+    // ! storeName, orderId, storeLink => ORDER ACCEPTED => SEND TO CUSTOMER
+
+    const msgToCustomer = {
+      to: customerDoc.email, // Change to your recipient
+      from: 'orders@qwikshop.online', // Change to your verified sender
+      subject: `Your QwikShop Order #${orderDoc.ref} has been accepted & Confirmed by ${storeDoc.storeName}!`,
+      // text:
+      //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+      html: OrderAccepted(
+        storeDoc.storeName,
+        orderDoc.ref,
+        `https://qwikshop.online/${storeDoc.subName}`,
+      ),
+    }
+
+    const msg = {
+      to: storeDoc.emailAddress, // Change to your recipient
+      from: 'payments@qwikshop.online', // Change to your verified sender
+      subject: 'Your QwikShop Store Wallet has been Debited.',
+      // text:
+      //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+      html: WalletDebited(
+        storeDoc.storeName,
+        shipment.order.deliveryCharge,
+        'Shipment Booking',
+        newTransactionDoc.transactionId,
+      ),
+    }
+
+    sgMail
+      .send(msg)
+      .then(() => {
+        console.log('Wallet Debited Notification sent successfully!')
+      })
+      .catch((error) => {
+        console.log('Falied to send wallet debited notification.')
+      })
+
+    sgMail
+      .send(msgToCustomer)
+      .then(() => {
+        console.log(
+          'Order Acceptance Notification sent successfully to customer',
+        )
+      })
+      .catch((error) => {
+        console.log('Falied to send order acceptance notification to customer.')
+      })
 
     // console.log(pickupPoint, shipment, storeDoc)
 
@@ -1302,6 +1409,7 @@ exports.getTrackingUpdate = catchAsync(async (req, res, next) => {
 
       const storeDoc = await Store.findById(shipmentDoc.store)
       const orderDoc = await Order.findById(shipmentDoc.order._id)
+      const customerDoc = shipmentDoc.customer
 
       orderDoc.status = req.body.current_status
       orderDoc.status_id = req.body.current_status_id
@@ -1322,6 +1430,59 @@ exports.getTrackingUpdate = catchAsync(async (req, res, next) => {
           storeDoc.amountOnHold * 1 + shipmentDoc.order.charges.total * 1 // TODO Here we need to take our commission
 
         await storeDoc.save({ new: true, validateModifiedOnly: true })
+
+        // ! storeName, orderId, amount, storeLink
+
+        const msg = {
+          to: storeDoc.email, // Change to your recipient
+          from: 'orders@qwikshop.online', // Change to your verified sender
+          subject: `Order #${orderDoc.ref} from store ${storeDoc.storeName} has been delivered successfully!.`,
+          // text:
+          //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+          html: OrderDelivered(
+            storeDoc.storeName,
+            orderDoc.ref,
+            orderDoc.charges.total,
+            `https://qwikshop.online/${storeDoc.subName}`,
+          ),
+        }
+
+        const customerMsg = {
+          to: customerDoc.email, // Change to your recipient
+          from: 'orders@qwikshop.online', // Change to your verified sender
+          subject: `Order #${orderDoc.ref} from store ${storeDoc.storeName} has been delivered successfully!.`,
+          // text:
+          //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+          html: OrderDelivered(
+            storeDoc.storeName,
+            orderDoc.ref,
+            orderDoc.charges.total,
+            `https://qwikshop.online/${storeDoc.subName}`,
+          ),
+        }
+
+        sgMail
+          .send(msg)
+          .then(() => {
+            console.log(
+              'Order delivered Notification sent successfully to seller',
+            )
+          })
+          .catch((error) => {
+            console.log('Falied to send Order delivered notification to seller')
+          })
+        sgMail
+          .send(customerMsg)
+          .then(() => {
+            console.log(
+              'Order delivered Notification sent successfully to customer',
+            )
+          })
+          .catch((error) => {
+            console.log(
+              'Falied to send Order delivered notification to customer',
+            )
+          })
       }
 
       // Sending notification update to considered seller and buyer

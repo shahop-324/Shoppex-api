@@ -4,6 +4,10 @@ const crypto = require('crypto')
 const { v4: uuidv4 } = require('uuid')
 const Store = require('../model/storeModel')
 const WalletTransaction = require('../model/walletTransactionModel')
+const WalletCredited = require('../Template/Mail/WalletCredited')
+
+const sgMail = require('@sendgrid/mail')
+sgMail.setApiKey(process.env.SENDGRID_KEY)
 
 const razorpay = new Razorpay({
   key_id: 'rzp_live_JOhvixtFUeoelr',
@@ -180,6 +184,25 @@ exports.processPayment = catchAsync(async (req, res, next) => {
         notes,
         fee,
         tax,
+      })
+
+
+      const msg = {
+        to: storeDoc.emailAddress, // Change to your recipient
+        from: 'payments@qwikshop.online', // Change to your verified sender
+        subject: 'Your QwikShop Store Wallet has been Credited.',
+        // text:
+        //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+        html: WalletCredited(storeDoc.storeName, (amount / 100).toFixed(0)),
+      }
+  
+      sgMail
+      .send(msg)
+      .then(() => {
+        console.log('Wallet Recharge Notification sent successfully!')
+      })
+      .catch((error) => {
+        console.log('Falied to send wallet recharge notification.')
       })
 
       res.status(200).json({

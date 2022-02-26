@@ -13,6 +13,7 @@ const randomString = require('random-string')
 
 const sgMail = require('@sendgrid/mail')
 const { LexRuntime } = require('aws-sdk')
+const NewStore = require('../Template/Mail/NewStore')
 sgMail.setApiKey(process.env.SENDGRID_KEY)
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID
@@ -985,6 +986,25 @@ exports.createNew = catchAsync(async (req, res, next) => {
   // Sign new token
 
   const token = signToken(req.user._id, updatedStore._id)
+
+  const msg = {
+    to: updatedStore.emailAddress, // Change to your recipient
+    from: 'welcome@qwikshop.online', // Change to your verified sender
+    subject: 'Congrats on starting your online business with QwikShop',
+    // text:
+    //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+    html: NewStore(updatedStore.storeName, updatedUser.firstName),
+  }
+
+  sgMail
+  .send(msg)
+  .then(() => {
+    console.log('New Store Welcome Notification sent successfully!')
+  })
+  .catch((error) => {
+    console.log('Falied to send new store welcome notification.')
+  })
+
 
   res.status(200).json({
     status: 'success',

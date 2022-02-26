@@ -8,6 +8,7 @@ const randomstring = require('randomstring')
 
 const sgMail = require('@sendgrid/mail')
 const Customer = require('../model/customerModel')
+const PayoutProccessed = require('../Template/Mail/PayoutProccessed')
 sgMail.setApiKey(process.env.SENDGRID_KEY)
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID
@@ -75,8 +76,8 @@ exports.createPayout = catchAsync(async (req, res, next) => {
 
   const store_doc = await Store.findById(storeId)
 
-  store_doc.amountPaid = store_doc.amountPaid*1 + amount*1
-  store_doc.amountOnHold = store_doc.amountOnHold*1 - amount*1
+  store_doc.amountPaid = store_doc.amountPaid * 1 + amount * 1
+  store_doc.amountOnHold = store_doc.amountOnHold * 1 - amount * 1
 
   const updatedStore = await store_doc.save({
     new: true,
@@ -92,6 +93,44 @@ exports.createPayout = catchAsync(async (req, res, next) => {
     payoutId: `pay_${randomstring.generate(10)}`,
     createdBy: req.admin._id,
   })
+
+  // storeName,
+  // amount,
+  // mode,
+  // accountNo,
+  // beneficiaryName,
+  // bankName,
+  // IFSCCode,
+  // upiId,
+  // transactionId,
+
+  const msg = {
+    to: updatedStore.emailAddress, // Change to your recipient
+    from: 'payouts@qwikshop.online', // Change to your verified sender
+    subject: `We have proccessed your payout of Rs. ${amount} in your registered ${method}`,
+    // text:
+    //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+    html: PayoutProccessed(
+      updatedStore.storeName,
+      amount,
+      method,
+      updatedStore.accountNumber,
+      updatedStore.accountHolderName,
+      updatedStore.bank.label,
+      updatedStore.IFSCCode,
+      updatedStore.upiId,
+      new_payout.payoutId,
+    ),
+  }
+
+  sgMail
+    .send(msg)
+    .then(() => {
+      console.log('Payout Proccessed Notification sent successfully!')
+    })
+    .catch((error) => {
+      console.log('Falied to send payout proccessed notification.')
+    })
 
   // Notify Seller About Payment => Via SMS & EMAIL
 
@@ -121,7 +160,7 @@ exports.createPayout = catchAsync(async (req, res, next) => {
 
 // Fetch Refunds
 exports.fetchRefunds = catchAsync(async (req, res, next) => {
-  const refunds = await Refund.find({}).populate('order').populate('customer');
+  const refunds = await Refund.find({}).populate('order').populate('customer')
   res.status(200).json({
     status: 'success',
     data: refunds,
@@ -138,9 +177,10 @@ exports.resolveRefund = catchAsync(async (req, res, next) => {
     req.params.id,
     { resolved: true },
     { new: true, validateModifiedOnly: true },
-  ).populate('customer').populate('order').populate('store');
-
-  
+  )
+    .populate('customer')
+    .populate('order')
+    .populate('store')
 
   client.messages
     .create({

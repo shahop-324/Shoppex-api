@@ -14,6 +14,10 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID
 const authToken = process.env.TWILIO_AUTH_TOKEN
 const client = require('twilio')(accountSid, authToken)
 
+const sgMail = require('@sendgrid/mail')
+const OrderCancelled = require('../Template/Mail/OrderCancelled')
+sgMail.setApiKey(process.env.SENDGRID_KEY)
+
 exports.createOrder = catchAsync(async (req, res, next) => {
   const {
     storeId,
@@ -161,7 +165,34 @@ exports.acceptOrder = catchAsync(async (req, res, next) => {
     { new: true, validateModifiedOnly: true },
   )
 
+  const customerDoc = acceptedShipment.customer
+  const storeDoc = await Store.findById(acceptedShipment.store)
+
   //  ! TODO Send email, SMS and whatsapp communication that order has been accepted
+
+  // ! storeName, orderId, storeLink => ORDER ACCEPTED => SEND TO CUSTOMER
+
+  const msgToCustomer = {
+    to: customerDoc.email, // Change to your recipient
+    from: 'orders@qwikshop.online', // Change to your verified sender
+    subject: `Your QwikShop Order #${acceptedOrder.ref} has been accepted & Confirmed by ${storeDoc.storeName}!`,
+    // text:
+    //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+    html: OrderAccepted(
+      storeDoc.storeName,
+      acceptedOrder.ref,
+      `https://qwikshop.online/${storeDoc.subName}`,
+    ),
+  }
+
+  sgMail
+    .send(msgToCustomer)
+    .then(() => {
+      console.log('Order Acceptance Notification sent successfully to customer')
+    })
+    .catch((error) => {
+      console.log('Falied to send Order Acceptance notification to customer')
+    })
 
   res.status(200).json({
     status: 'success',
@@ -197,6 +228,8 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
     },
     { new: true, validateModifiedOnly: true },
   )
+
+  const storeDoc = await Store.findById(cancelledOrder.store)
 
   const customerDoc = await Customer.findById(cancelledOrder.customer._id)
 
@@ -282,6 +315,56 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
     }
   }
 
+  // storeName ,orderId, amount, mode, reason, storeLink
+
+  const msg = {
+    to: storeDoc.emailAddress, // Change to your recipient
+    from: 'orders@qwikshop.online', // Change to your verified sender
+    subject: `Order #${cancelledOrder.ref} from store ${storeDoc.storeName} has been cancelled.`,
+    // text:
+    //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+    html: OrderCancelled(
+      storeDoc.storeName,
+      cancelledOrder.ref,
+      cancelledOrder.charges.total,
+      cancelledOrder.paymentMode,
+      `https://qwikshop.online/${storeDoc.subName}`,
+    ),
+  }
+
+  const msgToCustomer = {
+    to: customerDoc.email, // Change to your recipient
+    from: 'orders@qwikshop.online', // Change to your verified sender
+    subject: `Order #${cancelledOrder.ref} from store ${storeDoc.storeName} has been cancelled.`,
+    // text:
+    //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+    html: OrderCancelled(
+      storeDoc.storeName,
+      cancelledOrder.ref,
+      cancelledOrder.charges.total,
+      cancelledOrder.paymentMode,
+      `https://qwikshop.online/${storeDoc.subName}`,
+    ),
+  }
+
+  sgMail
+    .send(msg)
+    .then(() => {
+      console.log('Order cancellation Notification sent successfully!')
+    })
+    .catch((error) => {
+      console.log('Falied to send Order cancellation notification.')
+    })
+
+  sgMail
+    .send(msgToCustomer)
+    .then(() => {
+      console.log('Order cancellation Notification sent successfully to store!')
+    })
+    .catch((error) => {
+      console.log('Falied to send Order cancellation notification to store')
+    })
+
   //  ! TODO Send email, SMS and whatsapp communication that order has been cancelled
   res.status(200).json({
     status: 'success',
@@ -327,7 +410,7 @@ exports.askForReview = catchAsync(async (req, res, next) => {
 
           await storeDoc.save({ new: true, validateModifiedOnly: true })
 
-          await WalletTransaction.create({
+          const newTransactionDoc = await WalletTransaction.create({
             store: req.store._id,
             transactionId: `pay_${randomstring.generate({
               length: 10,
@@ -338,6 +421,31 @@ exports.askForReview = catchAsync(async (req, res, next) => {
             reason: 'Asked for review',
             timestamp: Date.now(),
           })
+
+          // ! storeName, amount, reason, transactionId
+
+          const msg = {
+            to: req.store.emailAddress, // Change to your recipient
+            from: 'payments@qwikshop.online', // Change to your verified sender
+            subject: 'Your QwikShop Store Wallet has been Debited.',
+            // text:
+            //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+            html: WalletDebited(
+              req.store.storeName,
+              1.5,
+              'Asked for review',
+              newTransactionDoc.transactionId,
+            ),
+          }
+
+          sgMail
+            .send(msg)
+            .then(() => {
+              console.log('Wallet Debited Notification sent successfully!')
+            })
+            .catch((error) => {
+              console.log('Falied to send wallet debited notification.')
+            })
 
           res.status(200).json({
             status: 'success',

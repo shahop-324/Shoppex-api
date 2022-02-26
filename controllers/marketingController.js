@@ -124,7 +124,7 @@ exports.sendEmailCampaign = catchAsync(async (req, res, next) => {
 
   // Create a wallet transaction => type => Debit => amount => campaignDoc.amount => transactionId => generated => reason=> Email Campaign => timestamp => Date.now()
 
-  await WalletTransaction.create({
+  const newTransactionDoc = await WalletTransaction.create({
     transactionId: `pay_${randomstring.generate({
       length: 10,
       charset: 'alphabetic',
@@ -134,6 +134,26 @@ exports.sendEmailCampaign = catchAsync(async (req, res, next) => {
     reason: 'Email Campaign',
     timestamp: Date.now(),
     store: req.store._id,
+  })
+
+  // ! storeName, amount, reason, transactionId
+
+  const msg = {
+    to: updatedStore.emailAddress, // Change to your recipient
+    from: 'payments@qwikshop.online', // Change to your verified sender
+    subject: 'Your QwikShop Store Wallet has been Debited.',
+    // text:
+    //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+    html: WalletDebited(store.storeName, campaignDoc.amount,'Email Campaign', newTransactionDoc.transactionId),
+  }
+
+  sgMail
+  .send(msg)
+  .then(() => {
+    console.log('Wallet Debited Notification sent successfully!')
+  })
+  .catch((error) => {
+    console.log('Falied to send wallet debited notification.')
   })
 
   campaignDoc.status = 'Sent'
@@ -197,7 +217,7 @@ exports.sendSMSCampaign = catchAsync(async (req, res, next) => {
 
   // Create a wallet transaction => type => Debit => amount => campaignDoc.amount => transactionId => generated => reason=> Email Campaign => timestamp => Date.now()
 
-  await WalletTransaction.create({
+ const newTransactionDoc = await WalletTransaction.create({
     transactionId: `pay_${randomstring.generate({
       length: 10,
       charset: 'alphabetic',
@@ -207,6 +227,24 @@ exports.sendSMSCampaign = catchAsync(async (req, res, next) => {
     reason: 'SMS Campaign',
     timestamp: Date.now(),
     store: req.store._id,
+  })
+
+  const msg = {
+    to: updatedStore.emailAddress, // Change to your recipient
+    from: 'payments@qwikshop.online', // Change to your verified sender
+    subject: 'Your QwikShop Store Wallet has been Debited.',
+    // text:
+    //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+    html: WalletDebited(store.storeName, campaignDoc.amount,'SMS Campaign', newTransactionDoc.transactionId),
+  }
+
+  sgMail
+  .send(msg)
+  .then(() => {
+    console.log('Wallet Debited Notification sent successfully!')
+  })
+  .catch((error) => {
+    console.log('Falied to send wallet debited notification.')
   })
 
   campaignDoc.status = 'Sent'

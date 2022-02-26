@@ -13,7 +13,10 @@ const StoreSubName = require('../model/storeSubNameModel')
 const slugify = require('slugify')
 const { nanoid } = require('nanoid')
 const Admin = require('../model/adminModel')
-const AppError = require("../utils/appError")
+const AppError = require('../utils/appError')
+const Welcome = require('../Template/Mail/Welcome')
+const ResetPassword = require('../Template/Mail/ResetPassword')
+const PasswordChanged = require('../Template/Mail/PasswordChanged')
 
 // this function will return you jwt token
 const signToken = (userId, storeId) =>
@@ -84,7 +87,7 @@ exports.register = catchAsync(async (req, res, next) => {
     from: 'welcome@qwikshop.online', // Change to your verified sender
     subject: `Welcome to QwikShop`,
     text: `Hello, welcome to QwikShop. This is your OTP for verifying your email: ${otp}`,
-    // html: WelcomeToBluemeet(newUser.firtsName),
+    html: VerifyOTP(newUserRequest.firstName, newUserRequest.otp),
   }
 
   sgMail
@@ -157,7 +160,7 @@ exports.resendEmailVerificationOTP = catchAsync(async (req, res, next) => {
     from: 'welcome@qwikshop.online', // Change to your verified sender
     subject: `Verify your QwikShop Account Email`,
     text: `Here is your OTP for verifying your email: ${otp}`,
-    // html: WelcomeToBluemeet(newUser.firtsName),
+    html: VerifyOTP(userAccountRequest.firstName, userAccountRequest.otp),
   }
 
   sgMail
@@ -325,6 +328,24 @@ exports.verifyOTPForRegistration = catchAsync(async (req, res, next) => {
 
     // TODO => Send welcome email to this user (P5)
 
+    // Send OTP verification on email
+
+    const msg = {
+      to: newUser.email, // Change to your recipient
+      from: 'welcome@qwikshop.online', // Change to your verified sender
+      subject: `Welcome to QwikShop`,
+      html: Welcome(newUser.firstName),
+    }
+
+    sgMail
+      .send(msg)
+      .then(() => {
+        console.log('Welcome Mail Sent successfully!')
+      })
+      .catch(() => {
+        console.log('Failed to send Welcome mail.')
+      })
+
     res.status(200).json({
       status: 'success',
       message: 'Email verified successfully!',
@@ -388,9 +409,9 @@ exports.loginUser = catchAsync(async (req, res, next) => {
 
   const store = await Store.findById(user.stores[0])
 
-const storeId = user.stores[0]._id;
+  const storeId = user.stores[0]._id
 
-console.log(storeId);
+  console.log(storeId)
 
   const token = signToken(user._id, storeId)
 
@@ -426,12 +447,11 @@ console.log(storeId);
 // Login Admin
 
 exports.loginAdmin = catchAsync(async (req, res, next) => {
-
-  try{
+  try {
     const { email, password } = req.body
 
     console.log(email, password)
-  
+
     if (!email || !password) {
       res.status(400).json({
         status: 'error',
@@ -439,32 +459,29 @@ exports.loginAdmin = catchAsync(async (req, res, next) => {
       })
       return
     }
-  
+
     const admin = await Admin.findOne({ email: email }).select('+password')
-  
+
     if (!admin || !(password === admin.password)) {
       res.status(400).json({
         status: 'error',
         message: 'Email or password is incorrect',
       })
-  
+
       return
     }
-  
+
     const token = signAdminToken(admin._id)
-  
+
     res.status(200).json({
       status: 'success',
       message: 'Logged in successfully!',
       token,
       admin,
     })
+  } catch (error) {
+    console.log(error)
   }
-  catch(error){
-    console.log(error);
-  }
-
-  
 })
 
 // Protect Admin
@@ -581,20 +598,20 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   // 3) Send it to user's email
   try {
-    // const resetURL = `https://app.qwikshop.online/auth/update-password/?token=${resetToken}`
-    const resetURL = `http://localhost:4000/auth/update-password/?token=${resetToken}`
+    const resetURL = `https://app.qwikshop.online/auth/update-password/?token=${resetToken}`
+    // const resetURL = `http://localhost:4000/auth/update-password/?token=${resetToken}`
 
     // Send Grid is implemented here
 
     const msg = {
       to: user.email, // Change to your recipient
       from: 'security@qwikshop.online', // Change to your verified sender
-      subject: 'Your Password Reset Link',
-      text: `use this link to reset your password. This link is valid for only 10 min ${resetURL}`,
-      // html: PasswordResetLink(
-      //   user.firstName,
-      //   `https://www.letstream.live/resetPassword/${resetToken}`
-      // ),
+      subject: 'Your QwikShop Password Reset Link',
+      // text: `use this link to reset your password. This link is valid for only 10 min ${resetURL}`,
+      html: ResetPassword(
+        user.firstName,
+        resetURL
+      ),
     }
 
     sgMail
@@ -648,10 +665,10 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     const msg = {
       to: user.email, // Change to your recipient
       from: 'security@qwikshop.online', // Change to your verified sender
-      subject: 'Your Password has been changed.',
-      text:
-        'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
-      // html: PasswordChanged(user.firstName),
+      subject: 'Alert, Your QwikShop Password has been changed.',
+      // text:
+      //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+      html: PasswordChanged(user.firstName),
     }
 
     sgMail
@@ -666,7 +683,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     // 3) Update changedPasswordAt property for the user
     // 4) Log the user in, send JWT
 
-    // DO THIS ONLY 
+    // DO THIS ONLY
 
     const token = signToken(user._id, user.stores[0]._id)
 
@@ -722,8 +739,8 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
     return
   } else {
     // 3) If so, update password
-    user.password = await bcrypt.hash(req.body.pass, 12); 
-    user.passwordConfirm = await bcrypt.hash(req.body.passConfirm, 12);
+    user.password = await bcrypt.hash(req.body.pass, 12)
+    user.passwordConfirm = await bcrypt.hash(req.body.passConfirm, 12)
     user.passwordChangedAt = Date.now()
     await user.save()
     // User.findByIdAndUpdate will NOT work as intended!
