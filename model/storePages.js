@@ -31,5 +31,5 @@ storePagesSchema.index({
   slug: 'text',
 })
 
-const StorePages = mongoose.model('StorePages', storePagesSchema)
+const StorePages = new mongoose.model('StorePages', storePagesSchema)
 module.exports = StorePages

@@ -94,5 +94,5 @@ customerSchema.index({
   pincode: 'text',
 })
 
-const Customer = mongoose.model('Customer', customerSchema)
+const Customer = new mongoose.model('Customer', customerSchema)
 module.exports = Customer

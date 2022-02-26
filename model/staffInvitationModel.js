@@ -39,5 +39,5 @@ const staffInvitationSchema = new mongoose.Schema({
   },
 })
 
-const StaffInvitation = mongoose.model('StaffInvitation', staffInvitationSchema)
+const StaffInvitation = new mongoose.model('StaffInvitation', staffInvitationSchema)
 module.exports = StaffInvitation

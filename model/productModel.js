@@ -85,7 +85,6 @@ const productSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now() },
   freeDelivery: {type: Boolean, default: false,},
   priceDeterminingVariant: {type: String,},
-
   shopCategory: {
     type: Map,
   },
@@ -95,7 +94,6 @@ const productSchema = new mongoose.Schema({
   shopDivision: {
     type: Map,
   },
-
   reviewedBy: [
     {
       type: mongoose.Schema.ObjectId,
@@ -114,5 +112,5 @@ productSchema.index({
   description: 'text',
 })
 
-const Product = mongoose.model('Product', productSchema)
+const Product = new mongoose.model('Product', productSchema)
 module.exports = Product

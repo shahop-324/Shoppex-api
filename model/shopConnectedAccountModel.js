@@ -29,5 +29,5 @@ const shopConnectedAccountSchema = new mongoose.Schema({
   },
 })
 
-const ShopConnectedAccount = new mongoose.model("ShopConnectedAccount", ShopConnectedAccount);
+const ShopConnectedAccount = new mongoose.model("ShopConnectedAccount", shopConnectedAccountSchema);
 module.exports = ShopConnectedAccount;

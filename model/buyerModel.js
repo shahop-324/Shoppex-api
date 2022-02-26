@@ -45,5 +45,5 @@ const buyerSchema = new mongoose.Schema({
   ],
 })
 
-const Buyer = mongoose.model('Buyer', buyerSchema)
+const Buyer = new mongoose.model('Buyer', buyerSchema)
 module.exports = Buyer

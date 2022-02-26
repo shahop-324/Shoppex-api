@@ -70,5 +70,5 @@ catalougeSchema.index({
   description: 'text',
 })
 
-const Catalouge = mongoose.model('Catalouge', catalougeSchema)
+const Catalouge = new mongoose.model('Catalouge', catalougeSchema)
 module.exports = Catalouge

@@ -60,5 +60,5 @@ userRequestSchema.methods.correctOTP = async function (
   return await bcrypt.compare(candidateOTP, userRequestOTP)
 }
 
-const UserRequest = mongoose.model('UserRequest', userRequestSchema)
+const UserRequest = new mongoose.model('UserRequest', userRequestSchema)
 module.exports = UserRequest

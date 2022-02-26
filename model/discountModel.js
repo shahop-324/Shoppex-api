@@ -24,7 +24,7 @@ const discountSchema = new mongoose.Schema({
   minOrderValue: { type: Number },
   maxDiscount: { type: Number },
   showToCustomer: { type: Boolean, default: true },
-  usedByCustomers: { type: mongoose.Schema.ObjectId, ref: 'Customer' },
+  usedByCustomers: [{ type: mongoose.Schema.ObjectId, ref: 'Customer' }],
   totalSales: { type: Number },
   appliedOnOrders: [
     {
