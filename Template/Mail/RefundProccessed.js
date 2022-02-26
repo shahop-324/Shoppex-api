@@ -1,14 +1,4 @@
-module.exports = (
-  storeName,
-  amount,
-  mode,
-  accountNo,
-  beneficiaryName,
-  bankName,
-  IFSCCode,
-  upiId,
-  transactionId,
-) => {
+module.exports = (amount, name, orderId, storeName) => {
   return `
     
     <!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -188,7 +178,7 @@ a[x-apple-data-detectors='true'] {
       <td class="v-container-padding-padding" style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:'Montserrat',sans-serif;" align="left">
         
   <div class="v-text-align" style="line-height: 140%; text-align: left; word-wrap: break-word;">
-    <p style="font-size: 14px; line-height: 140%;"><span style="font-size: 36px; line-height: 50.4px;">Rs. ${amount} Payout Processed</span></p>
+    <p style="font-size: 14px; line-height: 140%;"><span style="font-size: 36px; line-height: 50.4px;">Rs. ${amount} Refund Processed</span></p>
   </div>
 
       </td>
@@ -202,48 +192,11 @@ a[x-apple-data-detectors='true'] {
       <td class="v-container-padding-padding" style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:'Montserrat',sans-serif;" align="left">
         
   <div class="v-text-align" style="color: #413b3b; line-height: 210%; text-align: left; word-wrap: break-word;">
-    <p style="line-height: 210%; font-size: 14px;"><span style="font-size: 16px; line-height: 33.6px;">Hi, ${storeName}</span></p>
-<p style="line-height: 210%; font-size: 14px;"><span style="font-size: 16px; line-height: 33.6px;">This is to inform you that your we have proccessed your payout of Rs. ${amount} in your ${mode} with below details</span></p>
+    <p style="line-height: 210%; font-size: 14px;"><span style="font-size: 16px; line-height: 33.6px;">Hi, ${name}</span></p>
+<p style="line-height: 210%; font-size: 14px;"><span style="font-size: 16px; line-height: 33.6px;">This is to inform you that your we have proccessed your refund for Order Id #${orderId} for your order placed via ${storeName} of Rs. ${amount}.</span></p>
 <p style="line-height: 210%; font-size: 14px;">&nbsp;</p>
-
-${
-  mode === 'bank' ? (
-    `<div>
-      {' '}
-      <p style="line-height: 210%; font-size: 14px;">
-        <span style="font-size: 16px; line-height: 33.6px;">
-          Transaction Id: ${transactionId}
-        </span>
-      </p>
-      <p style="line-height: 210%; font-size: 14px;">
-        <span style="font-size: 16px; line-height: 33.6px;">
-          Account No. ${accountNo}
-        </span>
-      </p>
-      <p style="line-height: 210%; font-size: 14px;">
-        <span style="font-size: 16px; line-height: 33.6px;">
-          Beneficiary Name: ${beneficiaryName}
-        </span>
-      </p>
-      <p style="line-height: 210%; font-size: 14px;">
-        <span style="font-size: 16px; line-height: 33.6px;">
-          Bank: ${bankName}
-          <br />
-          IFSC Code: ${IFSCCode}
-        </span>
-      </p>{' '}
-    </div>`
-  ) : (
-    `<p style="line-height: 210%; font-size: 14px;">
-      <span style="font-size: 16px; line-height: 33.6px;">
-        UPI Id: ${upiId}
-      </span>
-    </p>`
-  )
-}
-
-
-
+<p style="line-height: 210%; font-size: 14px;"><span style="font-size: 16px; line-height: 33.6px;">Money should reflect in your Mode of payment within 7 business days.</span></p>
+<p style="line-height: 210%; font-size: 14px;">&nbsp;</p>
 
 <p style="line-height: 210%; font-size: 14px;">&nbsp;</p>
 <p style="line-height: 210%; font-size: 14px;"><span style="font-size: 16px; line-height: 33.6px;">For any help or questions write to us at</span></p>
@@ -415,6 +368,6 @@ ${
 
 </html>
 
-    
+
     `
 }

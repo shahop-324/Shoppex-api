@@ -245,16 +245,23 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
 
     await orderDoc.save({ new: true, validateModifiedOnly: true })
 
-    if (shipmentDoc.carrier !== 'Self') {
+    if (orderDoc.paymentMode !== 'cod') {
       storeDoc.amountOnHold = (
         storeDoc.amountOnHold * 1 +
         orderDoc.charges.total * 1 -
         orderDoc.coinsUsed * 1
-      ).toFixed(2)
-
-      await storeDoc.save({ new: true, validateModifiedOnly: true })
+      )*((100-storeDoc.transaction_charge)/100).toFixed(2)
+    } else {
+      if (shipmentDoc.carrier !== 'Self') {
+        storeDoc.amountOnHold = (
+          storeDoc.amountOnHold * 1 +
+          orderDoc.charges.total * 1 -
+          orderDoc.coinsUsed * 1
+        )*((100-storeDoc.transaction_charge)/100).toFixed(2)
+      }
     }
 
+    await storeDoc.save({ new: true, validateModifiedOnly: true })
     // ! storeName, orderId, amount, storeLink
 
     const msg = {
@@ -1426,9 +1433,22 @@ exports.getTrackingUpdate = catchAsync(async (req, res, next) => {
       ) {
         // Create a payout for this delivered shipment
 
-        storeDoc.amountOnHold =
-          storeDoc.amountOnHold * 1 + shipmentDoc.order.charges.total * 1 // TODO Here we need to take our commission
-
+        if (orderDoc.paymentMode !== 'cod') {
+          storeDoc.amountOnHold = (
+            storeDoc.amountOnHold * 1 +
+            orderDoc.charges.total * 1 -
+            orderDoc.coinsUsed * 1
+          )*((100-storeDoc.transaction_charge)/100).toFixed(2)
+        } else {
+          if (shipmentDoc.carrier !== 'Self') {
+            storeDoc.amountOnHold = (
+              storeDoc.amountOnHold * 1 +
+              orderDoc.charges.total * 1 -
+              orderDoc.coinsUsed * 1
+            )*((100-storeDoc.transaction_charge)/100).toFixed(2)
+          }
+        }
+    
         await storeDoc.save({ new: true, validateModifiedOnly: true })
 
         // ! storeName, orderId, amount, storeLink

@@ -16,6 +16,7 @@ const client = require('twilio')(accountSid, authToken)
 
 const sgMail = require('@sendgrid/mail')
 const OrderCancelled = require('../Template/Mail/OrderCancelled')
+const RefundProccessed = require('../Template/Mail/RefundProccessed')
 sgMail.setApiKey(process.env.SENDGRID_KEY)
 
 exports.createOrder = catchAsync(async (req, res, next) => {
@@ -257,6 +258,35 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
         amount: amountToRefund,
         createdAt: Date.now(),
       })
+
+      // ! amount, name, orderId, storeName
+
+      const customerMsg = {
+        to: customerDoc.email, // Change to your recipient
+        from: 'orders@qwikshop.online', // Change to your verified sender
+        subject: `Refund of Rs.${amountToRefund} for Order #${orderDoc.ref} from store ${storeDoc.storeName} has been refunded successfully!.`,
+        // text:
+        //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+        html: RefundProccessed(
+          amountToRefund,
+          customerDoc.name,
+          orderDoc.ref,
+          storeDoc.storeName,
+        ),
+      }
+
+      sgMail
+        .send(customerMsg)
+        .then(() => {
+          console.log(
+            'Order Refund proccessed Notification sent successfully to customer',
+          )
+        })
+        .catch((error) => {
+          console.log(
+            'Falied to send Order Refund proccessed notification to customer',
+          )
+        })
     }
   }
 

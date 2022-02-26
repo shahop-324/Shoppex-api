@@ -140,7 +140,7 @@ a[x-apple-data-detectors='true'] {
         
   <div style="color: #018eea; line-height: 170%; text-align: left; word-wrap: break-word;">
     <p style="font-size: 14px; line-height: 170%; text-align: center;"><span style="font-size: 24px; line-height: 40.8px;"><strong><span style="line-height: 40.8px; font-size: 24px;">RESET PASSWORD</span></strong></span></p>
-<p style="line-height: 170%; text-align: center; font-size: 14px;"><span style="font-size: 20px; line-height: 34px;"> Hi ${firstName}, You can reset your Password by Clicking on button below</span></p>
+<p style="line-height: 170%; text-align: center; font-size: 14px;"><span style="font-size: 20px; line-height: 34px;"> Hi ${name}, You can reset your Password by Clicking on button below</span></p>
   </div>
 
       </td>
