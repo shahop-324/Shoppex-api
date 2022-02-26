@@ -17,6 +17,7 @@ const AppError = require('../utils/appError')
 const Welcome = require('../Template/Mail/Welcome')
 const ResetPassword = require('../Template/Mail/ResetPassword')
 const PasswordChanged = require('../Template/Mail/PasswordChanged')
+const VerifyOTP = require('../Template/Mail/VerifyOTP')
 
 // this function will return you jwt token
 const signToken = (userId, storeId) =>
@@ -608,10 +609,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
       from: 'security@qwikshop.online', // Change to your verified sender
       subject: 'Your QwikShop Password Reset Link',
       // text: `use this link to reset your password. This link is valid for only 10 min ${resetURL}`,
-      html: ResetPassword(
-        user.firstName,
-        resetURL
-      ),
+      html: ResetPassword(user.firstName, resetURL),
     }
 
     sgMail
