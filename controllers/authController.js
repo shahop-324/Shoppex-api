@@ -88,7 +88,7 @@ exports.register = catchAsync(async (req, res, next) => {
     from: 'welcome@qwikshop.online', // Change to your verified sender
     subject: `Welcome to QwikShop`,
     text: `Hello, welcome to QwikShop. This is your OTP for verifying your email: ${otp}`,
-    html: VerifyOTP(newUserRequest.firstName, newUserRequest.otp),
+    html: VerifyOTP(newUserRequest.firstName, otp),
   }
 
   sgMail
@@ -161,7 +161,7 @@ exports.resendEmailVerificationOTP = catchAsync(async (req, res, next) => {
     from: 'welcome@qwikshop.online', // Change to your verified sender
     subject: `Verify your QwikShop Account Email`,
     text: `Here is your OTP for verifying your email: ${otp}`,
-    html: VerifyOTP(userAccountRequest.firstName, userAccountRequest.otp),
+    html: VerifyOTP(userAccountRequest.firstName, otp),
   }
 
   sgMail
