@@ -243,7 +243,13 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
     orderDoc.paidAmount = orderDoc.charges.total
     orderDoc.amountToConfirm = 0
 
-    await orderDoc.save({ new: true, validateModifiedOnly: true })
+    orderDoc.deliveredOn = Date.now();
+        shipmentDoc.deliveredOn = Date.now();
+
+        await orderDoc.save({new: true, validateModifiedOnly: true});
+        await shipmentDoc.save({new: true, validateModifiedOnly: true});
+
+    
 
     if (orderDoc.paymentMode !== 'cod') {
       storeDoc.amountOnHold = (
@@ -1431,6 +1437,13 @@ exports.getTrackingUpdate = catchAsync(async (req, res, next) => {
         req.body.current_status === 'Delivered' ||
         req.body.current_status_id * 1 === 7
       ) {
+
+        orderDoc.deliveredOn = Date.now();
+        shipmentDoc.deliveredOn = Date.now();
+
+        await orderDoc.save({new: true, validateModifiedOnly: true});
+        await shipmentDoc.save({new: true, validateModifiedOnly: true});
+
         // Create a payout for this delivered shipment
 
         if (orderDoc.paymentMode !== 'cod') {

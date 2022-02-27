@@ -66,6 +66,7 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     enum: [
       -1,
+      0,
       1,
       2,
       3,
@@ -112,7 +113,6 @@ const orderSchema = new mongoose.Schema({
       44,
       45,
       46,
-      47,
     ],
     default: -1,
   },
@@ -167,6 +167,9 @@ const orderSchema = new mongoose.Schema({
   paidAmount: { type: Number, default: 0 },
   reasonForCancellation: {
     type: String,
+  },
+  deliveredOn: {
+    type: Date,
   },
 })
 

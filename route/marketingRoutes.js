@@ -4,7 +4,7 @@ const authController = require('../controllers/authController')
 const marketingController = require('../controllers/marketingController')
 
 router.get(
-  '/marketing/getAll',
+  '/getAll',
   authController.protect,
   marketingController.fetchCampaigns,
 )

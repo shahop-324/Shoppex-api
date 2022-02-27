@@ -10,8 +10,8 @@ const sgMail = require('@sendgrid/mail')
 sgMail.setApiKey(process.env.SENDGRID_KEY)
 
 const razorpay = new Razorpay({
-  key_id: 'rzp_live_JOhvixtFUeoelr',
-  key_secret: '9NtgdfOttmGnW2TKwEtvODZP',
+  key_id: 'rzp_live_5hAz4ZdZOwNSkW',
+  key_secret: 'oEQ7S89Gp74Q8zbofLshBaP3',
 })
 
 exports.createSubscription = catchAsync(async (req, res, next) => {

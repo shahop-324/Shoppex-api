@@ -65,6 +65,7 @@ const shipmentSchema = new mongoose.Schema({
     type: Number,
     enum: [
       -1,
+      0,
       1,
       2,
       3,
@@ -111,7 +112,6 @@ const shipmentSchema = new mongoose.Schema({
       44,
       45,
       46,
-      47,
     ],
     default: -1,
   },
@@ -174,6 +174,9 @@ const shipmentSchema = new mongoose.Schema({
   },
   transporter_name: {
     type: String,
+  },
+  deliveredOn: {
+    type: Date,
   },
 })
 
