@@ -60,6 +60,8 @@ exports.setupStore = catchAsync(async (req, res, next) => {
     category,
     phone,
     image,
+    lat,
+    long,
   } = req.body
 
   // Check if there is no previously assigned subname then assign new one
@@ -99,6 +101,8 @@ exports.setupStore = catchAsync(async (req, res, next) => {
       gstin,
       category: category,
       phone,
+      lat,
+      long,
     },
     { new: true, validateModifiedOnly: true },
   )
@@ -770,6 +774,8 @@ exports.updateGeneralStoreInfo = catchAsync(async (req, res, next) => {
       category: req.body.category,
       phone: req.body.phone,
       emailAddress: req.body.emailAddress,
+      lat: req.body.lat,
+      long: req.body.long,
     },
     { new: true, validateModifiedOnly: true },
   )

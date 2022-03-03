@@ -356,6 +356,16 @@ const storeSchema = new mongoose.Schema({
   pricePer5km: {
     type: Number,
   },
+  lat: {
+    type: Number, 
+    default: 26.2662023,
+  },
+  long: {
+    type: Number,
+    default:  78.2081602,  
+  },
+
+
 })
 
 const Store = new mongoose.model('Store', storeSchema)
