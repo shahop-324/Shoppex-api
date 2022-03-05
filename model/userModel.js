@@ -1,7 +1,7 @@
-const mongoose = require('mongoose')
-const bcrypt = require('bcryptjs')
-const crypto = require('crypto')
-const otpGenerator = require('otp-generator')
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
+const otpGenerator = require("otp-generator");
 
 const userSchema = new mongoose.Schema({
   firstName: {
@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
   stores: [
     {
       type: mongoose.Schema.ObjectId,
-      ref: 'Store',
+      ref: "Store",
     },
   ],
   image: {
@@ -51,26 +51,26 @@ const userSchema = new mongoose.Schema({
   referredBy: {
     // This is the id of a user who referred this person to sign up on qwikshop
     type: mongoose.Schema.ObjectId,
-    ref: 'User',
+    ref: "User",
   },
   referredUsers: [
     {
       // These are users who have successfully signed up via this user's referral
       type: mongoose.Schema.ObjectId,
-      ref: 'User',
+      ref: "User",
     },
   ],
   upgradedByRefUsers: [
     {
       // These are users who have successfully signed up via this user's referral and also upgraded to a premium plan
       type: mongoose.Schema.ObjectId,
-      ref: 'User',
+      ref: "User",
     },
   ],
   plan: {
     type: String,
-    enum: ['Trial', 'Monthly', 'Yearly', 'Lifetime'],
-    default: 'Trial',
+    enum: ["Trial", "Monthly", "Yearly", "Lifetime"],
+    default: "Trial",
   },
   upgraded: {
     type: Boolean,
@@ -89,42 +89,44 @@ const userSchema = new mongoose.Schema({
   passwordResetExpires: {
     type: Date,
   },
+  loginOTP: {
+    type: Number,
+  },
 });
 
 userSchema.pre(/^find/, function (next) {
   this.find({})
-    .populate('stores')
+    .populate("stores")
     .populate(
-      'referredUsers',
-      'firstName lastName email phone joinedAt upgraded plan',
+      "referredUsers",
+      "firstName lastName email phone joinedAt upgraded plan"
     )
     .populate(
-      'upgradedByRefUsers',
-      'firstName lastName email phone joinedAt upgraded plan',
-    )
-  next()
-})
-
+      "upgradedByRefUsers",
+      "firstName lastName email phone joinedAt upgraded plan"
+    );
+  next();
+});
 
 userSchema.methods.correctPassword = async function (
   candidatePassword,
-  userPassword,
+  userPassword
 ) {
-  return await bcrypt.compare(candidatePassword, userPassword)
-}
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
 
 userSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
   if (this.passwordChangedAt) {
     const changedTimeStamp = parseInt(
       this.passwordChangedAt.getTime() / 1000,
-      10,
-    )
-    return JWTTimeStamp < changedTimeStamp
+      10
+    );
+    return JWTTimeStamp < changedTimeStamp;
   }
 
   // FALSE MEANS NOT CHANGED
-  return false
-}
+  return false;
+};
 
 userSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString("hex");
@@ -139,5 +141,5 @@ userSchema.methods.createPasswordResetToken = function () {
   return resetToken;
 };
 
-const User = new mongoose.model('User', userSchema)
-module.exports = User
+const User = new mongoose.model("User", userSchema);
+module.exports = User;

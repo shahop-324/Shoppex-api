@@ -12,7 +12,6 @@ const Mailchimp = require('../model/mailchimpModel');
 const randomString = require('random-string')
 
 const sgMail = require('@sendgrid/mail')
-const { LexRuntime } = require('aws-sdk')
 const NewStore = require('../Template/Mail/NewStore')
 sgMail.setApiKey(process.env.SENDGRID_KEY)
 

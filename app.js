@@ -53,6 +53,7 @@ const adminRoutes = require('./route/adminRoutes')
 const payoutRoutes = require("./route/payoutRoutes");
 const refundRoutes = require("./route/refundRoutes");
 const googleRoutes = require('./route/googleRoutes');
+const mobileRoutes = require('./route/mobileRoutes');
 
 const { application } = require('express')
 
@@ -168,6 +169,7 @@ app.use('/v1/admin', adminRoutes)
 app.use('/v1/payout', payoutRoutes);
 app.use('/v1/refund', refundRoutes);
 app.use('/v1/google', googleRoutes);
+app.use('/v1/mobile', mobileRoutes);
 
 app.get('/v1/auth/mailchimp', (req, res, next) => {
   res.redirect(
