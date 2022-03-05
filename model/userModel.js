@@ -33,7 +33,9 @@ const userSchema = new mongoose.Schema({
   image: {
     type: String,
   },
-
+  googleId: {
+    type: String,
+  },
   referralCode: {
     type: String,
     default: otpGenerator.generate(8, {

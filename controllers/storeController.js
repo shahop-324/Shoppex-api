@@ -49,7 +49,7 @@ exports.setupStore = catchAsync(async (req, res, next) => {
   console.log(req.user, req.store, req.body)
 
   const {
-    name,
+    storeName,
     country,
     state,
     city,
@@ -91,7 +91,7 @@ exports.setupStore = catchAsync(async (req, res, next) => {
     req.store._id,
     {
       setupCompleted: true,
-      name,
+      storeName,
       country: country,
       state,
       city,
@@ -117,6 +117,7 @@ exports.setupStore = catchAsync(async (req, res, next) => {
   updatedStore.gstin = gstin
   updatedStore.category = category
   updatedStore.phone = phone
+  updatedStore.storeName = storeName
 
   updatedStore = await updatedStore.save({new: true, validateModifiedOnly: true});
 
