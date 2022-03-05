@@ -7,6 +7,9 @@ const Welcome = require("../Template/Mail/Welcome");
 const randomstring = require("randomstring");
 const UserRequest = require("../model/userRequestModel");
 const otpGenerator = require("otp-generator");
+const StoreSubName = require("../model/storeSubNameModel");
+const slugify = require("slugify");
+const { nanoid } = require("nanoid");
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -208,7 +211,7 @@ exports.resendRegisterOTP = catchAsync(async (req, res, next) => {
   if (existingUserRequest) {
     client.messages
       .create({
-        body: `Your OTP for QwikShop is ${loginOTP}`,
+        body: `Your OTP for QwikShop is ${otp}`,
         from: "+1 775 535 7258",
         to: existingUserRequest.phone,
       })
@@ -274,7 +277,7 @@ exports.register = catchAsync(async (req, res, next) => {
     firstName,
     lastName,
     shopName,
-    mobile,
+    phone: mobile,
     referralCode,
   });
 
@@ -332,6 +335,8 @@ exports.verifyAndRegister = catchAsync(async (req, res, next) => {
       phone: `+${req.body.mobile.substring(1)}`,
     }).select("+otp");
 
+    console.log(user, otp);
+
     if (!user || !otp) {
       // Bad request
       res.status(400).json({
@@ -341,12 +346,15 @@ exports.verifyAndRegister = catchAsync(async (req, res, next) => {
       return;
     }
 
-    if (!(await user.correctOTP(otp, user.otp))) {
+    console.log(otp, user.otp);
+
+    if (otp * 1 !== user.otp * 1) {
       // Incorrect OTP
       res.status(400).json({
         status: "error",
         message: "Incorrect OTP",
       });
+      return;
     }
 
     // At this point we are sure that OTP has been successfully verified

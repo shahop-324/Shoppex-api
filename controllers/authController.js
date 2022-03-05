@@ -207,6 +207,7 @@ exports.verifyOTPForRegistration = catchAsync(async (req, res, next) => {
         status: 'error',
         message: 'Incorrect OTP',
       })
+      return;
     }
 
     // At this point we are sure that OTP has been successfully verified
