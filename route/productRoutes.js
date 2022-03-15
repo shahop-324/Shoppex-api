@@ -10,4 +10,7 @@ router.patch('/update/:productId', authController.protect, productController.upd
 router.delete('/delete/:productId', authController.protect, productController.deleteProduct);
 router.delete('/deleteMultiple', authController.protect, productController.deleteMultipleProduct);
 
+router.post('/bulkImport', authController.protect, productController.bulkImportProducts);
+router.post('/bulkUpdate', authController.protect, productController.bulkUpdateProducts);
+
 module.exports = router;

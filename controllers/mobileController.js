@@ -348,7 +348,7 @@ exports.verifyAndRegister = catchAsync(async (req, res, next) => {
 
     console.log(otp, user.otp);
 
-    if (otp * 1 !== user.otp * 1) {
+    if (!await user.correctOTP(otp, user.otp)) {
       // Incorrect OTP
       res.status(400).json({
         status: "error",

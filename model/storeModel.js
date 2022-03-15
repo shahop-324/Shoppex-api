@@ -1,7 +1,8 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
+const otpGenerator = require("otp-generator");
 
 const staffMemberSchema = new mongoose.Schema({
-  status: { type: String, enum: ['Pending', 'Accepted'], default: 'Pending' },
+  status: { type: String, enum: ["Pending", "Accepted"], default: "Pending" },
   name: {
     type: String,
   },
@@ -11,25 +12,25 @@ const staffMemberSchema = new mongoose.Schema({
   email: { type: String },
   role: {
     type: String,
-    enum: ['Admin', 'Staff'],
+    enum: ["Admin", "Staff"],
   },
   permissions: [
     {
       type: String,
       enum: [
-        'Order',
-        'Catalouge',
-        'Delivery',
-        'Customer',
-        'Dining',
-        'Marketing',
-        'Payment',
-        'Discount',
-        'Manage',
-        'Design',
-        'Integration',
-        'Reviews',
-        'Reports',
+        "Order",
+        "Catalouge",
+        "Delivery",
+        "Customer",
+        "Dining",
+        "Marketing",
+        "Payment",
+        "Discount",
+        "Manage",
+        "Design",
+        "Integration",
+        "Reviews",
+        "Reports",
       ],
     },
   ],
@@ -39,7 +40,7 @@ const staffMemberSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
   },
-})
+});
 
 const checkoutFieldSchema = new mongoose.Schema({
   fieldName: {
@@ -53,12 +54,24 @@ const checkoutFieldSchema = new mongoose.Schema({
     default: true,
   },
   options: [{ type: Map }],
-})
+});
 
 const storeSchema = new mongoose.Schema({
+  qwikId: {
+    type: String,
+    default: otpGenerator.generate(10, {
+      upperCaseAlphabets: false,
+      specialChars: false,
+      digit: true,
+      lowerCaseAlphabets: true,
+    }),
+  },
+  subName: {
+    type: String,
+  },
   owner: {
     type: mongoose.Schema.ObjectId,
-    ref: 'User',
+    ref: "User",
   },
   setupCompleted: {
     type: Boolean,
@@ -86,9 +99,6 @@ const storeSchema = new mongoose.Schema({
     type: String,
   },
   gstin: {
-    type: String,
-  },
-  subName: {
     type: String,
   },
   category: {
@@ -130,7 +140,7 @@ const storeSchema = new mongoose.Schema({
   enableCOD: { type: Boolean, default: false },
   enablePartialCOD: { type: Boolean, default: false },
   partialCODPercentage: { type: Number, default: 20 },
-  paymentMode: { type: String, default: 'upi' },
+  paymentMode: { type: String, default: "upi" },
   upiId: { type: String },
   bank: { type: Map },
   accountNumber: { type: Number },
@@ -169,8 +179,8 @@ const storeSchema = new mongoose.Schema({
   twitterLink: { type: String },
   youtubeLink: { type: String },
   // Ambience
-  mode: { type: String, default: 'light' },
-  primaryColor: { type: String, default: '#2065D1' },
+  mode: { type: String, default: "light" },
+  primaryColor: { type: String, default: "#2065D1" },
   // Store Other info
   freeDeliveryAbove: { type: Number },
   orderIsShippedIn: { type: Map },
@@ -193,7 +203,7 @@ const storeSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  theme: { type: String, default: 'Lite' },
+  theme: { type: String, default: "Lite" },
   themesUnlocked: { type: Boolean, default: false },
   // Store Theme Booleans
   showTrendingProducts: {
@@ -335,7 +345,7 @@ const storeSchema = new mongoose.Schema({
   },
   currentPlan: {
     type: String,
-    default: 'Free',
+    default: "Free",
   },
   transaction_charge: {
     type: Number,
@@ -357,16 +367,26 @@ const storeSchema = new mongoose.Schema({
     type: Number,
   },
   lat: {
-    type: Number, 
+    type: Number,
     default: 26.2662023,
   },
   long: {
     type: Number,
-    default:  78.2081602,  
+    default: 78.2081602,
   },
+  mobileView: {
+    type: String,
+    default: "grid",
+  },
+  enableEstimatedDeliveryTime: {
+    type: Boolean,
+    default: true,
+  },
+  enableHeaderSocialIcons: {
+    type: Boolean,
+    default: true,
+  },
+});
 
-
-})
-
-const Store = new mongoose.model('Store', storeSchema)
-module.exports = Store
+const Store = new mongoose.model("Store", storeSchema);
+module.exports = Store;

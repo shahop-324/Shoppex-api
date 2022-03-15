@@ -197,3 +197,64 @@ exports.reorderSubCategories = catchAsync(async (req, res, next) => {
     status: 'success',
   })
 })
+
+exports.bulkImportSubCategories = catchAsync(async(req, res, next) => {
+  const storeId = req.store._id;
+  if (!storeId) {
+    // Store not found => through exception
+    res.status(400).json({
+      status: "error",
+      message: "Bad request, session expired. Please login again and try!",
+    });
+  } else {
+// Store found => proceed
+mRows = req.body.rows.map((e) => {
+  delete e.id;
+  return e;
+});
+let newSubCategories = [];
+for (let element of mRows) {
+  const newSubCat = await Customer.create({
+    store: storeId,
+    ...element,
+  });
+  newSubCategories.push(newSubCat);
+}
+
+res.status(200).json({
+  status: "success",
+  data: newSubCategories,
+  message: "Sub Categories imported successfully!",
+});
+  }
+});
+
+exports.bulkUpdateSubCategories = catchAsync(async(req, res, next) => {
+  const storeId = req.store._id;
+  if (!storeId) {
+    // Store not found => through exception
+    res.status(400).json({
+      status: "error",
+      message: "Bad request, session expired. Please login again and try!",
+    });
+  } else {
+    // Store found => proceed
+    for (let element of req.body.rows) {
+      // element is the product with its _id
+      await SubCategory.findByIdAndUpdate(
+        element._id,
+        {
+          ...element,
+        },
+        { new: true, validateModifiedOnly: true }
+      );
+    }
+    // Find all subCategories of this store and send as response
+    const subCategories = await SubCategory.find({ store: storeId });
+    res.status(200).json({
+      status: "success",
+      data: subCategories,
+      message: "Sub Categories updated successfully!",
+    });
+  }
+});

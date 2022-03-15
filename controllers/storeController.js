@@ -808,6 +808,20 @@ exports.updateStore = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.updatePreference = catchAsync(async (req, res, next) => {
+  const updatedStore = await Store.findByIdAndUpdate(
+    req.store._id,
+    { ...req.body },
+    { new: true, validateModifiedOnly: true }
+  );
+
+  res.status(200).json({
+    status: "success",
+    message: "Preferences Updated successfully!",
+    data: updatedStore,
+  });
+});
+
 exports.updateWhatsAppNumber = catchAsync(async (req, res, next) => {
   if (req.body.uninstall) {
     // Set WA Number to undefined and mark as uninstalled
@@ -839,6 +853,8 @@ exports.updateWhatsAppNumber = catchAsync(async (req, res, next) => {
       { WhatsAppNumber: req.body.phone, WAOTP, WAVerified: false },
       { new: true, validateModifiedOnly: true }
     );
+
+    console.log(updatedStore.WAOTP);
 
     // Send SMS Notification
 
@@ -911,6 +927,8 @@ exports.verifyWhatsAppNumber = catchAsync(async (req, res, next) => {
   // Fetch Store doc and compare user provided and database WAOTP and if they are same then change status of WAVerified to true otherwise inform the user
 
   const storeDoc = await Store.findById(req.store._id);
+
+  console.log(req.body.otp, storeDoc.WAOTP, 'These are two otps to be matched');
 
   if (req.body.otp === storeDoc.WAOTP) {
     // Set WAOTP to undefined and WAVerified to true

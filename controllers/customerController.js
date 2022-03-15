@@ -188,3 +188,64 @@ exports.sendSMSToCustomer = catchAsync(async (req, res, next) => {
     })
   }
 })
+
+exports.bulkImportCustomers = catchAsync(async(req, res, next) => {
+  const storeId = req.store._id;
+  if (!storeId) {
+    // Store not found => through exception
+    res.status(400).json({
+      status: "error",
+      message: "Bad request, session expired. Please login again and try!",
+    });
+  } else {
+// Store found => proceed
+mRows = req.body.rows.map((e) => {
+  delete e.id;
+  return e;
+});
+let newCustomers = [];
+for (let element of mRows) {
+  const newCust = await Customer.create({
+    store: storeId,
+    ...element,
+  });
+  newCustomers.push(newCust);
+}
+
+res.status(200).json({
+  status: "success",
+  data: newCustomers,
+  message: "Customers imported successfully!",
+});
+  }
+});
+
+exports.bulkUpdateCustomers = catchAsync(async(req, res, next) => {
+  const storeId = req.store._id;
+  if (!storeId) {
+    // Store not found => through exception
+    res.status(400).json({
+      status: "error",
+      message: "Bad request, session expired. Please login again and try!",
+    });
+  } else {
+    // Store found => proceed
+    for (let element of req.body.rows) {
+      // element is the product with its _id
+      await Customer.findByIdAndUpdate(
+        element._id,
+        {
+          ...element,
+        },
+        { new: true, validateModifiedOnly: true }
+      );
+    }
+    // Find all customers of this store and send as response
+    const customers = await Customer.find({ store: storeId });
+    res.status(200).json({
+      status: "success",
+      data: customers,
+      message: "Customers updated successfully!",
+    });
+  }
+});

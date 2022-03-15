@@ -19,4 +19,7 @@ router.post('/sendSMS', authController.protect, customerController.sendSMSToCust
 
 router.post('/addCoins', authController.protect, customerController.giveCoinsToCustomer);
 
+router.post('/bulkImport', authController.protect, customerController.bulkImportCustomers);
+router.post('/bulkUpdate', authController.protect, customerController.bulkUpdateCustomers);
+
 module.exports = router

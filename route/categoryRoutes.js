@@ -12,4 +12,7 @@ router.patch('/updateStock/:categoryId', authController.protect, categoryControl
 router.delete('/delete/:categoryId', authController.protect, categoryController.deleteCategory);
 router.delete('/deleteMultiple', authController.protect, categoryController.deleteMultipleCategory);
 
+router.post('/bulkImport', authController.protect, categoryController.bulkImportCategories);
+router.post('/bulkUpdate', authController.protect, categoryController.bulkUpdateCategories);
+
 module.exports = router;

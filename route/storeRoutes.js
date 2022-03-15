@@ -1,165 +1,210 @@
-const express = require('express')
-const router = express.Router()
+const express = require("express");
+const router = express.Router();
 
-const storeController = require('../controllers/storeController')
-const authController = require('../controllers/authController')
+const storeController = require("../controllers/storeController");
+const authController = require("../controllers/authController");
 
 router.get(
-  '/getDetails',
+  "/getDetails",
   authController.protect,
-  storeController.getStoreDetails,
-)
-router.post('/setup', authController.protect, storeController.setupStore) // For first time store setup
-router.post('/createNew', authController.protect, storeController.createNew) // Create new store
+  storeController.getStoreDetails
+);
+router.post("/setup", authController.protect, storeController.setupStore); // For first time store setup
+router.post("/createNew", authController.protect, storeController.createNew); // Create new store
 router.patch(
-  '/update/paymentSettings',
+  "/preference/update",
   authController.protect,
-  storeController.updatePaymentSettings,
-)
+  storeController.updatePreference
+); // Update store prefernces
+router.patch(
+  "/update/paymentSettings",
+  authController.protect,
+  storeController.updatePaymentSettings
+);
 
 // Manage Routes
 router.patch(
-  '/manage/favicon',
+  "/manage/favicon",
   authController.protect,
-  storeController.updateFavicon,
-)
+  storeController.updateFavicon
+);
 router.patch(
-  '/manage/seo',
+  "/manage/seo",
   authController.protect,
-  storeController.updateStoreSEO,
-)
+  storeController.updateStoreSEO
+);
 router.patch(
-  '/manage/self-delivery-zone',
+  "/manage/self-delivery-zone",
   authController.protect,
-  storeController.updateSelfDeliveryZone,
-)
+  storeController.updateSelfDeliveryZone
+);
 router.patch(
-  '/manage/manage-charges',
+  "/manage/manage-charges",
   authController.protect,
-  storeController.updateManageCharges,
-)
+  storeController.updateManageCharges
+);
 router.patch(
-  '/manage/store-timing',
+  "/manage/store-timing",
   authController.protect,
-  storeController.updateStoreTimings,
-)
+  storeController.updateStoreTimings
+);
 
 router.patch(
-  '/policy/update',
+  "/policy/update",
   authController.protect,
-  storeController.updatePolicy,
-)
+  storeController.updatePolicy
+);
 
 router.patch(
-  '/notification/update',
+  "/notification/update",
   authController.protect,
-  storeController.updateNotifications,
-)
+  storeController.updateNotifications
+);
 
 router.patch(
-  '/social-links/update',
+  "/social-links/update",
   authController.protect,
-  storeController.updateSocialLinks,
-)
+  storeController.updateSocialLinks
+);
 
 router.patch(
-  '/general/update',
+  "/general/update",
   authController.protect,
-  storeController.updateGeneralStoreInfo,
-)
+  storeController.updateGeneralStoreInfo
+);
 
 router.patch(
-  '/general/guest-checkout',
+  "/general/guest-checkout",
   authController.protect,
-  storeController.updateGuestCheckout,
-)
+  storeController.updateGuestCheckout
+);
 
 router.patch(
-  '/notification/update',
+  "/notification/update",
   authController.protect,
-  storeController.updateNotifications,
-)
+  storeController.updateNotifications
+);
 
 router.patch(
-  '/social-links/update',
+  "/social-links/update",
   authController.protect,
-  storeController.updateSocialLinks,
-)
+  storeController.updateSocialLinks
+);
 
 // Staff
 router.post(
-  '/staff/create',
+  "/staff/create",
   authController.protect,
-  storeController.addStaffMember,
-)
+  storeController.addStaffMember
+);
 
 router.patch(
-  '/staff/update/:email',
+  "/staff/update/:email",
   authController.protect,
-  storeController.editStaffMember,
-)
+  storeController.editStaffMember
+);
 
 router.patch(
-  '/staff/delete/:email',
+  "/staff/delete/:email",
   authController.protect,
-  storeController.removeStaffMember,
-)
+  storeController.removeStaffMember
+);
 
 // Checkout form fields
 
 router.post(
-  '/checkout-form/create',
+  "/checkout-form/create",
   authController.protect,
-  storeController.addCheckoutField,
-)
+  storeController.addCheckoutField
+);
 
 router.patch(
-  '/checkout-form/update/:fieldId',
+  "/checkout-form/update/:fieldId",
   authController.protect,
-  storeController.editCheckoutField,
-)
+  storeController.editCheckoutField
+);
 
 router.patch(
-  '/checkout-form/delete/:fieldId',
+  "/checkout-form/delete/:fieldId",
   authController.protect,
-  storeController.deleteCheckoutField,
-)
+  storeController.deleteCheckoutField
+);
 
 // Store other info
 
 router.patch(
-  '/other-info/update',
+  "/other-info/update",
   authController.protect,
-  storeController.updateStoreOtherInfo,
-)
+  storeController.updateStoreOtherInfo
+);
 router.patch(
-  '/ambience/update',
+  "/ambience/update",
   authController.protect,
-  storeController.updateStoreAmbience,
-)
+  storeController.updateStoreAmbience
+);
 router.patch(
-  '/updateTheme/:theme',
+  "/updateTheme/:theme",
   authController.protect,
-  storeController.updateStoreTheme,
-)
-router.patch('/update', authController.protect, storeController.updateStore)
+  storeController.updateStoreTheme
+);
+router.patch("/update", authController.protect, storeController.updateStore);
 router.post(
-  '/switch/:storeId',
+  "/switch/:storeId",
   authController.protect,
-  storeController.switchStore,
-)
+  storeController.switchStore
+);
 
-router.post('/updateHeroBanners', authController.protect, storeController.updateHeroBanner);
-router.post('/updateCustomBanners', authController.protect, storeController.updateCustomBanner);
-router.post('/updateImageBanners', authController.protect, storeController.updateImageBanner);
-router.post('/updateCustomSections', authController.protect, storeController.updateCustomSections);
-router.post('/updateWhatsAppNumber', authController.protect, storeController.updateWhatsAppNumber);
-router.post('/verifyWhatsAppNumber', authController.protect, storeController.verifyWhatsAppNumber);
-router.patch('/updateGA', authController.protect, storeController.updateGA);
-router.patch('/updateGMC', authController.protect, storeController.updateGMC);
-router.patch('/updateGSC', authController.protect, storeController.updateGSC);
-router.patch('/updateIntercom', authController.protect, storeController.updateIntercom);
-router.patch('/updatePixel', authController.protect, storeController.updateFBPixel);
-router.patch('/updateAdwords', authController.protect, storeController.updateAdwords);
-router.patch('/uninstallMailchimp', authController.protect, storeController.uninstallMailchimp);
-module.exports = router
+router.post(
+  "/updateHeroBanners",
+  authController.protect,
+  storeController.updateHeroBanner
+);
+router.post(
+  "/updateCustomBanners",
+  authController.protect,
+  storeController.updateCustomBanner
+);
+router.post(
+  "/updateImageBanners",
+  authController.protect,
+  storeController.updateImageBanner
+);
+router.post(
+  "/updateCustomSections",
+  authController.protect,
+  storeController.updateCustomSections
+);
+router.post(
+  "/updateWhatsAppNumber",
+  authController.protect,
+  storeController.updateWhatsAppNumber
+);
+router.post(
+  "/verifyWhatsAppNumber",
+  authController.protect,
+  storeController.verifyWhatsAppNumber
+);
+router.patch("/updateGA", authController.protect, storeController.updateGA);
+router.patch("/updateGMC", authController.protect, storeController.updateGMC);
+router.patch("/updateGSC", authController.protect, storeController.updateGSC);
+router.patch(
+  "/updateIntercom",
+  authController.protect,
+  storeController.updateIntercom
+);
+router.patch(
+  "/updatePixel",
+  authController.protect,
+  storeController.updateFBPixel
+);
+router.patch(
+  "/updateAdwords",
+  authController.protect,
+  storeController.updateAdwords
+);
+router.patch(
+  "/uninstallMailchimp",
+  authController.protect,
+  storeController.uninstallMailchimp
+);
+module.exports = router;

@@ -41,4 +41,7 @@ router.patch(
   referralController.deleteMultipleReferral,
 )
 
+router.post('/bulkImport', authController.protect, referralController.bulkImportReferrals);
+router.post('/bulkUpdate', authController.protect, referralController.bulkUpdateReferrals);
+
 module.exports = router
