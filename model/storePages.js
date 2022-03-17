@@ -29,7 +29,7 @@ const storePagesSchema = new mongoose.Schema({
 storePagesSchema.index({
   name: 'text',
   slug: 'text',
-})
+});
 
-const StorePages = new mongoose.model('StorePages', storePagesSchema)
-module.exports = StorePages
+const StorePages = new mongoose.model('StorePages', storePagesSchema);
+module.exports = StorePages;

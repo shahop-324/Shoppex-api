@@ -30,6 +30,9 @@ const customerSchema = new mongoose.Schema({
   password: {
     type: String,
   },
+  passwordConfirm: {
+    type: String,
+  },
   passwordChangedAt: {
     type: Date,
   },
@@ -58,12 +61,24 @@ const customerSchema = new mongoose.Schema({
   cartUpdatedAt: {
     type: Date,
   },
+  passwordResetToken: {
+    type: String,
+  },
+  passwordResetExpires: {
+    type: Date,
+  },
   boughtProducts: [
     {
       type: mongoose.Schema.ObjectId,
       ref: 'Product',
     },
   ],
+  loginOTP: {
+    type: Number,
+  },
+  guestOTP: {
+    type: Number,
+  },
 })
 
 customerSchema.methods.correctPassword = async function (
@@ -84,6 +99,19 @@ customerSchema.methods.changedPasswordAfter = function (JWTTimeStamp) {
 
   // FALSE MEANS NOT CHANGED
   return false
+}
+
+customerSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex')
+
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex')
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000
+
+  return resetToken
 }
 
 customerSchema.index({

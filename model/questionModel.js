@@ -61,9 +61,9 @@ const questionSchema = new mongoose.Schema({
 })
 
 questionSchema.pre(/^find/, function (next) {
-  this.find({}).populate('customer').populate('product').populate('answeredBy')
+  this.find({}).populate('customer').populate('product').populate('answeredBy');
   next()
-})
+});
 
 const Question = new mongoose.model('Question', questionSchema)
 module.exports = Question

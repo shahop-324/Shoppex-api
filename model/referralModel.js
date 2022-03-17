@@ -15,14 +15,13 @@ const referralSchema = new mongoose.Schema({
   totalEarnings: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now() },
   updatedAt: { type: Date },
-})
+});
 
 referralSchema.index({
   name: 'text',
   phone: 'text',
   email: 'text',
-})
+});
 
-const Referral = new mongoose.model('Referral', referralSchema)
-
-module.exports = Referral
+const Referral = new mongoose.model('Referral', referralSchema);
+module.exports = Referral;

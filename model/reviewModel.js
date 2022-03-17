@@ -60,6 +60,5 @@ reviewSchema.pre(/^find/, function (next) {
   next()
 })
 
-const Review = new mongoose.model('Review', reviewSchema)
-
-module.exports = Review
+const Review = new mongoose.model('Review', reviewSchema);
+module.exports = Review;

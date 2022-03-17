@@ -66,12 +66,12 @@ const storeSchema = new mongoose.Schema({
       lowerCaseAlphabets: true,
     }),
   },
-  subName: {
-    type: String,
-  },
   owner: {
     type: mongoose.Schema.ObjectId,
     ref: "User",
+  },
+  subName: {
+    type: String,
   },
   setupCompleted: {
     type: Boolean,
@@ -273,6 +273,11 @@ const storeSchema = new mongoose.Schema({
       type: Map,
     },
   ],
+  banners: [
+    {
+      type: Map,
+    },
+  ],
   heroBanners: [
     {
       type: Map,
@@ -383,6 +388,30 @@ const storeSchema = new mongoose.Schema({
     default: true,
   },
   enableHeaderSocialIcons: {
+    type: Boolean,
+    default: true,
+  },
+  enableOrderCancellation: {
+    type: Boolean,
+    default: true,
+  },
+  showTerms: {
+    type: Boolean,
+    default: true,
+  },
+  showDisclaimerPolicy: {
+    type: Boolean,
+    default: true,
+  },
+  showPrivacyPolicy: {
+    type: Boolean,
+    default: true,
+  },
+  showReturnPolicy: {
+    type: Boolean,
+    default: true,
+  },
+  showShippingPolicy: {
     type: Boolean,
     default: true,
   },

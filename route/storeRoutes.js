@@ -11,11 +11,21 @@ router.get(
 );
 router.post("/setup", authController.protect, storeController.setupStore); // For first time store setup
 router.post("/createNew", authController.protect, storeController.createNew); // Create new store
+router.post(
+  "/generatePolicy",
+  authController.protect,
+  storeController.generatePolicy
+); // Auto generate policies
 router.patch(
   "/preference/update",
   authController.protect,
   storeController.updatePreference
-); // Update store prefernces
+); // Update store preferences
+router.patch(
+  "/policyPreference/update",
+  authController.protect,
+  storeController.updatePolicyPreference
+); // Update policy preferences
 router.patch(
   "/update/paymentSettings",
   authController.protect,
@@ -153,7 +163,11 @@ router.post(
   authController.protect,
   storeController.switchStore
 );
-
+router.post(
+  "/updateBanners",
+  authController.protect,
+  storeController.updateBanner
+);
 router.post(
   "/updateHeroBanners",
   authController.protect,

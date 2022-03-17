@@ -19,6 +19,12 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = require("twilio")(accountSid, authToken);
 
+const sampleTerms = require('../Template/Policy/sampleTerms');
+const samplePrivacyPolicy = require('../Template/Policy/samplePrivacyPolicy');
+const sampleReturnPolicy = require('../Template/Policy/sampleRefundPolicy');
+const sampleShippingPolicy = require('../Template/Policy/sampleShippingPolicy');
+const sampleDisclaimerPolicy  = require('../Template/Policy/sampleDisclaimerPolicy');
+
 // this function will return you jwt token
 const signToken = (userId, storeId) =>
   jwt.sign({ userId, storeId }, process.env.JWT_SECRET);
@@ -808,6 +814,63 @@ exports.updateStore = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.generatePolicy = catchAsync(async (req, res, next) => {
+  // Find store doc
+  const storeDoc = await Store.findById(req.store._id);
+  // Generate all policies by replacing storeName placeholder with actual store Name
+  const terms = sampleTerms.replace(/storeName/g, storeDoc.storeName);
+  const privacyPolicy = samplePrivacyPolicy.replace(
+    /storeName/g,
+    storeDoc.storeName
+  );
+  const returnPolicy = sampleReturnPolicy.replace(
+    /storeName/g,
+    storeDoc.storeName
+  );
+  const shippingPolicy = sampleShippingPolicy.replace(
+    /storeName/g,
+    storeDoc.storeName
+  );
+  const disclaimerPolicy = sampleDisclaimerPolicy.replace(
+    /storeName/g,
+    storeDoc.storeName
+  );
+  // Save all policies to store doc
+
+  storeDoc.termsOfService = terms;
+  storeDoc.privacyPolicy = privacyPolicy;
+  storeDoc.refundPolicy = refundPolicy;
+  storeDoc.shippingPolicy = shippingPolicy;
+  storeDoc.disclaimerPolicy = disclaimerPolicy;
+
+  const updatedStoreDoc = await storeDoc.save({
+    new: true,
+    validateModifiedOnly: true,
+  });
+
+  // send update store doc with success message
+
+  res.status(200).json({
+    status: "success",
+    data: updatedStoreDoc,
+    message: "Policies generated successfully!",
+  });
+});
+
+exports.updatePolicyPreference = catchAsync(async (req, res, next) => {
+  const updatedStore = await Store.findByIdAndUpdate(
+    req.store._id,
+    { ...req.body },
+    { new: true, validateModifiedOnly: true }
+  );
+
+  res.status(200).json({
+    status: "success",
+    message: "Policy Preferences Updated successfully!",
+    data: updatedStore,
+  });
+});
+
 exports.updatePreference = catchAsync(async (req, res, next) => {
   const updatedStore = await Store.findByIdAndUpdate(
     req.store._id,
@@ -1062,6 +1125,24 @@ exports.switchStore = catchAsync(async (req, res, next) => {
 
 // While logging in store also send permissions along with token & Populate name, image of store in user
 
+exports.updateBanner = catchAsync(async (req, res, next) => {
+  const storeDoc = await Store.findById(req.store._id);
+
+  const banners = req.body.banners.map((el) => ({ ...el, file: null }));
+
+  storeDoc.banners = banners;
+  const updatedStoreDoc = await storeDoc.save({
+    new: true,
+    validateModifiedOnly: true,
+  });
+
+  res.status(200).json({
+    status: "success",
+    data: updatedStoreDoc,
+    message: "Store Banners Updated successfully!",
+  });
+});
+
 exports.updateHeroBanner = catchAsync(async (req, res, next) => {
   const storeDoc = await Store.findById(req.store._id);
 
@@ -1079,6 +1160,7 @@ exports.updateHeroBanner = catchAsync(async (req, res, next) => {
     message: "Hero Banners Updated successfully!",
   });
 });
+
 exports.updateCustomBanner = catchAsync(async (req, res, next) => {
   const storeDoc = await Store.findById(req.store._id);
 

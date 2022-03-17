@@ -159,5 +159,4 @@ shipmentSchema.index({
 });
 
 const Shipment = new mongoose.model("Shipment", shipmentSchema);
-
 module.exports = Shipment;
