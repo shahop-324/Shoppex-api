@@ -19,11 +19,11 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = require("twilio")(accountSid, authToken);
 
-const sampleTerms = require('../Template/Policy/sampleTerms');
-const samplePrivacyPolicy = require('../Template/Policy/samplePrivacyPolicy');
-const sampleReturnPolicy = require('../Template/Policy/sampleRefundPolicy');
-const sampleShippingPolicy = require('../Template/Policy/sampleShippingPolicy');
-const sampleDisclaimerPolicy  = require('../Template/Policy/sampleDisclaimerPolicy');
+const sampleTerms = require("../Template/Policy/sampleTerms");
+const samplePrivacyPolicy = require("../Template/Policy/samplePrivacyPolicy");
+const sampleReturnPolicy = require("../Template/Policy/sampleRefundPolicy");
+const sampleShippingPolicy = require("../Template/Policy/sampleShippingPolicy");
+const sampleDisclaimerPolicy = require("../Template/Policy/sampleDisclaimerPolicy");
 
 // this function will return you jwt token
 const signToken = (userId, storeId) =>
@@ -818,20 +818,20 @@ exports.generatePolicy = catchAsync(async (req, res, next) => {
   // Find store doc
   const storeDoc = await Store.findById(req.store._id);
   // Generate all policies by replacing storeName placeholder with actual store Name
-  const terms = sampleTerms.replace(/storeName/g, storeDoc.storeName);
-  const privacyPolicy = samplePrivacyPolicy.replace(
+  const terms = sampleTerms().replace(/storeName/g, storeDoc.storeName);
+  const privacyPolicy = samplePrivacyPolicy().replace(
     /storeName/g,
     storeDoc.storeName
   );
-  const returnPolicy = sampleReturnPolicy.replace(
+  const returnPolicy = sampleReturnPolicy().replace(
     /storeName/g,
     storeDoc.storeName
   );
-  const shippingPolicy = sampleShippingPolicy.replace(
+  const shippingPolicy = sampleShippingPolicy().replace(
     /storeName/g,
     storeDoc.storeName
   );
-  const disclaimerPolicy = sampleDisclaimerPolicy.replace(
+  const disclaimerPolicy = sampleDisclaimerPolicy().replace(
     /storeName/g,
     storeDoc.storeName
   );
