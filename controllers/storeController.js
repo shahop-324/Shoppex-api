@@ -839,7 +839,7 @@ exports.generatePolicy = catchAsync(async (req, res, next) => {
 
   storeDoc.termsOfService = terms;
   storeDoc.privacyPolicy = privacyPolicy;
-  storeDoc.refundPolicy = refundPolicy;
+  storeDoc.refundPolicy = returnPolicy;
   storeDoc.shippingPolicy = shippingPolicy;
   storeDoc.disclaimerPolicy = disclaimerPolicy;
 
