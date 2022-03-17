@@ -150,7 +150,9 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
   if (productDoc.shopCategory) {
     // Remove this product from prev shopCategory and add to new
 
-    const categoryDoc = await Category.findById(productDoc.shopCategory.value);
+    console.log(productDoc.shopCategory);
+
+    const categoryDoc = await Category.findById(productDoc.shopCategory.get('value'));
 
     categoryDoc.products = categoryDoc.products.filter(
       (el) => el._id.toString() !== productDoc._id.toString()
@@ -163,7 +165,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
     // Remove this product from prev shopSubCategory and add to new
 
     const subCategoryDoc = await SubCategory.findById(
-      productDoc.shopSubCategory.value
+      productDoc.shopSubCategory.get('value')
     );
 
     subCategoryDoc.products = subCategoryDoc.products.filter(
@@ -176,7 +178,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
   if (productDoc.shopDivision) {
     // Remove this product from prev shopDivision and add to new
 
-    const divisionDoc = await Division.findById(productDoc.shopDivision.value);
+    const divisionDoc = await Division.findById(productDoc.shopDivision.get('value'));
 
     divisionDoc.products = divisionDoc.products.filter(
       (el) => el._id.toString() !== productDoc._id.toString()
@@ -190,7 +192,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
 
     const newCategoryDoc = await Category.findById(shopCategory.value);
 
-    newCategoryDoc.products.push(newProduct._id);
+    newCategoryDoc.products.push(productDoc._id);
 
     await newCategoryDoc.save({ new: true, validateModifiedOnly: true });
   }
@@ -200,7 +202,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
 
     const newSubCategoryDoc = await SubCategory.findById(shopSubCategory.value);
 
-    newSubCategoryDoc.products.push(newProduct._id);
+    newSubCategoryDoc.products.push(productDoc._id);
 
     await newSubCategoryDoc.save({ new: true, validateModifiedOnly: true });
   }
@@ -209,7 +211,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
 
     const newDivisionDoc = await Division.findById(shopDivision.value);
 
-    newDivisionDoc.products.push(newProduct._id);
+    newDivisionDoc.products.push(productDoc._id);
 
     await newDivisionDoc.save({ new: true, validateModifiedOnly: true });
   }

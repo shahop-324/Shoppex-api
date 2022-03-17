@@ -17,6 +17,7 @@ const client = require('twilio')(accountSid, authToken)
 const sgMail = require('@sendgrid/mail')
 const OrderCancelled = require('../Template/Mail/OrderCancelled')
 const RefundProccessed = require('../Template/Mail/RefundProccessed')
+// const OrderAccepted = require('../Template/OrderAccepted');
 sgMail.setApiKey(process.env.SENDGRID_KEY)
 
 exports.createOrder = catchAsync(async (req, res, next) => {
@@ -157,12 +158,12 @@ exports.acceptOrder = catchAsync(async (req, res, next) => {
 
   const acceptedOrder = await Order.findByIdAndUpdate(
     req.body.id,
-    { status: 'Accepted', status_id: '1', updatedAt: Date.now() },
+    { status: 'Accepted', status_id: 0, updatedAt: Date.now() },
     { new: true, validateModifiedOnly: true },
   )
   const acceptedShipment = await Shipment.findByIdAndUpdate(
     acceptedOrder.shipment._id,
-    { status: 'Accepted', status_id: '1', updatedAt: Date.now() },
+    { status: 'Accepted', status_id: 0, updatedAt: Date.now() },
     { new: true, validateModifiedOnly: true },
   )
 
@@ -173,27 +174,27 @@ exports.acceptOrder = catchAsync(async (req, res, next) => {
 
   // ! storeName, orderId, storeLink => ORDER ACCEPTED => SEND TO CUSTOMER
 
-  const msgToCustomer = {
-    to: customerDoc.email, // Change to your recipient
-    from: 'orders@qwikshop.online', // Change to your verified sender
-    subject: `Your QwikShop Order #${acceptedOrder.ref} has been accepted & Confirmed by ${storeDoc.storeName}!`,
-    // text:
-    //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
-    html: OrderAccepted(
-      storeDoc.storeName,
-      acceptedOrder.ref,
-      `https://qwikshop.online/${storeDoc.subName}`,
-    ),
-  }
+  // const msgToCustomer = {
+  //   to: customerDoc.email, // Change to your recipient
+  //   from: 'orders@qwikshop.online', // Change to your verified sender
+  //   subject: `Your QwikShop Order #${acceptedOrder.ref} has been accepted & Confirmed by ${storeDoc.storeName}!`,
+  //   // text:
+  //   //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+  //   html: OrderAccepted(
+  //     storeDoc.storeName,
+  //     acceptedOrder.ref,
+  //     `https://qwikshop.online/${storeDoc.subName}`,
+  //   ),
+  // }
 
-  sgMail
-    .send(msgToCustomer)
-    .then(() => {
-      console.log('Order Acceptance Notification sent successfully to customer')
-    })
-    .catch((error) => {
-      console.log('Falied to send Order Acceptance notification to customer')
-    })
+  // sgMail
+  //   .send(msgToCustomer)
+  //   .then(() => {
+  //     console.log('Order Acceptance Notification sent successfully to customer')
+  //   })
+  //   .catch((error) => {
+  //     console.log('Falied to send Order Acceptance notification to customer')
+  //   })
 
   res.status(200).json({
     status: 'success',
@@ -211,7 +212,7 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
     req.body.id,
     {
       status: 'Cancelled',
-      status_id: 9,
+      status_id: 8,
       updatedAt: Date.now(),
       reasonForCancellation: req.body.reason,
     },
@@ -224,7 +225,7 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
     cancelledOrder.shipment,
     {
       status: 'Cancelled',
-      status_id: 9,
+      status_id: 8,
       reasonForCancellation: req.body.reason,
     },
     { new: true, validateModifiedOnly: true },

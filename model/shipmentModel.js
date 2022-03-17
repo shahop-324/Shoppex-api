@@ -1,17 +1,17 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const shipmentSchema = new mongoose.Schema({
   store: {
     type: mongoose.Schema.ObjectId,
-    ref: 'Store',
+    ref: "Store",
   },
   order: {
     type: mongoose.Schema.ObjectId,
-    ref: 'Order',
+    ref: "Order",
   },
   customer: {
     type: mongoose.Schema.ObjectId,
-    ref: 'Customer',
+    ref: "Customer",
   },
   orderRef: {
     type: String,
@@ -22,96 +22,63 @@ const shipmentSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: [
-      'Waiting For Acceptance', // ?
-      'Accepted',
-      'AWB Assigned',
-      'Label Generated',
-      'Pickup Scheduled/Generated', // ?
-      'Pickup Queued',
-      'Manifest Generated',
-      'Shipped', // ?
-      'Delivered', // ?
-      'Cancelled', // ?
-      'RTO Initiated',
-      'RTO Delivered',
-      'Pending',
-      'Lost',
-      'Pickup Error',
-      'RTO Acknowledged',
-      'Pickup Rescheduled',
-      'Cancellation Requested',
-      'Out For Delivery',
-      'In Transit', // ?
-      'Out For Pickup',
-      'Pickup Exception',
-      'Undelivered',
-      'Delayed',
-      'Destroyed',
-      'Damaged',
-      'Fulfilled',
-      'Reached Destination Hub',
-      'Misrouted',
-      'RTO NDR',
-      'RTO OFD',
-      'Picked Up',
-      'Self FulFiled',
-      'Disposed Off',
-      'Cancelled Before Dispatched',
-      'RTO In Transit',
+      "Waiting For Acceptance",
+      "Accepted",
+      "AWB Assigned",
+      "Label Generated",
+      "Pickup Scheduled/Generated",
+      "Pickup Queued",
+      "Manifest Generated",
+      "Shipped",
+      "Delivered",
+      "Cancelled",
+      "RTO Initiated",
+      "RTO Delivered",
+      "Pending",
+      "Lost",
+      "Pickup Error",
+      "RTO Acknowledged",
+      "Pickup Rescheduled",
+      "Cancellation Requested",
+      "Out For Delivery",
+      "In Transit",
+      "Out For Pickup",
+      "Pickup Exception",
+      "Undelivered",
+      "Delayed",
+      "Partial_Delivered",
+      "Destroyed",
+      "Damaged",
+      "Fulfilled",
+      "Reached at Destination",
+      "Misrouted",
+      "RTO NDR",
+      "RTO OFD",
+      "Picked Up",
+      "Self Fulfilled",
+      "DISPOSED_OFF",
+      "CANCELLED_BEFORE_DISPATCHED",
+      "RTO_IN_TRANSIT",
+      "QC Failed",
+      "Reached Warehouse",
+      "Custom Cleared",
+      "In Flight",
+      "Handover to Courier",
+      "Shipment Booked",
+      "In Transit Overseas",
+      "Connection Aligned",
+      "Reached Overseas Warehouse",
+      "Custom Cleared Overseas",
+      "Box Packing",
     ],
-    default: 'Waiting For Acceptance',
+    default: "Waiting For Acceptance",
   },
   status_id: {
     type: Number,
     enum: [
-      -1,
-      0,
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      15,
-      16,
-      17,
-      18,
-      19,
-      20,
-      21,
-      22,
-      23,
-      24,
-      25,
-      26,
-      27,
-      28,
-      29,
-      30,
-      31,
-      32,
-      33,
-      34,
-      35,
-      36,
-      37,
-      38,
-      39,
-      40,
-      41,
-      42,
-      43,
-      44,
-      45,
-      46,
+      -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+      20, 21, 22, 23, 24, 25, 26, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48,
+      49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59,
     ],
     default: -1,
   },
@@ -137,7 +104,7 @@ const shipmentSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now() },
   carrier: {
     type: String,
-    enum: ['Delhivery', 'Shiprocket', 'Self'],
+    enum: ["Delhivery", "Shiprocket", "Self"],
   },
   reasonForCancellation: {
     type: String,
@@ -178,19 +145,19 @@ const shipmentSchema = new mongoose.Schema({
   deliveredOn: {
     type: Date,
   },
-})
+});
 
 shipmentSchema.pre(/^find/, function (next) {
-  this.find({}).populate('customer').populate('order')
-  next()
-})
+  this.find({}).populate("customer").populate("order");
+  next();
+});
 
 shipmentSchema.index({
-  orderRef: 'text',
-  status: 'text',
-  carrier: 'text',
-})
+  orderRef: "text",
+  status: "text",
+  carrier: "text",
+});
 
-const Shipment = new mongoose.model('Shipment', shipmentSchema)
+const Shipment = new mongoose.model("Shipment", shipmentSchema);
 
-module.exports = Shipment
+module.exports = Shipment;
