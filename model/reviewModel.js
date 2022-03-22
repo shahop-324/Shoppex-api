@@ -28,8 +28,8 @@ const reviewSchema = new mongoose.Schema({
   videos: [{ type: String }],
   visible: { type: Boolean, default: true },
   isTestemonial: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now() },
-  updatedAt: { type: Date },
+  createdAt: { type: Date, default: Date.now() }, // unselect
+  updatedAt: { type: Date }, // unselect
   foundHelpful: [{ type: mongoose.Schema.ObjectId, ref: 'Customer' }],
   foundNotHelpful: [{ type: mongoose.Schema.ObjectId, ref: 'Customer' }],
   tags: [{type: String,},],

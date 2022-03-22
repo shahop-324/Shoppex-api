@@ -27,8 +27,8 @@ const marketingSchema = new mongoose.Schema({
   message: { type: String },
   html: { type: String },
   design: { type: Map },
-  createdAt: { type: Date, default: Date.now() },
-  updatedAt: { type: Date },
+  createdAt: { type: Date, default: Date.now() }, // unselect
+  updatedAt: { type: Date }, // unselect
   status: { type: String, enum: ['Draft', 'Sent'], default: 'Draft' },
 })
 

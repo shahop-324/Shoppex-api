@@ -85,9 +85,6 @@ const shipmentSchema = new mongoose.Schema({
   etd: {
     type: Date,
   },
-  courier_name: {
-    type: String,
-  },
   scans: [
     {
       date: {
@@ -113,9 +110,6 @@ const shipmentSchema = new mongoose.Schema({
     type: String,
   },
   shiprocket_shipment_id: {
-    type: String,
-  },
-  AWB: {
     type: String,
   },
   pickup_time: {

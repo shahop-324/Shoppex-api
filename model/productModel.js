@@ -81,8 +81,8 @@ const productSchema = new mongoose.Schema({
       ref: 'Order',
     },
   ],
-  createdAt: { type: Date, default: Date.now() },
-  updatedAt: { type: Date, default: Date.now() },
+  createdAt: { type: Date, default: Date.now() }, // unselect
+  updatedAt: { type: Date, default: Date.now() }, // unselect
   freeDelivery: {type: Boolean, default: false,},
   priceDeterminingVariant: {type: String,},
   shopCategory: {
@@ -91,9 +91,7 @@ const productSchema = new mongoose.Schema({
   shopSubCategory: {
     type: Map,
   },
-  shopDivision: {
-    type: Map,
-  },
+  
   reviewedBy: [
     {
       type: mongoose.Schema.ObjectId,

@@ -97,7 +97,7 @@ exports.setupStore = catchAsync(async (req, res, next) => {
     {
       setupCompleted: true,
       storeName,
-      country: country,
+      country: country && country,
       state,
       city,
       pincode,
@@ -111,18 +111,6 @@ exports.setupStore = catchAsync(async (req, res, next) => {
     },
     { new: true, validateModifiedOnly: true }
   );
-
-  updatedStore.setupCompleted = true;
-  updatedStore.country = country;
-  updatedStore.state = state;
-  updatedStore.city = city;
-  updatedStore.pincode = pincode;
-  updatedStore.address = address;
-  updatedStore.landmark = landmark;
-  updatedStore.gstin = gstin;
-  updatedStore.category = category;
-  updatedStore.phone = phone;
-  updatedStore.storeName = storeName;
 
   updatedStore = await updatedStore.save({
     new: true,

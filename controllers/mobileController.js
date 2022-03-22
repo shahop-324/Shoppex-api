@@ -21,15 +21,17 @@ const signToken = (userId, storeId) =>
 exports.login = catchAsync(async (req, res, next) => {
   // Find if there is any user with given mobile number
   // if yes then generate and send OTP via mobile and send after storing in database
-
+try{
   const loginOTP = otpGenerator.generate(6, {
     upperCaseAlphabets: false,
     specialChars: false,
     lowerCaseAlphabets: false,
   });
 
+  console.log(`+91${req.body.mobile}`)
+
   const existingUser = await User.findOneAndUpdate(
-    { phone: req.body.mobile },
+    { phone: `+91${req.body.mobile}` },
     { loginOTP },
     { new: true, validateModifiedOnly: true }
   );
@@ -41,7 +43,7 @@ exports.login = catchAsync(async (req, res, next) => {
       .create({
         body: `Your OTP for QwikShop is ${loginOTP}`,
         from: "+1 775 535 7258",
-        to: existingUser.phone,
+        to: `${existingUser.phone}`,
       })
 
       .then((message) => {
@@ -51,6 +53,7 @@ exports.login = catchAsync(async (req, res, next) => {
         res.status(200).json({
           status: "success",
           message: "OTP sent successfully!",
+          phone: `${existingUser.phone}`,
         });
       })
       .catch((e) => {
@@ -68,11 +71,16 @@ exports.login = catchAsync(async (req, res, next) => {
       message: "There is no account with this mobile number, Please register",
     });
   }
+}
+catch(e) {
+  console.log(e)
+}
+  
 });
 
 exports.resendLoginOTP = catchAsync(async (req, res, next) => {
   // JUST TAKE MOBILE NUMBER,fInd the user, generate new otp, send otp => DONE
-  console.log(`+${req.body.mobile.substring(1)}`);
+  console.log(`+91${req.body.mobile}`);
 
   const loginOTP = otpGenerator.generate(6, {
     upperCaseAlphabets: false,
@@ -81,7 +89,7 @@ exports.resendLoginOTP = catchAsync(async (req, res, next) => {
   });
 
   const existingUser = await User.findOneAndUpdate(
-    { phone: `+${req.body.mobile.substring(1)}` },
+    { phone: `+91${req.body.mobile}` },
     { loginOTP },
     { new: true, validateModifiedOnly: true }
   );
@@ -125,18 +133,17 @@ exports.verifyAndLogin = catchAsync(async (req, res, next) => {
 
   console.log(req.body.mobile);
 
-  console.log(`+${req.body.mobile.substring(1)}`);
+  console.log(`+91${req.body.mobile}`);
 
   const existingUser = await User.findOne({
-    phone: `+${req.body.mobile.substring(1)}`,
+    phone: `+91${req.body.mobile}`,
   });
 
   if (existingUser) {
+    console.log(existingUser.loginOTP, req.body.otp)
     if (existingUser.loginOTP * 1 === req.body.otp * 1) {
       // Correct OTP => Login
-
-      //   reset otp to null
-
+      // reset otp to null
       existingUser.loginOTP = null;
 
       await existingUser.save({ new: true, validateModifiedOnly: true });
@@ -251,11 +258,12 @@ exports.register = catchAsync(async (req, res, next) => {
   //   Make sure there is no exitsing user with same mobile number
 
   const { firstName, lastName, shopName, mobile, referralCode } = req.body;
+  console.log(req.body);
 
   // Check if there is any account with same email => if yes then throw error
 
   const existingUser = await User.findOne({
-    phone: `+${req.body.mobile.substring(1)}`,
+    phone: `+91${req.body.mobile}`,
   });
 
   if (existingUser) {
@@ -269,7 +277,7 @@ exports.register = catchAsync(async (req, res, next) => {
 
   // Delete all previous account request for same email
 
-  await UserRequest.deleteMany({ phone: `+${req.body.mobile.substring(1)}` });
+  await UserRequest.deleteMany({ phone: `+91${req.body.mobile}` });
 
   // Create new account request for this email
 
@@ -277,7 +285,7 @@ exports.register = catchAsync(async (req, res, next) => {
     firstName,
     lastName,
     shopName,
-    phone: mobile,
+    phone: `+91${req.body.mobile}`,
     referralCode,
   });
 
@@ -302,7 +310,7 @@ exports.register = catchAsync(async (req, res, next) => {
     .create({
       body: `Your OTP for QwikShop is ${otp}`,
       from: "+1 775 535 7258",
-      to: req.body.mobile,
+      to: `+91${req.body.mobile}`,
     })
 
     .then((message) => {
@@ -312,6 +320,7 @@ exports.register = catchAsync(async (req, res, next) => {
       res.status(201).json({
         status: "success",
         message: "Please confirm your mobile using OTP.",
+        phone: `+91${req.body.mobile}`,
       });
     })
     .catch((e) => {

@@ -138,8 +138,7 @@ const storeSchema = new mongoose.Schema({
     default: Date.now(),
   },
   enableCOD: { type: Boolean, default: false },
-  enablePartialCOD: { type: Boolean, default: false },
-  partialCODPercentage: { type: Number, default: 20 },
+ 
   paymentMode: { type: String, default: "upi" },
   upiId: { type: String },
   bank: { type: Map },
@@ -153,12 +152,12 @@ const storeSchema = new mongoose.Schema({
   seoMetaKeywords: { type: String },
   seoImagePreview: { type: String },
   storePincode: { type: String },
-  deliveryZones: [{ type: Map }],
-  extraCharges: [{ type: Map }],
+  deliveryZones: [{ type: Map }], // Unselect
+  extraCharges: [{ type: Map }], 
   gstEnabled: { type: Boolean, default: false },
   gstNumber: { type: String },
   gstPercentage: { type: Number },
-  storeTimings: [{ type: Map }],
+  storeTimings: [{ type: Map }], // Unselect
   termsOfService: { type: String },
   privacyPolicy: { type: String },
   refundPolicy: { type: String },
@@ -189,15 +188,7 @@ const storeSchema = new mongoose.Schema({
   returnPeriod: { type: Map },
   replacementPeriod: { type: Map },
   deliveryHappensWithin: { type: String },
-  deliveryState: { type: String },
-  deliveryCity: { type: String },
-  minDeliveryDistance: { type: Number },
-  maxDeliveryDistance: { type: Number },
-  showShopInsideDeliveryZoneOnly: { type: Boolean, default: false },
-  // Coins
-  coinValue: {
-    type: Number, // Value of 1 coin in ruppee
-  },
+  
   // Wallet
   walletAmount: {
     type: Number,

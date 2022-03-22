@@ -17,11 +17,11 @@ const payoutSchema = new mongoose.Schema({
     type: String,
   },
   payoutId: { type: String },
-  createdBy: {
+  createdBy: { // unselect
     type: mongoose.Schema.ObjectId,
     ref: 'Admin',
   },
-  createdAt: {
+  createdAt: { // unselect
     type: Date,
     default: Date.now(),
   },

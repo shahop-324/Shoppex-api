@@ -20,7 +20,7 @@ const refundSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  createdAt: {
+  createdAt: { // unselect
     type: Date,
     default: Date.now(),
   },

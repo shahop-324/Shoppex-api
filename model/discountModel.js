@@ -13,7 +13,6 @@ const discountSchema = new mongoose.Schema({
   givenProduct: { type: Map },
   applicableCategories: [{ type: Map }],
   applicableSubCategories: [{ type: Map }],
-  applicableDivisions: [{type: Map,}],
   applicableProducts: [{ type: Map }],
   numberOfCoupons: { type: Number },
   totalUsed: { type: Number, default: 0 },
@@ -36,11 +35,11 @@ const discountSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
-  createdAt: {
+  createdAt: { // unselect
     type: Date,
     default: Date.now(),
   },
-  updatedAt: {
+  updatedAt: { // unselect
     type: Date,
   },
 })

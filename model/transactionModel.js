@@ -15,7 +15,7 @@ const transactionSchema = new mongoose.Schema({
   store: { type: mongoose.Schema.ObjectId, ref: 'Store' },
   customer: { type: mongoose.Schema.ObjectId, ref: 'Customer' },
   order: { type: mongoose.Schema.ObjectId, ref: 'Order' },
-  createdAt: { type: Date, default: Date.now() },
+  createdAt: { type: Date, default: Date.now() }, // unselect
   fee: {
     type: Number,
   },

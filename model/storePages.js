@@ -14,10 +14,10 @@ const storePagesSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'Store',
   },
-  updatedAt: {
+  updatedAt: { // unselect
     type: Date,
   },
-  createdAt: {
+  createdAt: { // unselect
     type: Date,
   },
   type: { type: String, enum: ['dnd', 'quill'] },

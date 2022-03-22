@@ -6,7 +6,7 @@ const orderSchema = new mongoose.Schema({
   customer: { type: mongoose.Schema.ObjectId, ref: "Customer" },
   shipment: { type: mongoose.Schema.ObjectId, ref: "Shipment" },
   referral: { type: mongoose.Schema.ObjectId, ref: "Referral" },
-  createdAt: { type: Date, default: Date.now() },
+  createdAt: { type: Date, default: Date.now() }, // unselect
   shippingAddress: { type: Map },
   billingAddress: { type: Map },
   taxData: { type: Map },

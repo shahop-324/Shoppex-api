@@ -13,8 +13,8 @@ const referralSchema = new mongoose.Schema({
   commission: { type: Number },
   totalSales: { type: Number, default: 0 },
   totalEarnings: { type: Number, default: 0 },
-  createdAt: { type: Date, default: Date.now() },
-  updatedAt: { type: Date },
+  createdAt: { type: Date, default: Date.now() }, // unselect
+  updatedAt: { type: Date }, // unselect
 });
 
 referralSchema.index({

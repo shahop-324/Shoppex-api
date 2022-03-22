@@ -23,23 +23,23 @@ const customerSchema = new mongoose.Schema({
   smsCommunications: [
     { type: mongoose.Schema.ObjectId, ref: 'SMSCommunications' },
   ],
-  createdAt: { type: Date, default: Date.now() },
-  updatedAt: { type: Date },
+  createdAt: { type: Date, default: Date.now() }, // unselect
+  updatedAt: { type: Date }, // unselect
   type: { type: String, enum: ['Self', 'Imported'], default: 'Self' },
   tag: { type: String, enum: ['new', 'returning', 'noSale'], default: 'new' },
-  password: {
+  password: { // unselect
     type: String,
   },
-  passwordConfirm: {
+  passwordConfirm: { // unselect
     type: String,
   },
-  passwordChangedAt: {
+  passwordChangedAt: { // unselect
     type: Date,
   },
-  otp: {
+  otp: { // unselect
     type: String,
   },
-  birthDate: {
+  birthDate: { // unselect
     type: Date,
   },
   cart: [
@@ -58,13 +58,13 @@ const customerSchema = new mongoose.Schema({
       availableQuantity: { type: Number },
     },
   ],
-  cartUpdatedAt: {
+  cartUpdatedAt: { // unselect
     type: Date,
   },
-  passwordResetToken: {
+  passwordResetToken: { // unselect
     type: String,
   },
-  passwordResetExpires: {
+  passwordResetExpires: { // unselect
     type: Date,
   },
   boughtProducts: [
@@ -73,10 +73,10 @@ const customerSchema = new mongoose.Schema({
       ref: 'Product',
     },
   ],
-  loginOTP: {
+  loginOTP: { // unselect
     type: Number,
   },
-  guestOTP: {
+  guestOTP: { // unselect
     type: Number,
   },
 })

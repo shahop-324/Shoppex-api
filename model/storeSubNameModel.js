@@ -8,10 +8,10 @@ const storeSubNameSchema = new mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref: "Store",
     },
-    createdAt: {
+    createdAt: { // unselect
         type: Date,
     },
-    updatedAt: {
+    updatedAt: { // unselect
         type: Date,
     },
 });

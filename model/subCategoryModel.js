@@ -14,12 +14,7 @@ const subCategorySchema = new mongoose.Schema({
       ref: 'Product',
     },
   ],
-  divisions: [
-    {
-      type: mongoose.Schema.ObjectId,
-      ref: 'Division',
-    },
-  ],
+ 
   store: {
     type: mongoose.Schema.ObjectId,
     ref: 'Store',
@@ -37,8 +32,8 @@ const subCategorySchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  createdAt: { type: Date, },
-  updatedAt: { type: Date, default: Date.now() },
+  createdAt: { type: Date, }, // unselect
+  updatedAt: { type: Date, default: Date.now() }, // unselect
 })
 
 subCategorySchema.pre(/^find/, function (next) {
