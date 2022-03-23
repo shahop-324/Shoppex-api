@@ -538,6 +538,7 @@ exports.protectAdmin = catchAsync(async (req, res, next) => {
 exports.protect = catchAsync(async (req, res, next) => {
   // 1) Getting token and check if it's there
   let token;
+
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
@@ -546,6 +547,8 @@ exports.protect = catchAsync(async (req, res, next) => {
   } else if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
+
+  console.log(token);
 
   if (!token) {
     return next(
