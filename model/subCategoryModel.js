@@ -36,10 +36,6 @@ const subCategorySchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now() }, // unselect
 })
 
-subCategorySchema.pre(/^find/, function (next) {
-  this.find({}).populate('divisions')
-  next()
-})
 
 subCategorySchema.index({
   name: 'text',

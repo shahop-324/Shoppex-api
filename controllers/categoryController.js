@@ -3,7 +3,7 @@ const Product = require("../model/productModel");
 const catchAsync = require("../utils/catchAsync");
 const apiFeatures = require("../utils/apiFeatures");
 const SubCategory = require("../model/subCategoryModel");
-const Division = require("../model/divisionModel");
+const { default: mongoose } = require("mongoose");
 // Add, Edit, Delete, Get => Category
 
 const filterObj = (obj, ...allowedFields) => {
@@ -33,6 +33,8 @@ exports.addCategory = catchAsync(async (req, res, next) => {
 exports.updateCategoryStock = catchAsync(async (req, res, next) => {
   const { categoryId } = req.params;
 
+  console.log(req.body);
+
   const filteredBody = filterObj(req.body, "outOfStock", "hidden");
 
   const updatedCategory = await Category.findByIdAndUpdate(
@@ -41,11 +43,9 @@ exports.updateCategoryStock = catchAsync(async (req, res, next) => {
     { new: true, validateModifiedOnly: true }
   );
 
-  // Find all subcategory and then also divisions under sub category and do the same for all of them
+  // Find all subcategory under sub category and do the same for all of them
 
   const storeSubCategories = await SubCategory.find({ store: req.store._id });
-
-  const storeDivisions = await Division.find({ store: req.store._id });
 
   const eligibleSubCategories = storeSubCategories.filter((el) => {
     return el.category.get("value") === categoryId;
@@ -59,18 +59,6 @@ exports.updateCategoryStock = catchAsync(async (req, res, next) => {
       validateModifiedOnly: true,
     });
 
-    // Find all Divisions that belongs to this sub category
-
-    const eligibleDivisions = storeDivisions.filter((el) => {
-      el.subCategory.get("value") === e._id;
-    });
-
-    eligibleDivisions.forEach(async (elm) => {
-      await Division.findByIdAndUpdate(elm._id, filteredBody, {
-        new: true,
-        validateModifiedOnly: true,
-      });
-    });
   });
 
   res.status(200).json({
@@ -82,6 +70,8 @@ exports.updateCategoryStock = catchAsync(async (req, res, next) => {
 
 exports.updateCategory = catchAsync(async (req, res, next) => {
   const { categoryId } = req.params;
+
+  console.log(req.body);
 
   const filteredBody = filterObj(
     req.body,
@@ -118,25 +108,11 @@ exports.deleteCategory = catchAsync(async (req, res, next) => {
   });
 
   const storeSubCategories = await SubCategory.find({ store: req.store._id });
-  const storeDivisions = await Division.find({ store: req.store._id });
-
+ 
   const eligibleSubCategories = storeSubCategories.filter(
     (el) => el.category.get("value") === categoryId
   );
 
-  eligibleSubCategories.forEach(async (el) => {
-    await SubCategory.findByIdAndDelete(el._id);
-
-    // Find all Divisions and delete them as well
-
-    const eligibleDivisions = storeDivisions.filter(
-      (elm) => elm.subCategory.get("value") === el._id
-    );
-
-    eligibleDivisions.forEach(async (a) => {
-      await Division.findByIdAndDelete(a._id);
-    });
-  });
 
   // Remove this category
   await Category.findByIdAndDelete(categoryId);
@@ -163,7 +139,7 @@ exports.deleteMultipleCategory = catchAsync(async (req, res, next) => {
   }
 
   const storeSubCategories = await SubCategory.find({ store: req.store._id });
-  const storeDivisions = await Division.find({ store: req.store._id });
+  
 
   // Find all Sub categories & divisions and delete them as well
 
@@ -171,20 +147,6 @@ exports.deleteMultipleCategory = catchAsync(async (req, res, next) => {
     const eligibleSubCategories = storeSubCategories.filter(
       (el) => el.category.get("value") === e
     );
-
-    eligibleSubCategories.forEach(async (el) => {
-      await SubCategory.findByIdAndDelete(el._id);
-
-      // Find all Divisions and delete them as well
-
-      const eligibleDivisions = storeDivisions.filter(
-        (elm) => elm.subCategory.get("value") === el._id
-      );
-
-      eligibleDivisions.forEach(async (a) => {
-        await Division.findByIdAndDelete(a._id);
-      });
-    });
   });
 
   // Remove this category
@@ -219,15 +181,39 @@ exports.getCategories = catchAsync(async (req, res, next) => {
 exports.reorderCategories = catchAsync(async (req, res, next) => {
   // Delete all of prev categories and create new ones
 
-  await Category.deleteMany({ store: req.store._id });
+  if (req.body.isIdList) {
+    console.log(req.body.categories[0].toString());
+    // console.log(mongoose.Types.ObjectId(req.body.categories[0].slice(1, -1).toString()));
+    // const searchCategory = await Category.findById( mongoose.Types.ObjectId(req.body.categories[0].toString()));
+    const newList = req.body.categories.map(async (e) => {
+      const id = e.toString();
+      const searchCategory = await Category.findById(id);
+      return searchCategory;
+    });
 
-  const newCategories = await Category.insertMany(req.body.categories);
+    req.body.categories.forEach(async (e) => {
+      const id = e.toString();
+      await Category.findByIdAndDelete(id);
+    });
 
-  res.status(200).json({
-    message: "Reordered successfully!",
-    data: newCategories,
-    status: "success",
-  });
+    req.body.categories = newList;
+  } else {
+    await Category.deleteMany({ store: req.store._id });
+  }
+
+  setTimeout(async () => {
+    console.log(req.body.categories);
+
+    const newCategories = await Category.insertMany(req.body.categories);
+
+    console.log(req.body.categories);
+
+    res.status(200).json({
+      message: "Reordered successfully!",
+      data: newCategories,
+      status: "success",
+    });
+  }, 2000);
 });
 
 exports.bulkImportCategories = catchAsync(async (req, res, next) => {

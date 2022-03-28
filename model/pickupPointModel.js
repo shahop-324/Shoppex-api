@@ -1,7 +1,8 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const pickupPointSchema = new mongoose.Schema({
-  store: { type: mongoose.Schema.ObjectId, ref: 'Store' },
+  id: { type: String },
+  store: { type: mongoose.Schema.ObjectId, ref: "Store" },
   addressType: {
     type: String,
   },
@@ -24,20 +25,20 @@ const pickupPointSchema = new mongoose.Schema({
   shiprocket_data: {
     type: Map,
   },
-})
+});
 
 pickupPointSchema.index({
-  addressType: 'text',
-  pickupPointName: 'text',
-  state: 'text',
-  city: 'text',
-  landmark: 'text',
-  contactPersonName: 'text',
-  contactEmail: 'text',
-  phone: 'text',
-  address: 'text',
-})
+  addressType: "text",
+  pickupPointName: "text",
+  state: "text",
+  city: "text",
+  landmark: "text",
+  contactPersonName: "text",
+  contactEmail: "text",
+  phone: "text",
+  address: "text",
+});
 
-const PickupPoint = new mongoose.model('PickupPoint', pickupPointSchema)
+const PickupPoint = new mongoose.model("PickupPoint", pickupPointSchema);
 
-module.exports = PickupPoint
+module.exports = PickupPoint;

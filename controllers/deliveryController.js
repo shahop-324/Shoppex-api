@@ -100,9 +100,15 @@ exports.addPickupPoint = catchAsync(async (req, res, next) => {
             shiprocket_data: result.data,
           });
 
+          newPickupPoint.id = newPickupPoint._id;
+          const updatedPoint = await newPickupPoint.save({
+            new: true,
+            validateModifiedOnly: true,
+          });
+
           res.status(200).json({
             status: "success",
-            data: newPickupPoint,
+            data: updatedPoint,
             message: "New Pickup point added successfully!",
           });
         }
@@ -336,6 +342,7 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
     status: "success",
     data: updatedShipment,
     order: updatedOrder,
+    shipment: updatedShipment,
     message: "Shipment updated successfully!",
   });
 });
@@ -357,8 +364,22 @@ exports.getShipments = catchAsync(async (req, res, next) => {
 // Assign Shiprocket
 
 exports.assignShiprocket = catchAsync(async (req, res, next) => {
-  const pickupPoint = await PickupPoint.findById(req.body.pickupPointId.value);
-  const shipment = await Shipment.findById(req.body.shipmentId);
+  let pickupPoint;
+
+  if (req.body.pointId) {
+    pickupPoint = await PickupPoint.findById(req.body.pointId);
+  } else {
+    pickupPoint = await PickupPoint.findById(req.body.pickupPointId.value);
+  }
+
+  let shipment;
+
+  if (req.body.ref) {
+    shipment = await Shipment.findOne({ orderRef: req.body.ref });
+  } else {
+    shipment = await Shipment.findById(req.body.shipmentId);
+  }
+
   const orderDoc = await Order.findById(shipment.order._id);
   const customerDoc = await Customer.findById(orderDoc.customer._id);
 
@@ -1578,6 +1599,55 @@ exports.getTrackingUpdate = catchAsync(async (req, res, next) => {
 // Assign Self shipping
 exports.assignSelfShipping = catchAsync(async (req, res, next) => {
   // just update carrier as self shipping => Notify Customer
+
+  try {
+    let pickupPoint;
+
+    if (req.body.pointId) {
+      pickupPoint = await PickupPoint.findById(req.body.pointId);
+    } else {
+      pickupPoint = await PickupPoint.findById(req.body.pickupPointId.value);
+    }
+
+    let shipment;
+
+    if (req.body.ref) {
+      shipment = await Shipment.findOne({ orderRef: req.body.ref });
+    }
+
+    const orderDoc = await Order.findById(shipment.order._id);
+    const customerDoc = await Customer.findById(orderDoc.customer._id);
+
+    const storeDoc = await Store.findById(shipment.store);
+
+    shipment.carrier = "Self";
+    shipment.status = "Accepted";
+    shipment.status_id = 0;
+    shipment.updatedAt = Date.now();
+
+    const updatedShipment = await shipment.save({
+      new: true,
+      validateModifiedOnly: true,
+    });
+
+    orderDoc.carrier = "Self";
+    orderDoc.status_id = 0;
+    orderDoc.status = "Accepted";
+
+    const updatedOrder = await orderDoc.save({
+      new: true,
+      validateModifiedOnly: true,
+    });
+
+    res.status(200).json({
+      status: "success",
+      order: updatedOrder,
+      shipment: updatedShipment,
+      message: "Shipment carrier updated succesfully!",
+    });
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 // Staus Code	Description

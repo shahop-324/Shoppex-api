@@ -181,13 +181,13 @@ const storeSchema = new mongoose.Schema({
   mode: { type: String, default: "light" },
   primaryColor: { type: String, default: "#2065D1" },
   // Store Other info
-  freeDeliveryAbove: { type: Number },
-  orderIsShippedIn: { type: Map },
+  freeDeliveryAbove: { type: Number, default: 1000 },
+  orderIsShippedIn: { type: Map, },
   returnAccepted: { type: Boolean, default: false },
   replacementAccepted: { type: Boolean, default: false },
-  returnPeriod: { type: Map },
-  replacementPeriod: { type: Map },
-  deliveryHappensWithin: { type: String },
+  returnPeriod: { type: Map, },
+  replacementPeriod: { type: Map, },
+  deliveryHappensWithin: { type: String, },
   
   // Wallet
   walletAmount: {
@@ -352,15 +352,19 @@ const storeSchema = new mongoose.Schema({
   },
   pricePer100gm: {
     type: Number,
+    default: 10,
   },
   deliveryChargeType: {
     type: String,
+    default: 'Dynamic'
   },
   constantDeliveryChargeBasedOn: {
     type: String,
+    default: 'Weight',
   },
   pricePer5km: {
     type: Number,
+    default: 15,
   },
   lat: {
     type: Number,

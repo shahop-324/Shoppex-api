@@ -94,8 +94,7 @@ exports.deleteDivision = catchAsync(async (req, res, next) => {
     await Product.findByIdAndDelete(element._id)
   })
 
-  // Remove this division
-  await Division.findByIdAndDelete(divisionId)
+
 
   res.status(200).json({
     status: 'success',
@@ -106,17 +105,7 @@ exports.deleteDivision = catchAsync(async (req, res, next) => {
 exports.deleteMultipleDivision = catchAsync(async (req, res, next) => {
   const storeProducts = await Product.find({ store: req.store._id })
 
-  for (let element of req.body.divisions) {
-    // Remove all products in this division
 
-    const eligibleProducts = storeProducts.filter(
-      (el) => el.shopDivision.get('value') === element,
-    )
-
-    eligibleProducts.forEach(async (element) => {
-      await Product.findByIdAndDelete(element._id)
-    })
-  }
 
   // Remove these divisions
 

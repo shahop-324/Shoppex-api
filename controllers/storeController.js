@@ -789,17 +789,21 @@ exports.updateGeneralStoreInfo = catchAsync(async (req, res, next) => {
 // and create a invitation if not already present
 
 exports.updateStore = catchAsync(async (req, res, next) => {
-  const updatedStore = await Store.findByIdAndUpdate(
-    req.store._id,
-    { ...req.body },
-    { new: true, validateModifiedOnly: true }
-  );
+  try {
+    const updatedStore = await Store.findByIdAndUpdate(
+      req.store._id,
+      { ...req.body },
+      { new: true, validateModifiedOnly: true }
+    );
 
-  res.status(200).json({
-    status: "success",
-    message: "Store Updated successfully!",
-    data: updatedStore,
-  });
+    res.status(200).json({
+      status: "success",
+      message: "Store Updated successfully!",
+      data: updatedStore,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 exports.generatePolicy = catchAsync(async (req, res, next) => {

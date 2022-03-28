@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const categorySchema = new mongoose.Schema({
   name: {
@@ -10,17 +10,17 @@ const categorySchema = new mongoose.Schema({
   products: [
     {
       type: mongoose.Schema.ObjectId,
-      ref: 'Product',
+      ref: "Product",
     },
   ],
   store: {
     type: mongoose.Schema.ObjectId,
-    ref: 'Store',
+    ref: "Store",
   },
   subCategories: [
     {
       type: mongoose.Schema.ObjectId,
-      ref: 'SubCategory',
+      ref: "SubCategory",
     },
   ],
   outOfStock: {
@@ -35,19 +35,19 @@ const categorySchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  createdAt: { type: Date, }, // unselect
+  createdAt: { type: Date }, // unselect
   updatedAt: { type: Date, default: Date.now() }, // unselect
-})
+});
 
 categorySchema.pre(/^find/, function (next) {
-  this.find({}).populate('subCategories');
-  next()
-})
+  this.find({}).populate("subCategories");
+  next();
+});
 
 categorySchema.index({
-  name: 'text',
-})
+  name: "text",
+});
 
-const Category = new mongoose.model('Category', categorySchema)
+const Category = new mongoose.model("Category", categorySchema);
 
-module.exports = Category
+module.exports = Category;

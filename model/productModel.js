@@ -1,6 +1,9 @@
 const mongoose = require('mongoose')
 
 const productSchema = new mongoose.Schema({
+  id: {
+    type: String,
+  },
   store: {
     type: mongoose.Schema.ObjectId,
     ref: 'Store',
@@ -15,9 +18,6 @@ const productSchema = new mongoose.Schema({
     type: Map,
   },
   subCategory: {
-    type: Map,
-  },
-  division: { 
     type: Map,
   },
   price: {

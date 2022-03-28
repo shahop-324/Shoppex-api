@@ -19,6 +19,7 @@ router.get('/shipment/getAll', authController.protect, deliveryController.getShi
 // Assign Courier to delhivery
 
 router.post('/shipment/assignShiprocket', authController.protect, deliveryController.assignShiprocket);
+router.post('/shipment/assignSelfShipping', authController.protect, deliveryController.assignSelfShipping);
 
 router.post('/shipment/requestPickup/:shipmentId', authController.protect, deliveryController.requestPickup);
 router.post('/shipment/generateInvoice/:shipmentId', deliveryController.generateInvoice);

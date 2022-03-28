@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema({
+  id: {type: String,},
   ref: { type: String },
   store: { type: mongoose.Schema.ObjectId, ref: "Store" },
   customer: { type: mongoose.Schema.ObjectId, ref: "Customer" },
@@ -137,6 +138,9 @@ const orderSchema = new mongoose.Schema({
   },
   deliveredOn: {
     type: Date,
+  },
+  carrier: {
+    type: String,
   },
 });
 

@@ -27,6 +27,7 @@ const catchAsync = require('./utils/catchAsync')
 
 // Import routes
 
+const appRoutes = require('./route/appRoutes');
 const authRoutes = require('./route/authRoutes')
 const productRoutes = require('./route/productRoutes')
 const notificationRoutes = require('./route/notificationRoutes')
@@ -143,6 +144,7 @@ app.use(mongosanitize())
 app.use(xss())
 
 // api.shoppex.in/v1/auth/registerUser (POST);
+app.use('/v1/app', appRoutes);
 app.use('/v1/general', generalRoutes)
 app.use('/v1/auth', authRoutes)
 app.use('/v1/product', productRoutes)
@@ -160,7 +162,6 @@ app.use('/v1/customer', customerRoutes)
 app.use('/v1/review', reviewRoutes)
 app.use('/v1/questions', questionRoutes)
 app.use('/v1/marketing', marketingRoutes)
-app.use('/v1/division', divisionRoutes)
 app.use('/v1/razorpay', razorpayRoutes)
 app.use('/v1/menu', menuRoutes)
 app.use('/v1/wallet', walletRoutes)

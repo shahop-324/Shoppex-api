@@ -6,16 +6,14 @@ const apiFeatures = require("../utils/apiFeatures");
 const Store = require("../model/storeModel");
 const Category = require("../model/categoryModel");
 const SubCategory = require("../model/subCategoryModel");
-const Division = require("../model/divisionModel");
 
 exports.addProduct = catchAsync(async (req, res, next) => {
   console.log(req.body);
 
-  // Category, SubCategory & Division => Find and update them
+  // Category, SubCategory => Find and update them
 
   const shopCategory = req.body.category;
   const shopSubCategory = req.body.subCategory;
-  const shopDivision = req.body.division;
 
   // * DONE => Calculate if it qualifies for delivery or not
   // * DONE => Calculate lowest and highest price
@@ -26,11 +24,16 @@ exports.addProduct = catchAsync(async (req, res, next) => {
 
   let prices = [req.body.price];
 
-  req.body.customVariants.forEach((element) => {
-    element.options.forEach((item) => {
-      prices.push(item.price * 1);
+  if (
+    req.body.customVariants !== undefined &&
+    req.body.customVariants.length > 0
+  ) {
+    req.body.customVariants.forEach((element) => {
+      element.options.forEach((item) => {
+        prices.push(item.price * 1);
+      });
     });
-  });
+  }
 
   // Now prices array contains all prices => just find min and max and you will have lowest and highest prices
 
@@ -62,6 +65,7 @@ exports.addProduct = catchAsync(async (req, res, next) => {
 
   if (shopCategory) {
     newProduct.shopCategory = shopCategory;
+    newProduct.id = newProduct._id;
     // Add this product id to this category
 
     const categoryDoc = await Category.findById(shopCategory.value);
@@ -80,17 +84,6 @@ exports.addProduct = catchAsync(async (req, res, next) => {
     subCategoryDoc.products.push(newProduct._id);
 
     await subCategoryDoc.save({ new: true, validateModifiedOnly: true });
-  }
-
-  if (shopDivision) {
-    newProduct.shopDivision = shopDivision;
-    // Add this product id to this division
-
-    const divisionDoc = await Division.findById(shopDivision.value);
-
-    divisionDoc.products.push(newProduct._id);
-
-    await divisionDoc.save({ new: true, validateModifiedOnly: true });
   }
 
   newProduct.updatedAt = Date.now();
@@ -113,213 +106,237 @@ exports.addProduct = catchAsync(async (req, res, next) => {
 });
 
 exports.updateProduct = catchAsync(async (req, res, next) => {
-  // * DONE => Calculate lowest and highest price
-  // * DONE => Calculate if it qualifies for delivery or not
+  try {
+    // * DONE => Calculate lowest and highest price
+    // * DONE => Calculate if it qualifies for delivery or not
 
-  // Category, SubCategory & Division => Find and update them
+    // Category, SubCategory => Find and update them
 
-  const shopCategory = req.body.category;
-  const shopSubCategory = req.body.subCategory;
-  const shopDivision = req.body.division;
+    const shopCategory = req.body.category;
+    const shopSubCategory = req.body.subCategory;
 
-  if (!req.body.discountedPrice) {
-    req.body.discountedPrice = req.body.price;
-  }
+    if (!req.body.discountedPrice) {
+      req.body.discountedPrice = req.body.price;
+    }
 
-  let prices = [req.body.price];
+    let prices = [req.body.price];
 
-  req.body.customVariants.forEach((element) => {
-    element.options.forEach((item) => {
-      prices.push(item.price * 1);
+    if (
+      req.body.customVariants !== undefined &&
+      req.body.customVariants.length > 0
+    ) {
+      req.body.customVariants.forEach((element) => {
+        element.options.forEach((item) => {
+          prices.push(item.price * 1);
+        });
+      });
+    }
+
+    // Now prices array contains all prices => just find min and max and you will have lowest and highest prices
+
+    lowest = prices.reduce(function (p, v) {
+      return p < v ? p : v;
     });
-  });
 
-  // Now prices array contains all prices => just find min and max and you will have lowest and highest prices
+    highest = prices.reduce(function (p, v) {
+      return p > v ? p : v;
+    });
 
-  lowest = prices.reduce(function (p, v) {
-    return p < v ? p : v;
-  });
+    console.log(req.body);
+    const productDoc = await Product.findById(req.params.productId);
 
-  highest = prices.reduce(function (p, v) {
-    return p > v ? p : v;
-  });
+    if (productDoc.shopCategory) {
+      // Remove this product from prev shopCategory and add to new
 
-  console.log(req.body);
-  const productDoc = await Product.findById(req.params.productId);
+      console.log(productDoc.shopCategory);
 
-  if (productDoc.shopCategory) {
-    // Remove this product from prev shopCategory and add to new
+      const categoryDoc = await Category.findById(
+        productDoc.shopCategory.get("value")
+      );
 
-    console.log(productDoc.shopCategory);
+      if (categoryDoc) {
+        categoryDoc.products = categoryDoc.products.filter(
+          (el) => el._id.toString() !== productDoc._id.toString()
+        );
 
-    const categoryDoc = await Category.findById(productDoc.shopCategory.get('value'));
+        await categoryDoc.save({ new: true, validateModifiedOnly: true });
+      }
+    }
 
-    categoryDoc.products = categoryDoc.products.filter(
-      (el) => el._id.toString() !== productDoc._id.toString()
+    if (productDoc.shopSubCategory) {
+      // Remove this product from prev shopSubCategory and add to new
+
+      const subCategoryDoc = await SubCategory.findById(
+        productDoc.shopSubCategory.get("value")
+      );
+
+      if (subCategoryDoc) {
+        subCategoryDoc.products = subCategoryDoc.products.filter(
+          (el) => el._id.toString() !== productDoc._id.toString()
+        );
+
+        await subCategoryDoc.save({ new: true, validateModifiedOnly: true });
+      }
+    }
+
+    if (shopCategory) {
+      productDoc.shopCategory = shopCategory;
+
+      const newCategoryDoc = await Category.findById(
+        shopCategory.value || shopCategory.get("value")
+      );
+
+      if (newCategoryDoc) {
+        newCategoryDoc.products.push(productDoc._id);
+
+        await newCategoryDoc.save({ new: true, validateModifiedOnly: true });
+      }
+    }
+
+    if (shopSubCategory) {
+      productDoc.shopSubCategory = shopSubCategory;
+
+      const newSubCategoryDoc = await SubCategory.findById(
+        shopSubCategory.value || shopSubCategory.get("value")
+      );
+
+      if (newSubCategoryDoc) {
+        newSubCategoryDoc.products.push(productDoc._id);
+
+        await newSubCategoryDoc.save({ new: true, validateModifiedOnly: true });
+      }
+    }
+
+    if (
+      req.body.excludedImages !== undefined &&
+      req.body.excludedImages.length > 0
+    ) {
+      // exclude images that needs to be excluded
+
+      productDoc.images = productDoc.images.filter(
+        (el) => !req.body.excludedImages.includes(el)
+      );
+    }
+
+    if (
+      req.body.excludedVideos !== undefined &&
+      req.body.excludedVideos.length > 0
+    ) {
+      // exclude videos that needs to be excluded
+      productDoc.videos = productDoc.videos.filter(
+        (el) => !req.body.excludedVideos.includes(el)
+      );
+    }
+
+    // add videos that are added freshly
+
+    if (req.body.videoKeys !== undefined && req.body.videoKeys.length > 0) {
+      for (let element of req.body.videoKeys) {
+        productDoc.videos.push(element);
+      }
+    }
+
+    if (req.body.imageKeys !== undefined && req.body.imageKeys.length > 0) {
+      // add images that are added freshly
+      for (let element of req.body.imageKeys) {
+        productDoc.images.push(element);
+      }
+    }
+
+    productDoc.updatedAt = Date.now();
+
+    const storeDoc = await Store.findById(productDoc.store);
+    const freeDeliveryThreshold = storeDoc.freeDeliveryAbove;
+
+    if (highest * 1 >= freeDeliveryThreshold * 1) {
+      productDoc.freeDelivery = true;
+    }
+
+    // then update rest of the things
+
+    await productDoc.save({ new: true, validateModifiedOnly: true });
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.productId,
+      {
+        ...req.body,
+        discountedPrice: req.body.discountedPrice || req.body.price,
+        lowestPrice: lowest,
+        highestPrice: highest,
+      },
+      { new: true, validateModifiedOnly: true }
     );
 
-    await categoryDoc.save({ new: true, validateModifiedOnly: true });
+    res.status(200).json({
+      status: "success",
+      message: "Product updated successfully!",
+      data: updatedProduct,
+    });
+  } catch (error) {
+    console.log(error);
   }
-
-  if (productDoc.shopSubCategory) {
-    // Remove this product from prev shopSubCategory and add to new
-
-    const subCategoryDoc = await SubCategory.findById(
-      productDoc.shopSubCategory.get('value')
-    );
-
-    subCategoryDoc.products = subCategoryDoc.products.filter(
-      (el) => el._id.toString() !== productDoc._id.toString()
-    );
-
-    await subCategoryDoc.save({ new: true, validateModifiedOnly: true });
-  }
-
-  if (productDoc.shopDivision) {
-    // Remove this product from prev shopDivision and add to new
-
-    const divisionDoc = await Division.findById(productDoc.shopDivision.get('value'));
-
-    divisionDoc.products = divisionDoc.products.filter(
-      (el) => el._id.toString() !== productDoc._id.toString()
-    );
-
-    await divisionDoc.save({ new: true, validateModifiedOnly: true });
-  }
-
-  if (shopCategory) {
-    productDoc.shopCategory = shopCategory;
-
-    const newCategoryDoc = await Category.findById(shopCategory.value);
-
-    newCategoryDoc.products.push(productDoc._id);
-
-    await newCategoryDoc.save({ new: true, validateModifiedOnly: true });
-  }
-
-  if (shopSubCategory) {
-    productDoc.shopSubCategory = shopSubCategory;
-
-    const newSubCategoryDoc = await SubCategory.findById(shopSubCategory.value);
-
-    newSubCategoryDoc.products.push(productDoc._id);
-
-    await newSubCategoryDoc.save({ new: true, validateModifiedOnly: true });
-  }
-  if (shopDivision) {
-    productDoc.shopDivision = shopDivision;
-
-    const newDivisionDoc = await Division.findById(shopDivision.value);
-
-    newDivisionDoc.products.push(productDoc._id);
-
-    await newDivisionDoc.save({ new: true, validateModifiedOnly: true });
-  }
-
-  // exclude images that needs to be excluded
-
-  productDoc.images = productDoc.images.filter(
-    (el) => !req.body.excludedImages.includes(el)
-  );
-
-  // exclude videos that needs to be excluded
-  productDoc.videos = productDoc.videos.filter(
-    (el) => !req.body.excludedVideos.includes(el)
-  );
-
-  // add videos that are added freshly
-
-  for (let element of req.body.videoKeys) {
-    productDoc.videos.push(element);
-  }
-
-  // add images that are added freshly
-  for (let element of req.body.imageKeys) {
-    productDoc.images.push(element);
-  }
-
-  productDoc.updatedAt = Date.now();
-
-  const storeDoc = await Store.findById(productDoc.store);
-  const freeDeliveryThreshold = storeDoc.freeDeliveryAbove;
-
-  if (highest * 1 >= freeDeliveryThreshold * 1) {
-    productDoc.freeDelivery = true;
-  }
-
-  // then update rest of the things
-
-  await productDoc.save({ new: true, validateModifiedOnly: true });
-
-  const updatedProduct = await Product.findByIdAndUpdate(
-    req.params.productId,
-    {
-      ...req.body,
-      discountedPrice: req.body.discountedPrice || req.body.price,
-      lowestPrice: lowest,
-      highestPrice: highest,
-    },
-    { new: true, validateModifiedOnly: true }
-  );
-
-  res.status(200).json({
-    status: "success",
-    message: "Product updated successfully!",
-    data: updatedProduct,
-  });
 });
 
 exports.deleteProduct = catchAsync(async (req, res, next) => {
-  const { productId } = req.params;
+  try {
+    console.log(req.params.productId);
 
-  const productDoc = await Product.findById(productId);
+    const { productId } = req.params;
 
-  if (productDoc.shopCategory) {
-    // Remove this product from prev shopCategory and add to new
+    const productDoc = await Product.findById(productId);
 
-    const categoryDoc = await Category.findById(productDoc.shopCategory.value);
+    if (productDoc.shopCategory) {
+      console.log(productDoc.shopCategory);
+      // Remove this product from prev shopCategory and add to new
 
-    categoryDoc.products = categoryDoc.products.filter(
-      (el) => el._id.toString() !== productDoc._id.toString()
-    );
+      const categoryDoc = await Category.findById(
+        productDoc.shopCategory.value !== undefined
+          ? productDoc.shopCategory.value
+          : productDoc.shopCategory["value"]
+      );
 
-    await categoryDoc.save({ new: true, validateModifiedOnly: true });
+      console.log(categoryDoc);
+
+      if (categoryDoc) {
+        categoryDoc.products = categoryDoc.products.filter(
+          (el) => el._id.toString() !== productDoc._id.toString()
+        );
+
+        await categoryDoc.save({ new: true, validateModifiedOnly: true });
+      }
+    }
+
+    if (productDoc.shopSubCategory) {
+      // Remove this product from prev shopSubCategory and add to new
+
+      const subCategoryDoc = await SubCategory.findById(
+        productDoc.shopSubCategory.value !== undefined
+          ? productDoc.shopSubCategory.value
+          : productDoc.shopSubCategory["value"]
+      );
+
+      console.log(subCategoryDoc);
+
+      if (subCategoryDoc) {
+        subCategoryDoc.products = subCategoryDoc.products.filter(
+          (el) => el._id.toString() !== productDoc._id.toString()
+        );
+
+        await subCategoryDoc.save({ new: true, validateModifiedOnly: true });
+      }
+    }
+
+    // Remove all products in this category
+    await Product.findByIdAndDelete(productId);
+
+    // Remove this product from its category
+    res.status(200).json({
+      status: "success",
+      message: "Product deleted successfully!",
+    });
+  } catch (error) {
+    console.log(error);
   }
-
-  if (productDoc.shopSubCategory) {
-    // Remove this product from prev shopSubCategory and add to new
-
-    const subCategoryDoc = await SubCategory.findById(
-      productDoc.shopSubCategory.value
-    );
-
-    subCategoryDoc.products = subCategoryDoc.products.filter(
-      (el) => el._id.toString() !== productDoc._id.toString()
-    );
-
-    await subCategoryDoc.save({ new: true, validateModifiedOnly: true });
-  }
-
-  if (productDoc.shopDivision) {
-    // Remove this product from prev shopDivision and add to new
-
-    const divisionDoc = await Division.findById(productDoc.shopDivision.value);
-
-    divisionDoc.products = divisionDoc.products.filter(
-      (el) => el._id.toString() !== productDoc._id.toString()
-    );
-
-    await divisionDoc.save({ new: true, validateModifiedOnly: true });
-  }
-
-  // Remove all products in this category
-  await Product.findByIdAndDelete(productId);
-
-  // Remove this product from its category
-  res.status(200).json({
-    status: "success",
-    message: "Product deleted successfully!",
-  });
 });
 
 exports.deleteMultipleProduct = catchAsync(async (req, res, next) => {
@@ -352,20 +369,6 @@ exports.deleteMultipleProduct = catchAsync(async (req, res, next) => {
       );
 
       await subCategoryDoc.save({ new: true, validateModifiedOnly: true });
-    }
-
-    if (productDoc.shopDivision) {
-      // Remove this product from prev shopDivision and add to new
-
-      const divisionDoc = await Division.findById(
-        productDoc.shopDivision.value
-      );
-
-      divisionDoc.products = divisionDoc.products.filter(
-        (el) => el._id.toString() !== productDoc._id.toString()
-      );
-
-      await divisionDoc.save({ new: true, validateModifiedOnly: true });
     }
 
     // Remove all products in this category
