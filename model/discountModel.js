@@ -1,14 +1,14 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const discountSchema = new mongoose.Schema({
-  store: { type: mongoose.Schema.ObjectId, ref: 'Store' },
+  store: { type: mongoose.Schema.ObjectId, ref: "Store" },
   discountType: { type: String },
   applicableOn: { type: String },
   type: { type: String },
   applicableFromDateTime: { type: Date },
   applicableTillDateTime: { type: Date },
-  buyX: { type: Number },
-  getY: { type: Number },
+  buyX: { type: Number, default: 1 },
+  getY: { type: Number, default: 1 },
   boughtProduct: { type: Map },
   givenProduct: { type: Map },
   applicableCategories: [{ type: Map }],
@@ -17,33 +17,35 @@ const discountSchema = new mongoose.Schema({
   numberOfCoupons: { type: Number },
   totalUsed: { type: Number, default: 0 },
   discountCode: { type: String },
-  usesPerCustomer: { type: Number },
-  discountPercentage: { type: Number },
-  discountAmount: { type: Number },
-  minOrderValue: { type: Number },
-  maxDiscount: { type: Number },
+  usesPerCustomer: { type: Number, default: 1 },
+  discountPercentage: { type: Number, default: 0 },
+  discountAmount: { type: Number, default: 10 },
+  minOrderValue: { type: Number, default: 1000 },
+  maxDiscount: { type: Number, default: 10 },
   showToCustomer: { type: Boolean, default: true },
-  usedByCustomers: [{ type: mongoose.Schema.ObjectId, ref: 'Customer' }],
+  usedByCustomers: [{ type: mongoose.Schema.ObjectId, ref: "Customer" }],
   totalSales: { type: Number },
   appliedOnOrders: [
     {
       type: mongoose.Schema.ObjectId,
-      ref: 'Order',
+      ref: "Order",
     },
   ],
   active: {
     type: Boolean,
     default: true,
   },
-  createdAt: { // unselect
+  createdAt: {
+    // unselect
     type: Date,
     default: Date.now(),
   },
-  updatedAt: { // unselect
+  updatedAt: {
+    // unselect
     type: Date,
   },
-})
+});
 
-const Discount = new mongoose.model('Discount', discountSchema)
+const Discount = new mongoose.model("Discount", discountSchema);
 
-module.exports = Discount
+module.exports = Discount;
