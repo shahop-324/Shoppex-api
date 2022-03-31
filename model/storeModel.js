@@ -138,7 +138,7 @@ const storeSchema = new mongoose.Schema({
     default: Date.now(),
   },
   enableCOD: { type: Boolean, default: false },
- 
+
   paymentMode: { type: String, default: "upi" },
   upiId: { type: String },
   bank: { type: Map },
@@ -153,7 +153,7 @@ const storeSchema = new mongoose.Schema({
   seoImagePreview: { type: String },
   storePincode: { type: String },
   deliveryZones: [{ type: Map }], // Unselect
-  extraCharges: [{ type: Map }], 
+  extraCharges: [{ type: Map }],
   gstEnabled: { type: Boolean, default: false },
   gstNumber: { type: String },
   gstPercentage: { type: Number },
@@ -182,13 +182,13 @@ const storeSchema = new mongoose.Schema({
   primaryColor: { type: String, default: "#2065D1" },
   // Store Other info
   freeDeliveryAbove: { type: Number, default: 1000 },
-  orderIsShippedIn: { type: Map, },
+  orderIsShippedIn: { type: Map },
   returnAccepted: { type: Boolean, default: false },
   replacementAccepted: { type: Boolean, default: false },
-  returnPeriod: { type: Map, },
-  replacementPeriod: { type: Map, },
-  deliveryHappensWithin: { type: String, },
-  
+  returnPeriod: { type: Map },
+  replacementPeriod: { type: Map },
+  deliveryHappensWithin: { type: String },
+
   // Wallet
   walletAmount: {
     type: Number,
@@ -356,11 +356,11 @@ const storeSchema = new mongoose.Schema({
   },
   deliveryChargeType: {
     type: String,
-    default: 'Dynamic'
+    default: "Dynamic",
   },
   constantDeliveryChargeBasedOn: {
     type: String,
-    default: 'Weight',
+    default: "Weight",
   },
   pricePer5km: {
     type: Number,
@@ -409,6 +409,9 @@ const storeSchema = new mongoose.Schema({
   showShippingPolicy: {
     type: Boolean,
     default: true,
+  },
+  privateMessagingToken: {
+    type: String,
   },
 });
 
