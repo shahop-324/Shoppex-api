@@ -789,12 +789,27 @@ exports.updateGeneralStoreInfo = catchAsync(async (req, res, next) => {
 // and create a invitation if not already present
 
 exports.updateStore = catchAsync(async (req, res, next) => {
+  console.log(
+    req.body.orderIsShippedIn,
+    req.body.replacementPeriod,
+    req.body.returnPeriod
+  );
+
   try {
-    const updatedStore = await Store.findByIdAndUpdate(
+    let updatedStore = await Store.findByIdAndUpdate(
       req.store._id,
       { ...req.body },
       { new: true, validateModifiedOnly: true }
     );
+
+    updatedStore.orderIsShippedIn = req.body.orderIsShippedIn;
+    updatedStore.returnPeriod = req.body.returnPeriod;
+    updatedStore.replacementPeriod = req.body.replacementPeriod;
+
+    updatedStore = await updatedStore.save({
+      new: true,
+      validateModifiedOnly: true,
+    });
 
     res.status(200).json({
       status: "success",
