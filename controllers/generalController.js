@@ -2,15 +2,25 @@ const catchAsync = require('../utils/catchAsync')
 const StoreSubName = require('../model/storeSubNameModel')
 
 exports.getSubnames = catchAsync(async (req, res, next) => {
-  const subnames = await StoreSubName.find({})
+  try{
+    const subnames = await StoreSubName.find({})
 
-  const data = subnames.map((el) => el.subName)
-
-  res.status(200).json({
-    status: 'success',
-    data: data,
-    message: 'Successfully found subnames',
-  });
+    const data = subnames.map((el) => el.subName)
+  
+    res.status(200).json({
+      status: 'success',
+      data: data,
+      message: 'Successfully found subnames',
+    });
+  }
+  catch(error) {
+    console.log(error);
+    res.status(400).json({
+      staus: 'error',
+      message: error,
+    })
+  }
+  
 });
 
 exports.sendSMSMessage = catchAsync(async (req, res, next) => {

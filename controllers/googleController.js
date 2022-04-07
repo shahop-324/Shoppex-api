@@ -5,9 +5,10 @@ const jwt = require("jsonwebtoken");
 const AppError = require("../utils/appError");
 const Welcome = require("../Template/Mail/Welcome");
 const randomstring = require("randomstring");
-const UserRequest = require('../model/userRequestModel');
+const UserRequest = require("../model/userRequestModel");
 
 const StoreSubName = require("../model/storeSubNameModel");
+const { nanoid } = require("nanoid");
 
 const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SENDGRID_KEY);
@@ -97,135 +98,137 @@ exports.register = catchAsync(async (req, res, next) => {
           "There is already an account with same email, please use a different email",
       });
     } else {
-        const newUser = await User.create({
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            email: req.body.email,
-            googleId: req.body.googleId,
-            image: req.body.image,
-            refCode: randomstring.generate({
-              length: 8,
-              charset: "alphabetic",
-            }), // Create and assign a new referral code
-          });
-      
-          // ! Must check that if there is any pending invitation for this member using email then add to that store
-      
-          // ** Add this user as admin to its own store which is being created DONE
-      
-          // Create new store with given shopName and assign it to user
-      
-          const newStore = await Store.create({
-            storeName: "",
-            createdAt: Date.now(),
-          });
-      
-          newStore.team.push({
-            name: `${newUser.firstName} ${newUser.lastName}`,
-            email: newUser.email,
-            phone: newUser.phone,
-            role: "Admin",
-            addedAt: Date.now(),
-            permissions: [
-              "Order",
-              "Catalouge",
-              "Delivery",
-              "Customer",
-              "Dining",
-              "Marketing",
-              "Payment",
-              "Discount",
-              "Manage",
-              "Design",
-              "Integration",
-              "Reviews",
-              "Reports",
-            ],
-          });
-      
-          await newStore.save({ new: true, validateModifiedOnly: true });
-      
-          // Create a subname for store and create a subname doc for this store
-      
-          const newSubNameDoc = await StoreSubName.create({
-            store: newStore._id,
-            createdAt: Date.now(),
-          });
-      
-          newUser.stores.push(newStore._id);
-          // save store, user and subname doc
-      
-          let updatedUser = await newUser.save({
-            new: true,
-            validateModifiedOnly: true,
-          });
-      
-          updatedUser = await User.findById(updatedUser._id).populate(
-            "stores",
-            "storeName logo _id"
-          );
-      
-          await newSubNameDoc.save({ new: true, validateModifiedOnly: true });
-          const updatedStore = await newStore.save({
-            new: true,
-            validateModifiedOnly: true,
-          });
-      
-          // Destroy all userAccountRequests with this email
-          await UserRequest.deleteMany({ email: req.body.email });
-      
-          // Create and send login token for this user
-          const token = signToken(newUser._id, newUser.stores[0]);
-      
-          console.log(token);
-      
-          // TODO => Send welcome email to this user (P5)
-      
-          const msg = {
-            to: newUser.email, // Change to your recipient
-            from: "welcome@qwikshop.online", // Change to your verified sender
-            subject: `Welcome to QwikShop`,
-            html: Welcome(newUser.firstName),
-          };
-      
-          sgMail
-            .send(msg)
-            .then(() => {
-              console.log("Welcome Mail Sent successfully!");
-            })
-            .catch(() => {
-              console.log("Failed to send Welcome mail.");
-            });
-      
-          res.status(200).json({
-            status: "success",
-            message: "Email verified successfully!",
-            token,
-            user: updatedUser,
-            store: updatedStore,
-            permissions: [
-              "Order",
-              "Catalouge",
-              "Delivery",
-              "Customer",
-              "Dining",
-              "Marketing",
-              "Payment",
-              "Discount",
-              "Manage",
-              "Design",
-              "Integration",
-              "Reviews",
-              "Questions",
-              "Referral",
-              "Wallet",
-              "Reports",
-            ],
-          });
+      const newUser = await User.create({
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        googleId: req.body.googleId,
+        image: req.body.image,
+        refCode: randomstring.generate({
+          length: 8,
+          charset: "alphabetic",
+        }), // Create and assign a new referral code
+      });
 
+      // ! Must check that if there is any pending invitation for this member using email then add to that store
+
+      // ** Add this user as admin to its own store which is being created DONE
+
+      // Create new store with given shopName and assign it to user
+
+      const newStore = await Store.create({
+        storeName: "",
+        createdAt: Date.now(),
+      });
+
+      newStore.team.push({
+        name: `${newUser.firstName} ${newUser.lastName}`,
+        email: newUser.email,
+        phone: newUser.phone,
+        role: "Admin",
+        addedAt: Date.now(),
+        permissions: [
+          "Order",
+          "Catalouge",
+          "Delivery",
+          "Customer",
+          "Dining",
+          "Marketing",
+          "Payment",
+          "Discount",
+          "Manage",
+          "Design",
+          "Integration",
+          "Reviews",
+          "Reports",
+        ],
+      });
+
+      await newStore.save({ new: true, validateModifiedOnly: true });
+
+      // Create a subname for store and create a subname doc for this store
+
+      const newSubNameDoc = await StoreSubName.create({
+        store: newStore._id,
+        createdAt: Date.now(),
+      });
+
+      let alternateSubname = nanoid();
+
+      newSubNameDoc.subName = alternateSubname;
+      newStore.subName = alternateSubname;
+
+      newUser.stores.push(newStore._id);
+      // save store, user and subname doc
+
+      let updatedUser = await newUser.save({
+        new: true,
+        validateModifiedOnly: true,
+      });
+
+      updatedUser = await User.findById(updatedUser._id).populate(
+        "stores",
+        "storeName logo _id"
+      );
+
+      await newSubNameDoc.save({ new: true, validateModifiedOnly: true });
+      const updatedStore = await newStore.save({
+        new: true,
+        validateModifiedOnly: true,
+      });
+
+      // Destroy all userAccountRequests with this email
+      await UserRequest.deleteMany({ email: req.body.email });
+
+      // Create and send login token for this user
+      const token = signToken(newUser._id, newUser.stores[0]);
+
+      console.log(token);
+
+      // TODO => Send welcome email to this user (P5)
+
+      const msg = {
+        to: newUser.email, // Change to your recipient
+        from: "welcome@qwikshop.online", // Change to your verified sender
+        subject: `Welcome to QwikShop`,
+        html: Welcome(newUser.firstName),
+      };
+
+      sgMail
+        .send(msg)
+        .then(() => {
+          console.log("Welcome Mail Sent successfully!");
+        })
+        .catch(() => {
+          console.log("Failed to send Welcome mail.");
+        });
+
+      res.status(200).json({
+        status: "success",
+        message: "Account created successfully!",
+        token,
+        user: updatedUser,
+        store: updatedStore,
+        permissions: [
+          "Order",
+          "Catalouge",
+          "Delivery",
+          "Customer",
+          "Dining",
+          "Marketing",
+          "Payment",
+          "Discount",
+          "Manage",
+          "Design",
+          "Integration",
+          "Reviews",
+          "Questions",
+          "Referral",
+          "Wallet",
+          "Reports",
+        ],
+      });
     }
-
-    
   } catch (error) {
     console.log(error);
   }

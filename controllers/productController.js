@@ -394,18 +394,28 @@ exports.getProduct = catchAsync(async (req, res, next) => {
 });
 
 exports.getProducts = catchAsync(async (req, res, next) => {
-  // Get all products of a store
+  try{
+// Get all products of a store
 
-  const query = Product.find({ store: req.store._id });
+const query = Product.find({ store: req.store._id });
 
-  const features = new apiFeatures(query, req.query).textFilter();
-  const products = await features.query;
+const features = new apiFeatures(query, req.query).textFilter();
+const products = await features.query;
 
-  res.status(200).json({
-    status: "success",
-    message: "Products found successfully!",
-    data: products,
-  });
+res.status(200).json({
+  status: "success",
+  message: "Products found successfully!",
+  data: products,
+});
+  }
+  catch(error) {
+    console.log(error);
+    res.status(400).json({
+      staus: 'error',
+      message: error,
+    })
+  }
+  
 });
 
 exports.getLowInStockProducts = catchAsync(async (req, res, next) => {

@@ -65,16 +65,26 @@ exports.deleteCustomer = catchAsync(async (req, res, next) => {
 });
 
 exports.fetchCustomers = catchAsync(async (req, res, next) => {
-  const query = Customer.find({ store: req.store._id });
+  try{
+    const query = Customer.find({ store: req.store._id });
 
-  const features = new apiFeatures(query, req.query).textFilter();
-  const customers = await features.query;
-
-  res.status(200).json({
-    status: "success",
-    message: "Customers found successfully!",
-    data: customers,
-  });
+    const features = new apiFeatures(query, req.query).textFilter();
+    const customers = await features.query;
+  
+    res.status(200).json({
+      status: "success",
+      message: "Customers found successfully!",
+      data: customers,
+    });
+  }
+  catch(error) {
+    console.log(error);
+    res.status(400).json({
+      staus: 'error',
+      message: error,
+    })
+  }
+  
 });
 
 exports.deleteMultipleCustomers = catchAsync(async (req, res, next) => {

@@ -92,6 +92,7 @@ exports.register = catchAsync(async (req, res, next) => {
     .then(async () => {
       console.log("Verification mail sent successfully!");
       console.log("New account request created successfully!");
+      console.log(email);
 
       res.status(201).json({
         status: "success",
@@ -164,6 +165,7 @@ exports.resendEmailVerificationOTP = catchAsync(async (req, res, next) => {
   sgMail
     .send(msg)
     .then(() => {
+      console.log(email);
       console.log("Verification OTP Sent successfully!");
       res.status(200).json({
         status: "success",

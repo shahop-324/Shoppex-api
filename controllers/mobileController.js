@@ -21,61 +21,66 @@ const signToken = (userId, storeId) =>
 exports.login = catchAsync(async (req, res, next) => {
   // Find if there is any user with given mobile number
   // if yes then generate and send OTP via mobile and send after storing in database
-try{
-  const loginOTP = otpGenerator.generate(6, {
-    upperCaseAlphabets: false,
-    specialChars: false,
-    lowerCaseAlphabets: false,
-  });
-
-  console.log(`+91${req.body.mobile}`)
-
-  const existingUser = await User.findOneAndUpdate(
-    { phone: `+91${req.body.mobile}` },
-    { loginOTP },
-    { new: true, validateModifiedOnly: true }
-  );
-
-  if (existingUser) {
-    // send otp
-
-    client.messages
-      .create({
-        body: `Your OTP for QwikShop is ${loginOTP}`,
-        from: "+1 775 535 7258",
-        to: `${existingUser.phone}`,
-      })
-
-      .then((message) => {
-        console.log(message.sid);
-        console.log(`OTP sent successfully!`);
-
-        res.status(200).json({
-          status: "success",
-          message: "OTP sent successfully!",
-          phone: `${existingUser.phone}`,
-        });
-      })
-      .catch((e) => {
-        console.log(e);
-        console.log(`Failed to send OTP`);
-
-        res.status(400).json({
-          status: "error",
-          message: "Failed to send OTP, Please try again after sometime",
-        });
-      });
-  } else {
-    res.status(400).json({
-      status: "error",
-      message: "There is no account with this mobile number, Please register",
+  try {
+    const loginOTP = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      specialChars: false,
+      lowerCaseAlphabets: false,
     });
+
+    const mobileNo =
+      req.body.mobile.length === 10
+        ? `91${req.body.mobile}`
+        : req.body.mobile.length === 13 && req.body.mobile.startsWith("+")
+        ? req.body.mobile
+        : `+${req.body.mobile.substring(1)}`;
+
+    console.log(mobileNo);
+
+    const existingUser = await User.findOneAndUpdate(
+      { phone: mobileNo },
+      { loginOTP },
+      { new: true, validateModifiedOnly: true }
+    );
+
+    if (existingUser) {
+      // send otp
+
+      client.messages
+        .create({
+          body: `Your OTP for QwikShop is ${loginOTP}`,
+          from: "+1 775 535 7258",
+          to: `${existingUser.phone}`,
+        })
+
+        .then((message) => {
+          console.log(message.sid);
+          console.log(`OTP sent successfully!`);
+
+          res.status(200).json({
+            status: "success",
+            message: "OTP sent successfully!",
+            phone: `${existingUser.phone}`,
+          });
+        })
+        .catch((e) => {
+          console.log(e);
+          console.log(`Failed to send OTP`);
+
+          res.status(400).json({
+            status: "error",
+            message: "Failed to send OTP, Please try again after sometime",
+          });
+        });
+    } else {
+      res.status(400).json({
+        status: "error",
+        message: "There is no account with this mobile number, Please register",
+      });
+    }
+  } catch (e) {
+    console.log(e);
   }
-}
-catch(e) {
-  console.log(e)
-}
-  
 });
 
 exports.resendLoginOTP = catchAsync(async (req, res, next) => {
@@ -131,16 +136,21 @@ exports.resendLoginOTP = catchAsync(async (req, res, next) => {
 exports.verifyAndLogin = catchAsync(async (req, res, next) => {
   // Check if otp is correct then login => DONE
 
-  console.log(req.body.mobile);
+  const mobileNo =
+    req.body.mobile.length === 10
+      ? `91${req.body.mobile}`
+      : req.body.mobile.length === 13 && req.body.mobile.startsWith("+")
+      ? req.body.mobile
+      : `+${req.body.mobile.substring(1)}`;
 
-  console.log(`+91${req.body.mobile}`);
+  console.log(mobileNo);
 
   const existingUser = await User.findOne({
-    phone: `+91${req.body.mobile}`,
+    phone: mobileNo,
   });
 
   if (existingUser) {
-    console.log(existingUser.loginOTP, req.body.otp)
+    console.log(existingUser.loginOTP, req.body.otp);
     if (existingUser.loginOTP * 1 === req.body.otp * 1) {
       // Correct OTP => Login
       // reset otp to null
@@ -203,6 +213,16 @@ exports.resendRegisterOTP = catchAsync(async (req, res, next) => {
   // JUST TAKE MOBILE NUMBER,fInd the user, generate new otp, send otp => DONE
   console.log(`+${req.body.mobile.substring(1)}`);
 
+  console.log(req.body.mobile.length);
+
+  console.log(
+    req.body.mobile.length === 10
+      ? `91${req.body.mobile}`
+      : req.body.mobile.length === 13 && req.body.mobile.startsWith("+")
+      ? req.body.mobile
+      : `+${req.body.mobile.substring(1)}`
+  );
+
   const otp = otpGenerator.generate(6, {
     upperCaseAlphabets: false,
     specialChars: false,
@@ -210,7 +230,14 @@ exports.resendRegisterOTP = catchAsync(async (req, res, next) => {
   });
 
   const existingUserRequest = await UserRequest.findOneAndUpdate(
-    { phone: `+${req.body.mobile.substring(1)}` },
+    {
+      phone:
+        req.body.mobile.length === 10
+          ? `91${req.body.mobile}`
+          : req.body.mobile.length === 13 && req.body.mobile.startsWith("+")
+          ? req.body.mobile
+          : `+${req.body.mobile.substring(1)}`,
+    },
     { otp },
     { new: true, validateModifiedOnly: true }
   );
@@ -263,7 +290,8 @@ exports.register = catchAsync(async (req, res, next) => {
   // Check if there is any account with same email => if yes then throw error
 
   const existingUser = await User.findOne({
-    phone: `+91${req.body.mobile}`,
+    phone:
+      req.body.mobile.length === 10 ? `+91${req.body.mobile}` : req.body.mobile,
   });
 
   if (existingUser) {
@@ -277,7 +305,10 @@ exports.register = catchAsync(async (req, res, next) => {
 
   // Delete all previous account request for same email
 
-  await UserRequest.deleteMany({ phone: `+91${req.body.mobile}` });
+  await UserRequest.deleteMany({
+    phone:
+      req.body.mobile.length === 10 ? `+91${req.body.mobile}` : req.body.mobile,
+  });
 
   // Create new account request for this email
 
@@ -285,7 +316,8 @@ exports.register = catchAsync(async (req, res, next) => {
     firstName,
     lastName,
     shopName,
-    phone: `+91${req.body.mobile}`,
+    phone:
+      req.body.mobile.length === 10 ? `+91${req.body.mobile}` : req.body.mobile,
     referralCode,
   });
 
@@ -310,7 +342,10 @@ exports.register = catchAsync(async (req, res, next) => {
     .create({
       body: `Your OTP for QwikShop is ${otp}`,
       from: "+1 775 535 7258",
-      to: `+91${req.body.mobile}`,
+      to:
+        req.body.mobile.length === 10
+          ? `+91${req.body.mobile}`
+          : req.body.mobile,
     })
 
     .then((message) => {
@@ -320,7 +355,10 @@ exports.register = catchAsync(async (req, res, next) => {
       res.status(201).json({
         status: "success",
         message: "Please confirm your mobile using OTP.",
-        phone: `+91${req.body.mobile}`,
+        phone:
+          req.body.mobile.length === 10
+            ? `+91${req.body.mobile}`
+            : req.body.mobile,
       });
     })
     .catch((e) => {
@@ -340,8 +378,15 @@ exports.verifyAndRegister = catchAsync(async (req, res, next) => {
 
     console.log(`+${req.body.mobile.substring(1)}`, otp);
 
+    const mobileNo =
+      req.body.mobile.length === 10
+        ? `91${req.body.mobile}`
+        : req.body.mobile.length === 13 && req.body.mobile.startsWith("+")
+        ? req.body.mobile
+        : `+${req.body.mobile.substring(1)}`;
+
     const user = await UserRequest.findOne({
-      phone: `+${req.body.mobile.substring(1)}`,
+      phone: mobileNo,
     }).select("+otp");
 
     console.log(user, otp);
@@ -357,7 +402,7 @@ exports.verifyAndRegister = catchAsync(async (req, res, next) => {
 
     console.log(otp, user.otp);
 
-    if (!await user.correctOTP(otp, user.otp)) {
+    if (otp !== user.otp) {
       // Incorrect OTP
       res.status(400).json({
         status: "error",

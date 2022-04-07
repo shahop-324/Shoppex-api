@@ -65,16 +65,26 @@ exports.createOrder = catchAsync(async (req, res, next) => {
 });
 
 exports.getOrders = catchAsync(async (req, res, next) => {
-  const query = Order.find({ store: req.store._id });
+  try{
+    const query = Order.find({ store: req.store._id });
 
-  const features = new apiFeatures(query, req.query).textFilter();
-  const orders = await features.query;
-
-  res.status(200).json({
-    status: "success",
-    data: orders,
-    message: "Orders found successfully!",
-  });
+    const features = new apiFeatures(query, req.query).textFilter();
+    const orders = await features.query;
+  
+    res.status(200).json({
+      status: "success",
+      data: orders,
+      message: "Orders found successfully!",
+    });
+  }
+  catch(error) {
+    console.log(error);
+    res.status(400).json({
+      staus: 'error',
+      message: error,
+    })
+  }
+  
 });
 
 exports.getAbondonedCarts = catchAsync(async (req, res, next) => {
@@ -140,16 +150,26 @@ exports.getAbondonedCarts = catchAsync(async (req, res, next) => {
 });
 
 exports.getRecentOrders = catchAsync(async (req, res, next) => {
-  // get latest 6 orders
-  const orders = await Order.find({ store: req.store._id })
-    .sort({ timestamp: -1 })
-    .limit(6);
+  try{
+// get latest 6 orders
+const orders = await Order.find({ store: req.store._id })
+.sort({ timestamp: -1 })
+.limit(6);
 
-  res.status(200).json({
-    status: "success",
-    data: orders,
-    message: "successfully found latest orders",
-  });
+res.status(200).json({
+status: "success",
+data: orders,
+message: "successfully found latest orders",
+});
+  }
+  catch{
+    console.log(error);
+    res.status(400).json({
+      staus: 'error',
+      message: error,
+    })
+  }
+  
 });
 
 exports.acceptOrder = catchAsync(async (req, res, next) => {
