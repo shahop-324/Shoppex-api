@@ -30,7 +30,7 @@ exports.login = catchAsync(async (req, res, next) => {
 
     const mobileNo =
       req.body.mobile.length === 10
-        ? `91${req.body.mobile}`
+        ? `+91${req.body.mobile}`
         : req.body.mobile.length === 13 && req.body.mobile.startsWith("+")
         ? req.body.mobile
         : `+${req.body.mobile.substring(1)}`;
@@ -138,7 +138,7 @@ exports.verifyAndLogin = catchAsync(async (req, res, next) => {
 
   const mobileNo =
     req.body.mobile.length === 10
-      ? `91${req.body.mobile}`
+      ? `+91${req.body.mobile}`
       : req.body.mobile.length === 13 && req.body.mobile.startsWith("+")
       ? req.body.mobile
       : `+${req.body.mobile.substring(1)}`;
@@ -217,7 +217,7 @@ exports.resendRegisterOTP = catchAsync(async (req, res, next) => {
 
   console.log(
     req.body.mobile.length === 10
-      ? `91${req.body.mobile}`
+      ? `+91${req.body.mobile}`
       : req.body.mobile.length === 13 && req.body.mobile.startsWith("+")
       ? req.body.mobile
       : `+${req.body.mobile.substring(1)}`
@@ -233,7 +233,7 @@ exports.resendRegisterOTP = catchAsync(async (req, res, next) => {
     {
       phone:
         req.body.mobile.length === 10
-          ? `91${req.body.mobile}`
+          ? `+91${req.body.mobile}`
           : req.body.mobile.length === 13 && req.body.mobile.startsWith("+")
           ? req.body.mobile
           : `+${req.body.mobile.substring(1)}`,
@@ -289,9 +289,15 @@ exports.register = catchAsync(async (req, res, next) => {
 
   // Check if there is any account with same email => if yes then throw error
 
+ const mobileNo = req.body.mobile.length === 10
+      ? `+91${req.body.mobile}`
+      : req.body.mobile.length === 13 && req.body.mobile.startsWith("+")
+      ? req.body.mobile
+      : `+${req.body.mobile.substring(1)}`
+
   const existingUser = await User.findOne({
     phone:
-      req.body.mobile.length === 10 ? `+91${req.body.mobile}` : req.body.mobile,
+    mobileNo,
   });
 
   if (existingUser) {
@@ -305,19 +311,23 @@ exports.register = catchAsync(async (req, res, next) => {
 
   // Delete all previous account request for same email
 
+  
+
   await UserRequest.deleteMany({
     phone:
-      req.body.mobile.length === 10 ? `+91${req.body.mobile}` : req.body.mobile,
+      mobileNo,
   });
 
   // Create new account request for this email
+
+
 
   const newUserRequest = await UserRequest.create({
     firstName,
     lastName,
     shopName,
     phone:
-      req.body.mobile.length === 10 ? `+91${req.body.mobile}` : req.body.mobile,
+      mobileNo,
     referralCode,
   });
 
@@ -343,9 +353,7 @@ exports.register = catchAsync(async (req, res, next) => {
       body: `Your OTP for QwikShop is ${otp}`,
       from: "+1 775 535 7258",
       to:
-        req.body.mobile.length === 10
-          ? `+91${req.body.mobile}`
-          : req.body.mobile,
+        mobileNo,
     })
 
     .then((message) => {
@@ -356,9 +364,7 @@ exports.register = catchAsync(async (req, res, next) => {
         status: "success",
         message: "Please confirm your mobile using OTP.",
         phone:
-          req.body.mobile.length === 10
-            ? `+91${req.body.mobile}`
-            : req.body.mobile,
+          mobileNo,
       });
     })
     .catch((e) => {
@@ -380,7 +386,7 @@ exports.verifyAndRegister = catchAsync(async (req, res, next) => {
 
     const mobileNo =
       req.body.mobile.length === 10
-        ? `91${req.body.mobile}`
+        ? `+91${req.body.mobile}`
         : req.body.mobile.length === 13 && req.body.mobile.startsWith("+")
         ? req.body.mobile
         : `+${req.body.mobile.substring(1)}`;
