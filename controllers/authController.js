@@ -397,6 +397,16 @@ exports.loginUser = catchAsync(async (req, res, next) => {
     .select("+password")
     .populate("stores", "storeName logo _id");
 
+    console.log(user, user.password, 'This is user',);
+    if(!user || !user.password) {
+      res.status(400).json({
+        status: "error",
+        message: "Incorrect password",
+      });
+  
+      return;
+    }
+
   if (!user || !(await user.correctPassword(password, user.password))) {
     res.status(400).json({
       status: "error",
