@@ -606,6 +606,7 @@ exports.updateStoreSEO = catchAsync(async (req, res, next) => {
     req.body,
     "seoTitle",
     "seoMetaDescription",
+    "seoMetaKeywords",
     "seoImagePreview"
   );
   const updatedStore = await Store.findByIdAndUpdate(

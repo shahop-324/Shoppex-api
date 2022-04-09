@@ -179,7 +179,7 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
       }
     }
 
-    if (shopCategory) {
+    if (shopCategory && shopCategory.value != null) {
       productDoc.shopCategory = shopCategory;
 
       const newCategoryDoc = await Category.findById(
@@ -193,7 +193,8 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
       }
     }
 
-    if (shopSubCategory) {
+    console.log(shopSubCategory);
+    if (shopSubCategory && shopSubCategory.value != null) {
       productDoc.shopSubCategory = shopSubCategory;
 
       const newSubCategoryDoc = await SubCategory.findById(
