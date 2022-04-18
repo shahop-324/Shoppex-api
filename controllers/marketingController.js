@@ -41,31 +41,37 @@ exports.createMailCampaign = catchAsync(async (req, res, next) => {
 })
 
 exports.createSMSCampaign = catchAsync(async (req, res, next) => {
-  let newCampaign = await Marketing.create({
-    campaignId: `camp_${randomstring.generate({
-      length: 10,
-      charset: 'alphabetic',
-    })}`,
-    store: req.store._id,
-    name: req.body.name,
-    channel: 'sms',
-    message: req.body.message,
-    createdAt: Date.now(),
-    amount: req.body.customers.length * 1.5,
-    status: 'Draft',
-  })
-
-  for (let element of req.body.customers) {
-    newCampaign.customers.push(element)
+  try{
+    let newCampaign = await Marketing.create({
+      campaignId: `camp_${randomstring.generate({
+        length: 10,
+        charset: 'alphabetic',
+      })}`,
+      store: req.store._id,
+      name: req.body.name,
+      channel: 'sms',
+      message: req.body.message,
+      createdAt: Date.now(),
+      amount: req.body.customers.length * 1.5,
+      status: 'Draft',
+    })
+  
+    for (let element of req.body.customers) {
+      newCampaign.customers.push(element)
+    }
+  
+    await newCampaign.save({ new: true, validateModifiedOnly: true })
+  
+    res.status(200).json({
+      status: 'success',
+      message: 'Campaign created and saved as draft!',
+      data: newCampaign,
+    })
   }
-
-  await newCampaign.save({ new: true, validateModifiedOnly: true })
-
-  res.status(200).json({
-    status: 'success',
-    messgae: 'Campaign created and saved as draft!',
-    data: newCampaign,
-  })
+  catch(error) {
+    console.log(error);
+  }
+  
 })
 
 exports.fetchCampaigns = catchAsync(async (req, res, next) => {

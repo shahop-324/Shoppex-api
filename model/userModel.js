@@ -92,6 +92,9 @@ const userSchema = new mongoose.Schema({
   loginOTP: { // unselect
     type: Number,
   },
+  resetPasswordOTP: {
+    type: Number,
+  },
 });
 
 userSchema.pre(/^find/, function (next) {

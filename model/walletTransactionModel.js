@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const walletTransactionSchema = new mongoose.Schema({
   transactionId: {
@@ -6,7 +6,7 @@ const walletTransactionSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['Debit', 'Credit'],
+    enum: ["Debit", "Credit"],
   },
   amount: {
     type: Number,
@@ -20,11 +20,11 @@ const walletTransactionSchema = new mongoose.Schema({
   },
   store: {
     type: mongoose.Schema.ObjectId,
-    ref: 'Store',
+    ref: "Store",
   },
   user: {
     type: mongoose.Schema.ObjectId,
-    ref: 'User',
+    ref: "User",
   },
   status: {
     type: String,
@@ -59,10 +59,19 @@ const walletTransactionSchema = new mongoose.Schema({
   tax: {
     type: Number,
   },
-})
+});
+
+walletTransactionSchema.index({
+  transactionId: "text",
+  type: "text",
+  reason: "text",
+  status: "text",
+  invoice_id: "text",
+  method: "text",
+});
 
 const WalletTransaction = new mongoose.model(
-  'WalletTransaction',
-  walletTransactionSchema,
-)
-module.exports = WalletTransaction
+  "WalletTransaction",
+  walletTransactionSchema
+);
+module.exports = WalletTransaction;

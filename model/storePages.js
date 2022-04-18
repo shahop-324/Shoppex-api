@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const storePagesSchema = new mongoose.Schema({
   name: {
@@ -12,24 +12,31 @@ const storePagesSchema = new mongoose.Schema({
   },
   store: {
     type: mongoose.Schema.ObjectId,
-    ref: 'Store',
+    ref: "Store",
   },
-  updatedAt: { // unselect
+  updatedAt: {
+    // unselect
     type: Date,
   },
-  createdAt: { // unselect
+  createdAt: {
+    // unselect
     type: Date,
   },
-  type: { type: String, enum: ['dnd', 'quill'] },
+  type: { type: String, enum: ["dnd", "quill"] },
   designJSON: {
     type: Map,
   },
-})
-
-storePagesSchema.index({
-  name: 'text',
-  slug: 'text',
+  mobileDesign: [
+    {
+      type: Map,
+    },
+  ],
 });
 
-const StorePages = new mongoose.model('StorePages', storePagesSchema);
+storePagesSchema.index({
+  name: "text",
+  slug: "text",
+});
+
+const StorePages = new mongoose.model("StorePages", storePagesSchema);
 module.exports = StorePages;

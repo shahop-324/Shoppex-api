@@ -31,6 +31,13 @@ exports.addPickupPoint = catchAsync(async (req, res, next) => {
 
   // Generate Unique name for each pickup point added
 
+  const mobileNo =
+      req.body.phone.length === 10
+        ? `+91${req.body.phone}`
+        : req.body.phone.length === 13 && req.body.phone.startsWith("+")
+        ? req.body.phone
+        : `+${req.body.phone.substring(1)}`;
+
   const warehouse_name = uniqid(); // Save this warehouse_name to actual pickup point in QwikShop Database
 
   // Generate Token
@@ -67,7 +74,7 @@ exports.addPickupPoint = catchAsync(async (req, res, next) => {
       },
       body: JSON.stringify({
         pickup_location: warehouse_name,
-        phone: req.body.phone * 1,
+        phone: mobileNo * 1,
         city: req.body.city,
         pin_code: req.body.pincode * 1,
         address: req.body.address,

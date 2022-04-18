@@ -397,15 +397,15 @@ exports.loginUser = catchAsync(async (req, res, next) => {
     .select("+password")
     .populate("stores", "storeName logo _id");
 
-    console.log(user, user.password, 'This is user',);
-    if(!user || !user.password) {
-      res.status(400).json({
-        status: "error",
-        message: "Incorrect password",
-      });
-  
-      return;
-    }
+  console.log(user, user.password, "This is user");
+  if (!user || !user.password) {
+    res.status(400).json({
+      status: "error",
+      message: "Incorrect password",
+    });
+
+    return;
+  }
 
   if (!user || !(await user.correctPassword(password, user.password))) {
     res.status(400).json({
@@ -595,8 +595,8 @@ exports.protect = catchAsync(async (req, res, next) => {
 });
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
-  // 1) Get user based on POSTed email
-  console.log(req.body.email);
+  // 1) Get user based on Posted email
+
   const user = await User.findOne({ email: req.body.email });
 
   if (!user) {
@@ -636,6 +636,108 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
         });
       })
       .catch((error) => {});
+  } catch (err) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return next(
+      new AppError("There was an error sending the email. Try again later!"),
+      500
+    );
+  }
+});
+
+exports.forgotEmailPassword = catchAsync(async (req, res, next) => {
+  // 1) Get user based on Posted email
+
+  const user = await User.findOne({ email: req.body.email });
+
+  if (!user) {
+    return next(
+      new AppError(
+        "There is no user with email address or you signed up with google.",
+        404
+      )
+    );
+  }
+
+  // 2) Generate the random reset OTP
+  const generatedOTP = otpGenerator.generate(6, {
+    upperCaseAlphabets: false,
+    specialChars: false,
+    lowerCaseAlphabets: false,
+  });
+  user.resetPasswordOTP = generatedOTP;
+  await user.save({ validateBeforeSave: false });
+
+  // 3) Send it to user's email
+  try {
+    // Send Grid is implemented here
+
+    const msg = {
+      to: user.email, // Change to your recipient
+      from: "security@qwikshop.online", // Change to your verified sender
+      subject: "Your QwikShop Password Reset OTP",
+      text: `Please use this OTP (${generatedOTP}) to reset your QwikShop Password.`,
+      //  html: ResetPassword(user.firstName, resetURL),
+    };
+
+    sgMail
+      .send(msg)
+      .then(() => {
+        res.status(200).json({
+          status: "success",
+          message: "Token sent to email!",
+        });
+      })
+      .catch((error) => {});
+  } catch (err) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return next(
+      new AppError("There was an error sending the email. Try again later!"),
+      500
+    );
+  }
+});
+
+exports.verifyForgotEmailPassword = catchAsync(async (req, res, next) => {
+  // 1) Get user based on Posted email
+
+  const user = await User.findOne({ email: req.body.email });
+
+  if (!user) {
+    return next(
+      new AppError(
+        "There is no user with email address or you signed up with google.",
+        404
+      )
+    );
+  }
+
+  // 2) Check if provided OTP is correct
+  if (!user.resetPasswordOTP === req.body.otp * 1) {
+    return next(new AppError("Incorrect OTP", 404));
+  }
+
+  // 4) Generate random reset token
+
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+
+  // 3) Send it to user's email
+  try {
+    // Send Grid is implemented here
+
+    res.status(200).json({
+      status: "success",
+      message: "Email verified successfully!",
+      resetToken: resetToken,
+      verified: true,
+    });
   } catch (err) {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;

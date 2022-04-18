@@ -734,6 +734,13 @@ exports.updateGeneralStoreInfo = catchAsync(async (req, res, next) => {
   const storeDoc = await Store.findById(req.store._id);
   const storeSubNameDocs = await StoreSubName.find({});
 
+  const mobileNo =
+      req.body.phone.length === 10
+        ? `+91${req.body.phone}`
+        : req.body.phone.length === 13 && req.body.phone.startsWith("+")
+        ? req.body.phone
+        : `+${req.body.phone.substring(1)}`;
+
   const allSubNames = storeSubNameDocs.map((el) => el.subName);
 
   if (!allSubNames.includes(req.body.subName)) {
@@ -770,7 +777,7 @@ exports.updateGeneralStoreInfo = catchAsync(async (req, res, next) => {
       landmark: req.body.landmark,
       gstin: req.body.gstin,
       category: req.body.category,
-      phone: req.body.phone,
+      phone: mobileNo,
       emailAddress: req.body.emailAddress,
       lat: req.body.lat,
       long: req.body.long,
@@ -911,6 +918,13 @@ exports.updateWhatsAppNumber = catchAsync(async (req, res, next) => {
     // Update Number in store database and Generate a verification OTP and send on the requested number
     // Set WhatsApp Verified Status to false
 
+    const mobileNo =
+      req.body.phone.length === 10
+        ? `+91${req.body.phone}`
+        : req.body.phone.length === 13 && req.body.phone.startsWith("+")
+        ? req.body.phone
+        : `+${req.body.phone.substring(1)}`;
+
     const WAOTP = randomString({
       length: 6,
       numeric: true,
@@ -921,7 +935,7 @@ exports.updateWhatsAppNumber = catchAsync(async (req, res, next) => {
 
     const updatedStore = await Store.findByIdAndUpdate(
       req.store._id,
-      { WhatsAppNumber: req.body.phone, WAOTP, WAVerified: false },
+      { WhatsAppNumber: mobileNo, WAOTP, WAVerified: false },
       { new: true, validateModifiedOnly: true }
     );
 
@@ -933,7 +947,7 @@ exports.updateWhatsAppNumber = catchAsync(async (req, res, next) => {
       .create({
         body: `${WAOTP} is your OTP to Confirm your WhatsApp Number with QwikShop.`,
         from: "+1 775 535 7258",
-        to: req.body.phone,
+        to: mobileNo,
       })
 
       .then((message) => {
