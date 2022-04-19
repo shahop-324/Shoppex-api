@@ -289,15 +289,15 @@ exports.register = catchAsync(async (req, res, next) => {
 
   // Check if there is any account with same email => if yes then throw error
 
- const mobileNo = req.body.mobile.length === 10
+  const mobileNo =
+    req.body.mobile.length === 10
       ? `+91${req.body.mobile}`
       : req.body.mobile.length === 13 && req.body.mobile.startsWith("+")
       ? req.body.mobile
-      : `+${req.body.mobile.substring(1)}`
+      : `+${req.body.mobile.substring(1)}`;
 
   const existingUser = await User.findOne({
-    phone:
-    mobileNo,
+    phone: mobileNo,
   });
 
   if (existingUser) {
@@ -311,23 +311,17 @@ exports.register = catchAsync(async (req, res, next) => {
 
   // Delete all previous account request for same email
 
-  
-
   await UserRequest.deleteMany({
-    phone:
-      mobileNo,
+    phone: mobileNo,
   });
 
   // Create new account request for this email
-
-
 
   const newUserRequest = await UserRequest.create({
     firstName,
     lastName,
     shopName,
-    phone:
-      mobileNo,
+    phone: mobileNo,
     referralCode,
   });
 
@@ -352,8 +346,7 @@ exports.register = catchAsync(async (req, res, next) => {
     .create({
       body: `Your OTP for QwikShop is ${otp}`,
       from: "+1 775 535 7258",
-      to:
-        mobileNo,
+      to: mobileNo,
     })
 
     .then((message) => {
@@ -363,8 +356,7 @@ exports.register = catchAsync(async (req, res, next) => {
       res.status(201).json({
         status: "success",
         message: "Please confirm your mobile using OTP.",
-        phone:
-          mobileNo,
+        phone: mobileNo,
       });
     })
     .catch((e) => {
@@ -381,6 +373,8 @@ exports.verifyAndRegister = catchAsync(async (req, res, next) => {
 
   try {
     const { mobile, otp } = req.body;
+
+    console.log(otp, "Line 385");
 
     console.log(`+${req.body.mobile.substring(1)}`, otp);
 
@@ -408,13 +402,24 @@ exports.verifyAndRegister = catchAsync(async (req, res, next) => {
 
     console.log(otp, user.otp);
 
-    if (otp !== user.otp) {
-      // Incorrect OTP
-      res.status(400).json({
-        status: "error",
-        message: "Incorrect OTP",
-      });
-      return;
+    if (user.otp.length > 8) {
+      if (!(await user.correctOTP(otp, user.otp))) {
+        // Incorrect OTP
+        res.status(400).json({
+          status: "error",
+          message: "Incorrect OTP",
+        });
+        return;
+      }
+    } else {
+      if (otp !== user.otp) {
+        // Incorrect OTP
+        res.status(400).json({
+          status: "error",
+          message: "Incorrect OTP",
+        });
+        return;
+      }
     }
 
     // At this point we are sure that OTP has been successfully verified

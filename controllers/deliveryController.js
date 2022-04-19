@@ -74,7 +74,7 @@ exports.addPickupPoint = catchAsync(async (req, res, next) => {
       },
       body: JSON.stringify({
         pickup_location: warehouse_name,
-        phone: mobileNo * 1,
+        phone: req.body.phone * 1,
         city: req.body.city,
         pin_code: req.body.pincode * 1,
         address: req.body.address,
