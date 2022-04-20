@@ -176,7 +176,6 @@ exports.processPayment = catchAsync(async (req, res, next) => {
           reason: "Wallet recharge",
           timestamp: created_at,
           store: notes.storeId,
-          user: notes.userId,
           status,
           currency,
           wallet,
