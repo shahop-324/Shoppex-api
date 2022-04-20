@@ -100,7 +100,7 @@ exports.deleteCategory = catchAsync(async (req, res, next) => {
   const storeProducts = await Product.find({ store: req.store._id });
 
   const eligibleProducts = storeProducts.filter(
-    (el) => el.shopCategory.get("value") === categoryId
+    (el) => el.shopCategory ? el.shopCategory.get("value") === categoryId : false
   );
 
   eligibleProducts.forEach(async (element) => {
@@ -110,7 +110,7 @@ exports.deleteCategory = catchAsync(async (req, res, next) => {
   const storeSubCategories = await SubCategory.find({ store: req.store._id });
  
   const eligibleSubCategories = storeSubCategories.filter(
-    (el) => el.category.get("value") === categoryId
+    (el) => el.category ? el.category.get("value") === categoryId : false
   );
 
 

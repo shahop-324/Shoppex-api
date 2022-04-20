@@ -32,11 +32,11 @@ exports.addPickupPoint = catchAsync(async (req, res, next) => {
   // Generate Unique name for each pickup point added
 
   const mobileNo =
-      req.body.phone.length === 10
-        ? `+91${req.body.phone}`
-        : req.body.phone.length === 13 && req.body.phone.startsWith("+")
-        ? req.body.phone
-        : `+${req.body.phone.substring(1)}`;
+    req.body.phone.length === 10
+      ? `+91${req.body.phone}`
+      : req.body.phone.length === 13 && req.body.phone.startsWith("+")
+      ? req.body.phone
+      : `+${req.body.phone.substring(1)}`;
 
   const warehouse_name = uniqid(); // Save this warehouse_name to actual pickup point in QwikShop Database
 
@@ -253,10 +253,12 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
 
     const storeDoc = await Store.findById(shipmentDoc.store);
 
+    orderDoc.status_id = req.body.status_id;
     orderDoc.paidAmount = orderDoc.charges.total;
     orderDoc.amountToConfirm = 0;
 
     orderDoc.deliveredOn = Date.now();
+    shipmentDoc.status_id = req.body.status_id;
     shipmentDoc.deliveredOn = Date.now();
 
     await orderDoc.save({ new: true, validateModifiedOnly: true });
@@ -333,6 +335,7 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
     shipmentId,
     {
       ...req.body,
+      status_id: req.body.status_id,
     },
     { new: true, validateModifiedOnly: true }
   );
@@ -341,6 +344,7 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
     updatedShipment.order._id,
     {
       ...req.body,
+      status_id: req.body.status_id,
     },
     { new: true, validateModifiedOnly: true }
   );

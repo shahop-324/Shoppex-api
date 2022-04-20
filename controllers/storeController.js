@@ -67,6 +67,7 @@ exports.setupStore = catchAsync(async (req, res, next) => {
     image,
     lat,
     long,
+    setupCompleted,
   } = req.body;
 
   // Check if there is no previously assigned subname then assign new one
@@ -735,11 +736,11 @@ exports.updateGeneralStoreInfo = catchAsync(async (req, res, next) => {
   const storeSubNameDocs = await StoreSubName.find({});
 
   const mobileNo =
-      req.body.phone.length === 10
-        ? `+91${req.body.phone}`
-        : req.body.phone.length === 13 && req.body.phone.startsWith("+")
-        ? req.body.phone
-        : `+${req.body.phone.substring(1)}`;
+    req.body.phone.length === 10
+      ? `+91${req.body.phone}`
+      : req.body.phone.length === 13 && req.body.phone.startsWith("+")
+      ? req.body.phone
+      : `+${req.body.phone.substring(1)}`;
 
   const allSubNames = storeSubNameDocs.map((el) => el.subName);
 

@@ -96,15 +96,15 @@ exports.deleteSubCategory = catchAsync(async (req, res, next) => {
 
   const storeProducts = await Product.find({ store: req.store._id });
 
-  const eligibleProducts = storeProducts.filter(
-    (el) => el.shopSubCategory.get("value") === subCategoryId
+  const eligibleProducts = storeProducts.filter((el) =>
+    el.shopSubCategory
+      ? el.shopSubCategory.get("value") === subCategoryId
+      : false
   );
 
   eligibleProducts.forEach(async (element) => {
     await Product.findByIdAndDelete(element._id);
   });
-
-  
 
   // Remove this category
   await SubCategory.findByIdAndDelete(subCategoryId);
@@ -130,10 +130,7 @@ exports.deleteMultipleSubCategory = catchAsync(async (req, res, next) => {
     });
   }
 
-
   // Find all Sub categories & divisions and delete them as well
-
-
 
   // Remove this subCategory
 
