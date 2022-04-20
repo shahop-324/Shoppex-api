@@ -352,6 +352,8 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
     { new: true, validateModifiedOnly: true }
   );
 
+  console.log(updatedShipment, updatedOrder);
+
   res.status(200).json({
     status: "success",
     data: updatedShipment,
