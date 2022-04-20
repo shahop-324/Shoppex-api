@@ -1,5 +1,6 @@
 const catchAsync = require("../utils/catchAsync");
 const WalletTransaction = require("../model/walletTransactionModel");
+const apiFeatures = require("../utils/apiFeatures");
 
 exports.getTransactions = catchAsync(async (req, res, next) => {
   const query = WalletTransaction.find({ store: req.store._id });
