@@ -239,6 +239,8 @@ exports.getPickupPoints = catchAsync(async (req, res, next) => {
 exports.updateShipment = catchAsync(async (req, res, next) => {
   const { shipmentId } = req.params;
 
+  console.log(req.body.status_id, req.body.status);
+
   if (req.body.status === "Delivered") {
     // Mark Payment as completed and add money to on Hold for seller
 
@@ -336,6 +338,7 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
     {
       ...req.body,
       status_id: req.body.status_id,
+
     },
     { new: true, validateModifiedOnly: true }
   );
