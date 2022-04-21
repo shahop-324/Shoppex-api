@@ -318,7 +318,7 @@ exports.editCheckoutField = catchAsync(async (req, res, next) => {
   const storeDoc = await Store.findById(req.store._id);
 
   storeDoc.formFields = storeDoc.formFields.map((el) => {
-    console.log(el._id, fieldId);
+    console.log(el._id, fieldId, el);
     if (el._id.toString() !== fieldId.toString()) {
       return el;
     }
