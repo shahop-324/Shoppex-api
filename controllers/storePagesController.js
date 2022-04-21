@@ -73,7 +73,7 @@ exports.editStorePage = catchAsync(async (req, res, next) => {
       const updatedPage = await StorePages.findByIdAndUpdate(pageId, {
         html,
         name,
-        newSlug,
+        slug: newSlug,
         designJSON: mobileDesign != null ? [] : designJSON,
         mobileDesign: mobileDesign != null ? mobileDesign : [],
         updatedAt: Date.now(),
@@ -91,7 +91,8 @@ exports.editStorePage = catchAsync(async (req, res, next) => {
     const updatedPage = await StorePages.findByIdAndUpdate(pageId, {
       html,
       name,
-      designJSON,
+      designJSON: mobileDesign != null ? [] : designJSON,
+      mobileDesign: mobileDesign != null ? mobileDesign : [],
       updatedAt: Date.now(),
     });
 
