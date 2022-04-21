@@ -980,8 +980,6 @@ exports.verifyWhatsAppNumber = catchAsync(async (req, res, next) => {
 
   const storeDoc = await Store.findById(req.store._id);
 
-  console.log(storeDoc.WAOTP, 'This is STORE WAOTP');
-
   console.log(req.body.otp, storeDoc.WAOTP, "These are two otps to be matched");
 
   if (req.body.otp === storeDoc.WAOTP) {
