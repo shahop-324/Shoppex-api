@@ -318,7 +318,8 @@ exports.editCheckoutField = catchAsync(async (req, res, next) => {
   const storeDoc = await Store.findById(req.store._id);
 
   storeDoc.formFields = storeDoc.formFields.map((el) => {
-    if (el._id !== fieldId) {
+    console.log(el._id, fieldId);
+    if (el._id.toString() !== fieldId.toString()) {
       return el;
     }
     el.name = fieldName;
@@ -349,7 +350,7 @@ exports.deleteCheckoutField = catchAsync(async (req, res, next) => {
 
   storeDoc.formFields = storeDoc.formFields.filter((el) => {
     console.log(el._id, fieldId);
-    return el._id != fieldId;
+    return el._id.toString() != fieldId.toString();
   });
 
   const updatedStore = await storeDoc.save({
