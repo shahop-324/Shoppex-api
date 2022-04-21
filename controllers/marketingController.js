@@ -104,6 +104,7 @@ exports.updateMailCampaign = catchAsync(async (req, res, next) => {
 })
 
 exports.updateSMSCampaign = catchAsync(async (req, res, next) => {
+  console.log(req.body);
   const updatedSMSCampaign = await Marketing.findByIdAndUpdate(
     req.params.id,
     { ...req.body, updatedAt: Date.now() },
