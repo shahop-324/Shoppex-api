@@ -271,14 +271,14 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
         (storeDoc.amountOnHold * 1 +
           orderDoc.charges.total * 1 -
           orderDoc.coinsUsed * 1) *
-        ((100 - storeDoc.transaction_charge) / 100).toFixed(2);
+        ((100 - storeDoc.transaction_charge) / 100);
     } else {
       if (shipmentDoc.carrier !== "Self") {
         storeDoc.amountOnHold =
           (storeDoc.amountOnHold * 1 +
             orderDoc.charges.total * 1 -
             orderDoc.coinsUsed * 1) *
-          ((100 - storeDoc.transaction_charge) / 100).toFixed(2);
+          ((100 - storeDoc.transaction_charge) / 100);
       }
     }
 
@@ -338,7 +338,6 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
     {
       ...req.body,
       status_id: req.body.status_id,
-
     },
     { new: true, validateModifiedOnly: true }
   );

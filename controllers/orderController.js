@@ -65,26 +65,24 @@ exports.createOrder = catchAsync(async (req, res, next) => {
 });
 
 exports.getOrders = catchAsync(async (req, res, next) => {
-  try{
+  try {
     const query = Order.find({ store: req.store._id });
 
     const features = new apiFeatures(query, req.query).textFilter();
     const orders = await features.query;
-  
+
     res.status(200).json({
       status: "success",
       data: orders,
       message: "Orders found successfully!",
     });
-  }
-  catch(error) {
+  } catch (error) {
     console.log(error);
     res.status(400).json({
-      staus: 'error',
+      staus: "error",
       message: error,
-    })
+    });
   }
-  
 });
 
 exports.getAbondonedCarts = catchAsync(async (req, res, next) => {
@@ -150,26 +148,24 @@ exports.getAbondonedCarts = catchAsync(async (req, res, next) => {
 });
 
 exports.getRecentOrders = catchAsync(async (req, res, next) => {
-  try{
-// get latest 6 orders
-const orders = await Order.find({ store: req.store._id })
-.sort({ timestamp: -1 })
-.limit(6);
+  try {
+    // get latest 6 orders
+    const orders = await Order.find({ store: req.store._id })
+      .sort({ timestamp: -1 })
+      .limit(6);
 
-res.status(200).json({
-status: "success",
-data: orders,
-message: "successfully found latest orders",
-});
-  }
-  catch{
+    res.status(200).json({
+      status: "success",
+      data: orders,
+      message: "successfully found latest orders",
+    });
+  } catch {
     console.log(error);
     res.status(400).json({
-      staus: 'error',
+      staus: "error",
       message: error,
-    })
+    });
   }
-  
 });
 
 exports.acceptOrder = catchAsync(async (req, res, next) => {
@@ -295,11 +291,16 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
 
     const orderDoc = cancelledOrder;
 
+    console.log(`Payment Method is ${orderDoc.paymentMode}`);
+
     if (orderDoc.paymentMode !== "cod") {
       // Calculate total - coinsUsed === amount that needs to be refunded
-      const amountToRefund = (
-        orderDoc.charges.total - cancelledOrder.coinsUsed
-      ).toFixed(2);
+      const amountToRefund = orderDoc.charges.total - cancelledOrder.coinsUsed;
+
+      console.log(
+        `Amount to refund is ${amountToRefund}`,
+        amountToRefund * 1 > 0
+      );
 
       if (amountToRefund * 1 > 0) {
         await Refund.create({
