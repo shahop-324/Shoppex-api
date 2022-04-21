@@ -313,6 +313,8 @@ exports.editCheckoutField = catchAsync(async (req, res, next) => {
 
   const { fieldName, type, required, options } = req.body;
 
+  console.log(fieldId, fieldName, type, required, options);
+
   const storeDoc = await Store.findById(req.store._id);
 
   storeDoc.formFields = storeDoc.formFields.map((el) => {
@@ -345,7 +347,10 @@ exports.deleteCheckoutField = catchAsync(async (req, res, next) => {
 
   const storeDoc = await Store.findById(req.store._id);
 
-  storeDoc.formFields = storeDoc.formFields.filter((el) => el._id !== fieldId);
+  storeDoc.formFields = storeDoc.formFields.filter((el) => {
+    console.log(el._id, fieldId);
+    return el._id != fieldId;
+  });
 
   const updatedStore = await storeDoc.save({
     new: true,

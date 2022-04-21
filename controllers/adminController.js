@@ -116,7 +116,7 @@ exports.createPayout = catchAsync(async (req, res, next) => {
       method,
       updatedStore.accountNumber,
       updatedStore.accountHolderName,
-      updatedStore.bank.label,
+      updatedStore.bank ? updatedStore.bank.label : 'NA',
       updatedStore.IFSCCode,
       updatedStore.upiId,
       new_payout.payoutId,
