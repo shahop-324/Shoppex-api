@@ -845,7 +845,15 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
     const user = await User.findById(req.user._id).select("+password");
 
     // 2) Check if POSTED current password is correct
-    if (!(await user.correctPassword(req.body.oldPass, user.password))) {
+    if (!user.password) {
+      res.status(400).json({
+        status: "Failed",
+        message: "You have created your account using mobile No.",
+        wrongPassword: true,
+      });
+
+      return;
+    } else if (!(await user.correctPassword(req.body.oldPass, user.password))) {
       res.status(400).json({
         status: "Failed",
         message: "Your current password is wrong",
