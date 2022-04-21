@@ -281,11 +281,10 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
 
     const customerDoc = await Customer.findById(cancelledOrder.customer._id);
 
-    customerDoc.coins = (
+    customerDoc.coins =
       customerDoc.coins -
       (cancelledOrder.coinsEarned || 0) +
-      (cancelledOrder.coinsUsed || 0)
-    ).toFixed(0);
+      (cancelledOrder.coinsUsed || 0);
 
     await customerDoc.save({ new: true, validateModifiedOnly: true });
 
@@ -295,8 +294,13 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
 
     if (orderDoc.paymentMode !== "cod") {
       // Calculate total - coinsUsed === amount that needs to be refunded
-      const amountToRefund = orderDoc.charges.total - cancelledOrder.coinsUsed;
-      console.log(orderDoc.charges, orderDoc.charges.total, cancelledOrder.coinsUsed);
+      const amountToRefund =
+        (orderDoc.charges.total
+          ? orderDoc.charges.total
+          : orderDoc.charges.get("total")) *
+          1 -
+        cancelledOrder.coinsUsed * 1;
+
       console.log(
         `Amount to refund is ${amountToRefund}`,
         amountToRefund * 1 > 0
