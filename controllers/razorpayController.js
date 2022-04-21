@@ -130,7 +130,7 @@ exports.processPayment = catchAsync(async (req, res, next) => {
 
     if (digest === req.headers["x-razorpay-signature"]) {
       // This is a legit community plan purchase so process it.
-      console.log(req.body.payload.payment.entity);
+      // console.log(req.body.payload.payment.entity);
 
       const payObject = req.body.payload.payment.entity;
 
@@ -155,15 +155,19 @@ exports.processPayment = catchAsync(async (req, res, next) => {
         card_id,
       } = payObject;
 
-      console.log(payObject);
+      // console.log(payObject);
 
       if (payObject.notes.type === "wallet-recharge") {
         // Create a wallet Credit transaction and update store wallet total money
 
         const storeDoc = await Store.findById(notes.storeId);
 
+        console.log(storeDoc.walletAmount*1, amount*1 / 100);
+
         storeDoc.walletAmount =
-          (storeDoc.walletAmount * 1).toFixed(0) + (amount / 100).toFixed(0);
+          (storeDoc.walletAmount * 1) + (amount*1 / 100);
+
+
 
         await storeDoc.save({ new: true, validateModifiedOnly: true });
 
