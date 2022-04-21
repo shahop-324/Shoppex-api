@@ -5,6 +5,8 @@ const randomstring = require('randomstring')
 const Customer = require('../model/customerModel')
 const WalletTransaction = require('../model/walletTransactionModel')
 
+const WalletDebited = require('../Template/Mail/WalletDebited,');
+
 const sgMail = require('@sendgrid/mail')
 const Store = require('../model/storeModel')
 sgMail.setApiKey(process.env.SENDGRID_KEY)
