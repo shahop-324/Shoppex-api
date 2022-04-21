@@ -943,7 +943,7 @@ exports.updateWhatsAppNumber = catchAsync(async (req, res, next) => {
 
     const updatedStore = await Store.findByIdAndUpdate(
       req.store._id,
-      { WhatsAppNumber: mobileNo, WAOTP, WAVerified: false },
+      { WhatsAppNumber: mobileNo, WAOTP: WAOTP, WAVerified: false },
       { new: true, validateModifiedOnly: true }
     );
 
@@ -979,6 +979,8 @@ exports.verifyWhatsAppNumber = catchAsync(async (req, res, next) => {
   // Fetch Store doc and compare user provided and database WAOTP and if they are same then change status of WAVerified to true otherwise inform the user
 
   const storeDoc = await Store.findById(req.store._id);
+
+  console.log(storeDoc.WAOTP, 'This is STORE WAOTP');
 
   console.log(req.body.otp, storeDoc.WAOTP, "These are two otps to be matched");
 
