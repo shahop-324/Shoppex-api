@@ -296,7 +296,7 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
     if (orderDoc.paymentMode !== "cod") {
       // Calculate total - coinsUsed === amount that needs to be refunded
       const amountToRefund = orderDoc.charges.total - cancelledOrder.coinsUsed;
-
+      console.log(orderDoc.charges.total, cancelledOrder.coinsUsed);
       console.log(
         `Amount to refund is ${amountToRefund}`,
         amountToRefund * 1 > 0
