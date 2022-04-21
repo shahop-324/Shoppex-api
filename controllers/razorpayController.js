@@ -119,22 +119,21 @@ exports.createWalletOrder = catchAsync(async (req, res, next) => {
 });
 
 exports.processPayment = catchAsync(async (req, res, next) => {
-
-  try{
+  try {
     const secret = "sbvhqi839pqp’;a;s;sbuhwuhbhauxwvcywg3638228282fhvhyw";
 
     const paymentEntity = req.body.payload.payment.entity;
-  
+
     const shasum = crypto.createHmac("sha256", secret);
     shasum.update(JSON.stringify(req.body));
     const digest = shasum.digest("hex");
-  
+
     if (digest === req.headers["x-razorpay-signature"]) {
       // This is a legit community plan purchase so process it.
       console.log(req.body.payload.payment.entity);
-  
+
       const payObject = req.body.payload.payment.entity;
-  
+
       const {
         notes,
         fee,
@@ -155,20 +154,19 @@ exports.processPayment = catchAsync(async (req, res, next) => {
         invoice_id,
         card_id,
       } = payObject;
-  
+
       console.log(payObject);
-  
+
       if (payObject.notes.type === "wallet-recharge") {
-        
         // Create a wallet Credit transaction and update store wallet total money
-  
+
         const storeDoc = await Store.findById(notes.storeId);
-  
+
         storeDoc.walletAmount =
-          storeDoc.walletAmount * 1 + (amount / 100).toFixed(0);
-  
+          (storeDoc.walletAmount * 1).toFixed(0) + (amount / 100).toFixed(0);
+
         await storeDoc.save({ new: true, validateModifiedOnly: true });
-  
+
         await WalletTransaction.create({
           transactionId: id,
           type: "Credit",
@@ -188,7 +186,7 @@ exports.processPayment = catchAsync(async (req, res, next) => {
           fee,
           tax,
         });
-  
+
         const msg = {
           to: storeDoc.emailAddress, // Change to your recipient
           from: "payments@qwikshop.online", // Change to your verified sender
@@ -197,7 +195,7 @@ exports.processPayment = catchAsync(async (req, res, next) => {
           //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
           html: WalletCredited(storeDoc.storeName, (amount / 100).toFixed(0)),
         };
-  
+
         sgMail
           .send(msg)
           .then(() => {
@@ -206,20 +204,20 @@ exports.processPayment = catchAsync(async (req, res, next) => {
           .catch((error) => {
             console.log("Falied to send wallet recharge notification.");
           });
-  
+
         res.status(200).json({
           status: "success",
           message: "Payment processed successfully!",
         });
       }
-  
+
       if (payObject.notes.type === "qwikshop-plan") {
         const storeId = payObject.notes.storeId;
         const userId = payObject.notes.userId;
         const plan_id = payObject.notes.plan_id;
-  
+
         const storeDoc = await Store.findById(storeId);
-  
+
         if (plan_id === "plan_IxW85OSdILIwpV") {
           storeDoc.currentPlan = "Monthly";
           storeDoc.currentPlanExpiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
@@ -227,15 +225,16 @@ exports.processPayment = catchAsync(async (req, res, next) => {
         }
         if (plan_id === "plan_IxW8v5vM36IGIQ") {
           storeDoc.currentPlan = "Yearly";
-          storeDoc.currentPlanExpiresAt = Date.now() + 365 * 24 * 60 * 60 * 1000;
+          storeDoc.currentPlanExpiresAt =
+            Date.now() + 365 * 24 * 60 * 60 * 1000;
           storeDoc.transaction_charge = 1;
         }
-  
+
         const updatedStoreDoc = await storeDoc.save({
           new: true,
           validateModifiedOnly: true,
         });
-  
+
         res.status(200).json({
           status: "success",
           message: "Store Plan Purchase proccessed succesfully!",
@@ -244,11 +243,7 @@ exports.processPayment = catchAsync(async (req, res, next) => {
     } else {
       // This is not genuine => Just pass it
     }
-  }
-  catch(error) {
+  } catch (error) {
     console.log(error);
   }
-
-
-  
 });
