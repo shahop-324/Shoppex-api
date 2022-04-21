@@ -322,6 +322,7 @@ exports.editCheckoutField = catchAsync(async (req, res, next) => {
     if (el._id.toString() !== fieldId.toString()) {
       return el;
     }
+    el.fieldName = fieldName;
     el.name = fieldName;
     el.type = type;
     el.required = required;
