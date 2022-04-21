@@ -65,26 +65,24 @@ exports.deleteCustomer = catchAsync(async (req, res, next) => {
 });
 
 exports.fetchCustomers = catchAsync(async (req, res, next) => {
-  try{
+  try {
     const query = Customer.find({ store: req.store._id });
 
     const features = new apiFeatures(query, req.query).textFilter();
     const customers = await features.query;
-  
+
     res.status(200).json({
       status: "success",
       message: "Customers found successfully!",
       data: customers,
     });
-  }
-  catch(error) {
+  } catch (error) {
     console.log(error);
     res.status(400).json({
-      staus: 'error',
+      staus: "error",
       message: error,
-    })
+    });
   }
-  
 });
 
 exports.deleteMultipleCustomers = catchAsync(async (req, res, next) => {
@@ -103,103 +101,107 @@ exports.importCustomers = catchAsync(async (req, res, next) => {
 });
 
 exports.sendSMSToCustomer = catchAsync(async (req, res, next) => {
-  // Send sms and create a copy of communication in SMSCommunications
+  try {
+    // Send sms and create a copy of communication in SMSCommunications
 
-  // Check if we have more than 1.5 in our wallet then only allow to send message
+    // Check if we have more than 1.5 in our wallet then only allow to send message
 
-  const storeDoc = await Store.findById(req.store._id);
+    const storeDoc = await Store.findById(req.store._id);
 
-  if (storeDoc.walletAmount > 1.5) {
-    const { message, id } = req.body;
+    if (storeDoc.walletAmount > 1.5) {
+      const { message, id } = req.body;
 
-    const customer = await Customer.findById(id);
+      const customer = await Customer.findById(id);
 
-    console.log(customer, message);
+      console.log(customer, message);
 
-    client.messages
-      .create({
-        body: message,
-        from: "+1 775 535 7258",
-        to: customer.phone,
-      })
+      client.messages
+        .create({
+          body: message,
+          from: "+1 775 535 7258",
+          to: customer.phone,
+        })
 
-      .then(async (message) => {
-        console.log(message.sid);
-        console.log(
-          `Message Sent successfully to ${customer.name} on mobile ${customer.phone}.`
-        );
-        await SMSCommunication.create({
-          store: req.store._id,
-          user: req.user._id,
-          customer: id,
-          message: req.body.message,
-          createdAt: Date.now(),
-        });
-
-        // deduct amount from wallet
-
-        storeDoc.walletAmount = storeDoc.walletAmount - 1.5;
-
-        await storeDoc.save({ new: true, validateModifiedOnly: true });
-
-        const newTransactionDoc = await WalletTransaction.create({
-          transactionId: `pay_${randomstring.generate({
-            length: 10,
-            charset: "alphabetic",
-          })}`,
-          type: "Debit",
-          amount: 1.5,
-          reason: "SMS Communication",
-          timestamp: Date.now(),
-          store: req.store._id,
-        });
-
-        // ! storeName, amount, reason, transactionId
-
-        const msg = {
-          to: storeDoc.emailAddress, // Change to your recipient
-          from: "payments@qwikshop.online", // Change to your verified sender
-          subject: "Your QwikShop Store Wallet has been Debited.",
-          // text:
-          //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
-          html: WalletDebited(
-            storeDoc.storeName,
-            1.5,
-            "SMS Communication",
-            newTransactionDoc.transactionId
-          ),
-        };
-
-        sgMail
-          .send(msg)
-          .then(() => {
-            console.log("Wallet Debited Notification sent successfully!");
-          })
-          .catch((error) => {
-            console.log("Falied to send wallet debited notification.");
+        .then(async (message) => {
+          console.log(message.sid);
+          console.log(
+            `Message Sent successfully to ${customer.name} on mobile ${customer.phone}.`
+          );
+          await SMSCommunication.create({
+            store: req.store._id,
+            user: req.user._id,
+            customer: id,
+            message: req.body.message,
+            createdAt: Date.now(),
           });
 
-        res.status(200).json({
-          status: "success",
-          message: "SMS sent successfully!",
+          // deduct amount from wallet
+
+          storeDoc.walletAmount = storeDoc.walletAmount - 1.5;
+
+          await storeDoc.save({ new: true, validateModifiedOnly: true });
+
+          const newTransactionDoc = await WalletTransaction.create({
+            transactionId: `pay_${randomstring.generate({
+              length: 10,
+              charset: "alphabetic",
+            })}`,
+            type: "Debit",
+            amount: 1.5,
+            reason: "SMS Communication",
+            timestamp: Date.now(),
+            store: req.store._id,
+          });
+
+          // ! storeName, amount, reason, transactionId
+
+          const msg = {
+            to: storeDoc.emailAddress, // Change to your recipient
+            from: "payments@qwikshop.online", // Change to your verified sender
+            subject: "Your QwikShop Store Wallet has been Debited.",
+            // text:
+            //   'Hi we have changed your password as requested by you. If you think its a mistake then please contact us via support room or write to us at support@qwikshop.online',
+            html: WalletDebited(
+              storeDoc.storeName,
+              1.5,
+              "SMS Communication",
+              newTransactionDoc.transactionId
+            ),
+          };
+
+          sgMail
+            .send(msg)
+            .then(() => {
+              console.log("Wallet Debited Notification sent successfully!");
+            })
+            .catch((error) => {
+              console.log("Falied to send wallet debited notification.");
+            });
+
+          res.status(200).json({
+            status: "success",
+            message: "SMS sent successfully!",
+          });
+        })
+        .catch((e) => {
+          console.log(e);
+          console.log(
+            `Failed to send SMS to ${customer.name} on mobile ${customer.phone}`
+          );
+          res.status(400).json({
+            status: "error",
+            message: "Failed to send SMS, Please try again.",
+          });
         });
-      })
-      .catch((e) => {
-        console.log(e);
-        console.log(
-          `Failed to send SMS to ${customer.name} on mobile ${customer.phone}`
-        );
-        res.status(400).json({
-          status: "error",
-          message: "Failed to send SMS, Please try again.",
-        });
+    } else {
+      res.status(400).json({
+        status: "failed",
+        message:
+          "You don't have enough wallet balance to send SMS. Please recharge your wallet.",
       });
-  } else {
-    res.status(400).json({
-      status: "failed",
-      message:
-        "You don't have enough wallet balance to send SMS. Please recharge your wallet.",
-    });
+    }
+  } catch (error) {
+    console.log(error);
   }
 });
 
