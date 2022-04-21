@@ -256,7 +256,15 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
     const storeDoc = await Store.findById(shipmentDoc.store);
 
     orderDoc.status_id = req.body.status_id;
-    orderDoc.paidAmount = orderDoc.charges.total;
+    orderDoc.paidAmount = (
+      orderDoc.charges.total
+        ? orderDoc.charges.total
+        : orderDoc.charges.get("total")
+    )
+      ? orderDoc.charges.total
+        ? orderDoc.charges.total
+        : orderDoc.charges.get("total")
+      : orderDoc.charges.get("total");
     orderDoc.amountToConfirm = 0;
 
     orderDoc.deliveredOn = Date.now();
@@ -269,14 +277,20 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
     if (orderDoc.paymentMode !== "cod") {
       storeDoc.amountOnHold =
         (storeDoc.amountOnHold * 1 +
-          orderDoc.charges.total * 1 -
+          (orderDoc.charges.total
+            ? orderDoc.charges.total
+            : orderDoc.charges.get("total")) *
+            1 -
           orderDoc.coinsUsed * 1) *
         ((100 - storeDoc.transaction_charge) / 100);
     } else {
       if (shipmentDoc.carrier !== "Self") {
         storeDoc.amountOnHold =
           (storeDoc.amountOnHold * 1 +
-            orderDoc.charges.total * 1 -
+            (orderDoc.charges.total
+              ? orderDoc.charges.total
+              : orderDoc.charges.get("total")) *
+              1 -
             orderDoc.coinsUsed * 1) *
           ((100 - storeDoc.transaction_charge) / 100);
       }
@@ -294,7 +308,9 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
       html: OrderDelivered(
         storeDoc.storeName,
         orderDoc.ref,
-        orderDoc.charges.total,
+        orderDoc.charges.total
+          ? orderDoc.charges.total
+          : orderDoc.charges.get("total"),
         `https://qwikshop.online/${storeDoc.subName}`
       ),
     };
@@ -308,7 +324,9 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
       html: OrderDelivered(
         storeDoc.storeName,
         orderDoc.ref,
-        orderDoc.charges.total,
+        orderDoc.charges.total
+          ? orderDoc.charges.total
+          : orderDoc.charges.get("total"),
         `https://qwikshop.online/${storeDoc.subName}`
       ),
     };
@@ -1486,14 +1504,20 @@ exports.getTrackingUpdate = catchAsync(async (req, res, next) => {
         if (orderDoc.paymentMode !== "cod") {
           storeDoc.amountOnHold =
             (storeDoc.amountOnHold * 1 +
-              orderDoc.charges.total * 1 -
+              (orderDoc.charges.total
+                ? orderDoc.charges.total
+                : orderDoc.charges.get("total")) *
+                1 -
               orderDoc.coinsUsed * 1) *
             ((100 - storeDoc.transaction_charge) / 100).toFixed(2);
         } else {
           if (shipmentDoc.carrier !== "Self") {
             storeDoc.amountOnHold =
               (storeDoc.amountOnHold * 1 +
-                orderDoc.charges.total * 1 -
+                (orderDoc.charges.total
+                  ? orderDoc.charges.total
+                  : orderDoc.charges.get("total")) *
+                  1 -
                 orderDoc.coinsUsed * 1) *
               ((100 - storeDoc.transaction_charge) / 100).toFixed(2);
           }
@@ -1512,7 +1536,9 @@ exports.getTrackingUpdate = catchAsync(async (req, res, next) => {
           html: OrderDelivered(
             storeDoc.storeName,
             orderDoc.ref,
-            orderDoc.charges.total,
+            orderDoc.charges.total
+              ? orderDoc.charges.total
+              : orderDoc.charges.get("total"),
             `https://qwikshop.online/${storeDoc.subName}`
           ),
         };
@@ -1526,7 +1552,9 @@ exports.getTrackingUpdate = catchAsync(async (req, res, next) => {
           html: OrderDelivered(
             storeDoc.storeName,
             orderDoc.ref,
-            orderDoc.charges.total,
+            orderDoc.charges.total
+              ? orderDoc.charges.total
+              : orderDoc.charges.get("total"),
             `https://qwikshop.online/${storeDoc.subName}`
           ),
         };
