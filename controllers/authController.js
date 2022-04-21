@@ -839,37 +839,46 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 });
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
-  console.log(req.body);
-  // 1) Get user from collection
-  const user = await User.findById(req.user._id).select("+password");
+  try {
+    console.log(req.body);
+    // 1) Get user from collection
+    const user = await User.findById(req.user._id).select("+password");
 
-  // 2) Check if POSTED current password is correct
-  if (!(await user.correctPassword(req.body.oldPass, user.password))) {
+    // 2) Check if POSTED current password is correct
+    if (!(await user.correctPassword(req.body.oldPass, user.password))) {
+      res.status(400).json({
+        status: "Failed",
+        message: "Your current password is wrong",
+        wrongPassword: true,
+      });
+
+      return;
+    } else {
+      // 3) If so, update password
+      user.password = await bcrypt.hash(req.body.pass, 12);
+      user.passwordConfirm = await bcrypt.hash(req.body.passConfirm, 12);
+      user.passwordChangedAt = Date.now();
+      await user.save();
+      // User.findByIdAndUpdate will NOT work as intended!
+
+      // 4) Log user in, send JWT
+      const token = signToken(req.user._id, req.store._id);
+      console.log(token);
+
+      // Send email to this user's registered email informing about current password change
+
+      res.status(200).json({
+        status: "success",
+        token: token,
+        message: "Password changed successfully!",
+      });
+    }
+  } catch (error) {
+    console.log(error);
     res.status(400).json({
       status: "Failed",
-      message: "Your current password is wrong",
+      message: "Failed to change password",
       wrongPassword: true,
-    });
-
-    return;
-  } else {
-    // 3) If so, update password
-    user.password = await bcrypt.hash(req.body.pass, 12);
-    user.passwordConfirm = await bcrypt.hash(req.body.passConfirm, 12);
-    user.passwordChangedAt = Date.now();
-    await user.save();
-    // User.findByIdAndUpdate will NOT work as intended!
-
-    // 4) Log user in, send JWT
-    const token = signToken(req.user._id, req.store._id);
-    console.log(token);
-
-    // Send email to this user's registered email informing about current password change
-
-    res.status(200).json({
-      status: "success",
-      token: token,
-      message: "Password changed successfully!",
     });
   }
 });
