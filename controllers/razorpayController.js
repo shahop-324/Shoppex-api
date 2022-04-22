@@ -53,8 +53,8 @@ exports.createQwikShopPremiumOrder = catchAsync(async (req, res, next) => {
 
   const newOrder = razorpay.orders.create(
     {
-      // amount: amount * 100,
-      amount: 5 * 100,
+      amount: amount * 100,
+      // amount: 5 * 100,
       currency: "INR",
       receipt: uuidv4(),
       notes: {
