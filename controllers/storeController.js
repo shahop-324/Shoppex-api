@@ -742,12 +742,13 @@ exports.updateGeneralStoreInfo = catchAsync(async (req, res, next) => {
   const storeDoc = await Store.findById(req.store._id);
   const storeSubNameDocs = await StoreSubName.find({});
 
-  const mobileNo =
-    req.body.phone.length === 10
+  const mobileNo = req.body.phone
+    ? req.body.phone.length === 10
       ? `+91${req.body.phone}`
       : req.body.phone.length === 13 && req.body.phone.startsWith("+")
       ? req.body.phone
-      : `+${req.body.phone.substring(1)}`;
+      : `+${req.body.phone.substring(1)}`
+    : undefined;
 
   const allSubNames = storeSubNameDocs.map((el) => el.subName);
 
