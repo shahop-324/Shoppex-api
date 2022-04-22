@@ -70,6 +70,8 @@ exports.setupStore = catchAsync(async (req, res, next) => {
     setupCompleted,
   } = req.body;
 
+
+
   // Check if there is no previously assigned subname then assign new one
 
   const storeSubNameDoc = await StoreSubName.findOne({ store: req.store._id });
@@ -748,7 +750,7 @@ exports.updateGeneralStoreInfo = catchAsync(async (req, res, next) => {
       : req.body.phone.length === 13 && req.body.phone.startsWith("+")
       ? req.body.phone
       : `+${req.body.phone.substring(1)}`
-    : undefined;
+    : storeDoc.phone;
 
   const allSubNames = storeSubNameDocs.map((el) => el.subName);
 
