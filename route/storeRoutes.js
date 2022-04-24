@@ -3,6 +3,7 @@ const router = express.Router();
 
 const storeController = require("../controllers/storeController");
 const authController = require("../controllers/authController");
+const manageController = require("../controllers/manageController");
 
 router.get(
   "/getDetails",
@@ -33,6 +34,18 @@ router.patch(
 );
 
 // Manage Routes
+router.patch(
+  "/manage/order-flow",
+  authController.protect,
+  manageController.updateOrderFlow
+);
+
+router.patch(
+  "/manage/share-message",
+  authController.protect,
+  manageController.updateShareMessage
+);
+
 router.patch(
   "/manage/favicon",
   authController.protect,

@@ -413,6 +413,22 @@ const storeSchema = new mongoose.Schema({
   privateMessagingToken: {
     type: String,
   },
+  shareStoreMessage: {
+    type: String,
+  },
+  shareProductMessage: {
+    type: String,
+  },
+  shareCategoryMessage: {
+    type: String,
+  },
+  shareSubCategoryMessage: {
+    type: String,
+  },
+  orderFlow: {
+    type: String,
+    default: "regular",
+  },
 });
 
 const Store = new mongoose.model("Store", storeSchema);
