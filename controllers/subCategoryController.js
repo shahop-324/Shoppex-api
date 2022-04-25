@@ -121,8 +121,8 @@ exports.deleteMultipleSubCategory = catchAsync(async (req, res, next) => {
   for (let element of req.body.subCategoryIds) {
     // Remove all products in this SubCategory
 
-    const eligibleProducts = storeProducts.filter(
-      (el) => el.shopSubCategory ? el.shopSubCategory.get("value") === element : false
+    const eligibleProducts = storeProducts.filter((el) =>
+      el.shopSubCategory ? el.shopSubCategory.get("value") === element : false
     );
 
     eligibleProducts.forEach(async (element) => {
