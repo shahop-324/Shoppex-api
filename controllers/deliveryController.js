@@ -1644,14 +1644,6 @@ exports.assignSelfShipping = catchAsync(async (req, res, next) => {
   // just update carrier as self shipping => Notify Customer
 
   try {
-    let pickupPoint;
-
-    if (req.body.pointId) {
-      pickupPoint = await PickupPoint.findById(req.body.pointId);
-    } else {
-      pickupPoint = await PickupPoint.findById(req.body.pickupPointId.value);
-    }
-
     let shipment;
 
     if (req.body.ref) {
