@@ -264,6 +264,11 @@ exports.updateProduct = catchAsync(async (req, res, next) => {
         discountedPrice: req.body.discountedPrice || req.body.price,
         lowestPrice: lowest,
         highestPrice: highest,
+        quantityInStock: req.body.outOfStock
+          ? 0
+          : productDoc.quantityInStock > 5
+          ? productDoc.quantityInStock
+          : 100,
       },
       { new: true, validateModifiedOnly: true }
     );
