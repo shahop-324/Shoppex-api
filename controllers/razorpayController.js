@@ -6,6 +6,8 @@ const Store = require("../model/storeModel");
 const WalletTransaction = require("../model/walletTransactionModel");
 const WalletCredited = require("../Template/Mail/WalletCredited");
 
+const admin = require("../cloud_messaging");
+
 const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SENDGRID_KEY);
 
@@ -190,6 +192,49 @@ exports.processPayment = catchAsync(async (req, res, next) => {
           fee,
           tax,
         });
+
+        try{
+          const notification_options = {
+            priority: "high",
+            timeToLive: 60 * 60 * 24,
+          };
+
+          const privateMessagingToken = storeDoc.privateMessagingToken;
+          const message = `New Order Transaction of Rs.${(amount / 100).toFixed(
+            2
+          )} Proccessed successfully!`;
+          const options = notification_options;
+
+          const payload = {
+            notification: {
+              title: "New Wallet Transaction",
+              body: message,
+              icon: "default",
+            },
+            data: {
+              // Here we can send data in an object format
+              type: "new_transaction", // ['low_stock', 'new_review', 'new_question', 'link', 'new_order', 'new_transaction']
+              // url: if we want to send user to a webpage after clicking on notification
+              p_tab: "2",
+            },
+          };
+
+          if (privateMessagingToken) {
+            admin
+              .messaging()
+              .sendToDevice(privateMessagingToken, payload, options)
+              .then((response) => {
+                console.log("Mobile Notification sent successfully!");
+              })
+              .catch((error) => {
+                console.log(error, "Failed to send mobile notification");
+              });
+          }
+
+        }
+        catch(error) {
+          console.log(error);
+        }
 
         const msg = {
           to: storeDoc.emailAddress, // Change to your recipient

@@ -133,6 +133,10 @@ const storeSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  codAmount: {
+    type: Number, // Field which tells us the total COD amount that has been delivered
+    default: 0,
+  },
   createdAt: {
     type: Date,
     default: Date.now(),
@@ -428,6 +432,10 @@ const storeSchema = new mongoose.Schema({
   orderFlow: {
     type: String,
     default: "regular",
+  },
+  showGoogleMap: {
+    type: Boolean,
+    default: false,
   },
 });
 

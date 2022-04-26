@@ -14,6 +14,8 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = require("twilio")(accountSid, authToken);
 
+const admin = require("../cloud_messaging");
+
 const sgMail = require("@sendgrid/mail");
 const OrderCancelled = require("../Template/Mail/OrderCancelled");
 const RefundProccessed = require("../Template/Mail/RefundProccessed");
@@ -265,6 +267,64 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
       );
     }
 
+    const storeDoc = await Store.findById(cancelledOrder.store);
+
+    cancelledOrder.items.forEach(async (e) => {
+      // e.product => Id of product
+      // e.quantity => Total Quantity of This purchased Product
+      // Find Product
+      const thisItem = await Product.findByIdAndUpdate(e.product);
+
+      thisItem.quantityInStock = thisItem.quantityInStock + e.quantity;
+
+      thisItem.outOfStock = false;
+
+      // check if thisItem.quantityInStock is less than 5 then send push notification
+      if (thisItem.quantityInStock * 1 < 5) {
+        try {
+          const notification_options = {
+            priority: "high",
+            timeToLive: 60 * 60 * 24,
+          };
+
+          // console.log(new_order.charges);
+
+          const privateMessagingToken = storeDoc.privateMessagingToken;
+          const message = `${thisItem.productName} is low in stock. Current stock is ${thisItem.quantityInStock} Items.`;
+          const options = notification_options;
+
+          const payload = {
+            notification: {
+              title: "Item Low in stock",
+              body: message,
+              icon: "default",
+            },
+            data: {
+              // Here we can send data in an object format
+              type: "low_stock", // ['low_stock', 'new_review', 'new_question', 'link', 'new_order', 'new_transaction']
+              // url: if we want to send user to a webpage after clicking on notification
+              p_tab: "2",
+            },
+          };
+
+          if (privateMessagingToken) {
+            admin
+              .messaging()
+              .sendToDevice(privateMessagingToken, payload, options)
+              .then((response) => {
+                console.log("Mobile Notification sent successfully!");
+              })
+              .catch((error) => {
+                console.log(error, "Failed to send mobile notification");
+              });
+          }
+        } catch (error) {
+          console.log("Following FCM error occured", error);
+        }
+      }
+      await thisItem.save({ new: true, validateModifiedOnly: true });
+    });
+
     // Mark corresponding shipment as cancelled
 
     const cancelledShipment = await Shipment.findByIdAndUpdate(
@@ -276,8 +336,6 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
       },
       { new: true, validateModifiedOnly: true }
     );
-
-    const storeDoc = await Store.findById(cancelledOrder.store);
 
     const customerDoc = await Customer.findById(cancelledOrder.customer._id);
 
@@ -314,6 +372,49 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
           amount: amountToRefund,
           createdAt: Date.now(),
         });
+
+        // Send Mobile notification
+
+        try {
+          const notification_options = {
+            priority: "high",
+            timeToLive: 60 * 60 * 24,
+          };
+
+          const privateMessagingToken = storeDoc.privateMessagingToken;
+          const message = `New Refund of Rs.${(amount / 100).toFixed(
+            2
+          )} Proccessed successfully towards Order #${cancelledOrder.ref}`;
+          const options = notification_options;
+
+          const payload = {
+            notification: {
+              title: "New Refund Proccessed Successfully!",
+              body: message,
+              icon: "default",
+            },
+            data: {
+              // Here we can send data in an object format
+              type: "new_transaction", // ['low_stock', 'new_review', 'new_question', 'link', 'new_order', 'new_transaction']
+              // url: if we want to send user to a webpage after clicking on notification
+              p_tab: "2",
+            },
+          };
+
+          if (privateMessagingToken) {
+            admin
+              .messaging()
+              .sendToDevice(privateMessagingToken, payload, options)
+              .then((response) => {
+                console.log("Mobile Notification sent successfully!");
+              })
+              .catch((error) => {
+                console.log(error, "Failed to send mobile notification");
+              });
+          }
+        } catch (error) {
+          console.log(error);
+        }
 
         // ! amount, name, orderId, storeName
 
@@ -519,6 +620,45 @@ exports.askForReview = catchAsync(async (req, res, next) => {
             reason: "Asked for review",
             timestamp: Date.now(),
           });
+
+          try {
+            const notification_options = {
+              priority: "high",
+              timeToLive: 60 * 60 * 24,
+            };
+
+            const privateMessagingToken = storeDoc.privateMessagingToken;
+            const message = `New Wallet Transaction of Rs.${1.5} Proccessed successfully towards Review request.`;
+            const options = notification_options;
+
+            const payload = {
+              notification: {
+                title: "New Wallet Transaction",
+                body: message,
+                icon: "default",
+              },
+              data: {
+                // Here we can send data in an object format
+                type: "new_transaction", // ['low_stock', 'new_review', 'new_question', 'link', 'new_order', 'new_transaction']
+                // url: if we want to send user to a webpage after clicking on notification
+                p_tab: "2",
+              },
+            };
+
+            if (privateMessagingToken) {
+              admin
+                .messaging()
+                .sendToDevice(privateMessagingToken, payload, options)
+                .then((response) => {
+                  console.log("Mobile Notification sent successfully!");
+                })
+                .catch((error) => {
+                  console.log(error, "Failed to send mobile notification");
+                });
+            }
+          } catch (error) {
+            console.log(error);
+          }
 
           // ! storeName, amount, reason, transactionId
 

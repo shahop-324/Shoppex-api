@@ -17,6 +17,8 @@ const randomstring = require("randomstring");
 const WalletTransaction = require("../model/walletTransactionModel");
 const WalletDebited = require("../Template/Mail/WalletDebited");
 
+const admin = require("../cloud_messaging");
+
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = require("twilio")(accountSid, authToken);
@@ -284,7 +286,7 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
           orderDoc.coinsUsed * 1) *
         ((100 - storeDoc.transaction_charge) / 100);
     } else {
-      if (shipmentDoc.carrier !== "Self") {
+      if (shipmentDoc.carrier !== "Self" || shipmentDoc.carrier !== "self") {
         storeDoc.amountOnHold =
           (storeDoc.amountOnHold * 1 +
             (orderDoc.charges.total
@@ -293,6 +295,11 @@ exports.updateShipment = catchAsync(async (req, res, next) => {
               1 -
             orderDoc.coinsUsed * 1) *
           ((100 - storeDoc.transaction_charge) / 100);
+      } else {
+        storeDoc.codAmount =
+          storeDoc.codAmount + orderDoc.charges.total
+            ? orderDoc.charges.total
+            : orderDoc.charges.get("total") * 1;
       }
     }
 
@@ -455,6 +462,47 @@ exports.assignShiprocket = catchAsync(async (req, res, next) => {
       timestamp: Date.now(),
       store: shipment.store,
     });
+
+    try {
+      const notification_options = {
+        priority: "high",
+        timeToLive: 60 * 60 * 24,
+      };
+
+      const privateMessagingToken = storeDoc.privateMessagingToken;
+      const message = `New Wallet Transaction of Rs.${(
+        shipment.order.deliveryCharge * 1
+      ).toFixed(2)} Proccessed successfully towards shipment booking.`;
+      const options = notification_options;
+
+      const payload = {
+        notification: {
+          title: "New Wallet Transaction",
+          body: message,
+          icon: "default",
+        },
+        data: {
+          // Here we can send data in an object format
+          type: "new_transaction", // ['low_stock', 'new_review', 'new_question', 'link', 'new_order', 'new_transaction']
+          // url: if we want to send user to a webpage after clicking on notification
+          p_tab: "2",
+        },
+      };
+
+      if (privateMessagingToken) {
+        admin
+          .messaging()
+          .sendToDevice(privateMessagingToken, payload, options)
+          .then((response) => {
+            console.log("Mobile Notification sent successfully!");
+          })
+          .catch((error) => {
+            console.log(error, "Failed to send mobile notification");
+          });
+      }
+    } catch (error) {
+      console.log(error);
+    }
 
     // ! storeName, amount, reason, transactionId => WALLET DEBITED
 
@@ -1511,7 +1559,10 @@ exports.getTrackingUpdate = catchAsync(async (req, res, next) => {
               orderDoc.coinsUsed * 1) *
             ((100 - storeDoc.transaction_charge) / 100).toFixed(2);
         } else {
-          if (shipmentDoc.carrier !== "Self") {
+          if (
+            shipmentDoc.carrier !== "Self" ||
+            shipmentDoc.carrier !== "self"
+          ) {
             storeDoc.amountOnHold =
               (storeDoc.amountOnHold * 1 +
                 (orderDoc.charges.total

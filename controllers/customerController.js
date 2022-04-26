@@ -8,6 +8,8 @@ const randomstring = require("randomstring");
 const WalletTransaction = require("../model/walletTransactionModel");
 const WalletDebited = require("../Template/Mail/WalletDebited");
 
+const admin = require("../cloud_messaging");
+
 const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SENDGRID_KEY);
 
@@ -153,6 +155,45 @@ exports.sendSMSToCustomer = catchAsync(async (req, res, next) => {
             timestamp: Date.now(),
             store: req.store._id,
           });
+
+          try {
+            const notification_options = {
+              priority: "high",
+              timeToLive: 60 * 60 * 24,
+            };
+
+            const privateMessagingToken = storeDoc.privateMessagingToken;
+            const message = `New Wallet Transaction of Rs.${1.5} Proccessed successfully towards SMS Communication.`;
+            const options = notification_options;
+
+            const payload = {
+              notification: {
+                title: "New Wallet Transaction",
+                body: message,
+                icon: "default",
+              },
+              data: {
+                // Here we can send data in an object format
+                type: "new_transaction", // ['low_stock', 'new_review', 'new_question', 'link', 'new_order', 'new_transaction']
+                // url: if we want to send user to a webpage after clicking on notification
+                p_tab: "2",
+              },
+            };
+
+            if (privateMessagingToken) {
+              admin
+                .messaging()
+                .sendToDevice(privateMessagingToken, payload, options)
+                .then((response) => {
+                  console.log("Mobile Notification sent successfully!");
+                })
+                .catch((error) => {
+                  console.log(error, "Failed to send mobile notification");
+                });
+            }
+          } catch (error) {
+            console.log(error);
+          }
 
           // ! storeName, amount, reason, transactionId
 
