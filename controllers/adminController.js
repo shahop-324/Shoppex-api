@@ -15,7 +15,7 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = require("twilio")(accountSid, authToken);
 
-const admin = require("../cloud_messaging");
+const { admin } = require("../cloud_messaging");
 
 // Create Admin
 exports.createAdmin = catchAsync(async (req, res, next) => {

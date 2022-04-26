@@ -8,7 +8,7 @@ const randomstring = require("randomstring");
 const WalletTransaction = require("../model/walletTransactionModel");
 const WalletDebited = require("../Template/Mail/WalletDebited");
 
-const admin = require("../cloud_messaging");
+const { admin } = require("../cloud_messaging");
 
 const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SENDGRID_KEY);

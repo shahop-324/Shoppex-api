@@ -6,7 +6,7 @@ const Store = require("../model/storeModel");
 const WalletTransaction = require("../model/walletTransactionModel");
 const WalletCredited = require("../Template/Mail/WalletCredited");
 
-const admin = require("../cloud_messaging");
+const { admin } = require("../cloud_messaging");
 
 const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SENDGRID_KEY);

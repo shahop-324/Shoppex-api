@@ -17,7 +17,7 @@ const randomstring = require("randomstring");
 const WalletTransaction = require("../model/walletTransactionModel");
 const WalletDebited = require("../Template/Mail/WalletDebited");
 
-const admin = require("../cloud_messaging");
+const { admin } = require("../cloud_messaging");
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;

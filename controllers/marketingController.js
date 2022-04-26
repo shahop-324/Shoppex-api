@@ -7,7 +7,7 @@ const WalletTransaction = require("../model/walletTransactionModel");
 
 const WalletDebited = require("../Template/Mail/WalletDebited");
 
-const admin = require("../cloud_messaging");
+const { admin } = require("../cloud_messaging");
 
 const sgMail = require("@sendgrid/mail");
 const Store = require("../model/storeModel");

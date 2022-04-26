@@ -14,7 +14,7 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = require("twilio")(accountSid, authToken);
 
-const admin = require("../cloud_messaging");
+const { admin } = require("../cloud_messaging");
 
 const sgMail = require("@sendgrid/mail");
 const OrderCancelled = require("../Template/Mail/OrderCancelled");
