@@ -437,6 +437,10 @@ const storeSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  opened: {
+    type: Boolean,
+    default: true,
+  }
 });
 
 const Store = new mongoose.model("Store", storeSchema);

@@ -6,7 +6,7 @@ const authController = require("../controllers/authController");
 const manageController = require("../controllers/manageController");
 
 router.get(
-  "/getDetails",
+  "/getDetails/:storeId?",
   authController.protect,
   storeController.getStoreDetails
 );

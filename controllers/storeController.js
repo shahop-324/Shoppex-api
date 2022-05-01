@@ -40,7 +40,13 @@ const filterObj = (obj, ...allowedFields) => {
 // Get store details
 
 exports.getStoreDetails = catchAsync(async (req, res, next) => {
-  const storeDoc = await Store.findById(req.store._id);
+  let storeDoc;
+  if (req.params.storeId) {
+    storeDoc = await Store.findById(req.params.storeId);
+  } else {
+    storeDoc = await Store.findById(req.store._id);
+  }
+
   res.status(200).json({
     status: "success",
     data: storeDoc,
@@ -69,8 +75,6 @@ exports.setupStore = catchAsync(async (req, res, next) => {
     long,
     setupCompleted,
   } = req.body;
-
-
 
   // Check if there is no previously assigned subname then assign new one
 
