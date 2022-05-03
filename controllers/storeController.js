@@ -25,6 +25,8 @@ const sampleReturnPolicy = require("../Template/Policy/sampleRefundPolicy");
 const sampleShippingPolicy = require("../Template/Policy/sampleShippingPolicy");
 const sampleDisclaimerPolicy = require("../Template/Policy/sampleDisclaimerPolicy");
 
+const Razorpay = require("razorpay");
+
 // this function will return you jwt token
 const signToken = (userId, storeId) =>
   jwt.sign({ userId, storeId }, process.env.JWT_SECRET);
@@ -36,6 +38,44 @@ const filterObj = (obj, ...allowedFields) => {
   });
   return newObj;
 };
+
+const razorpay = new Razorpay({
+  key_id: "rzp_live_dqej1lr2FIM2j9",
+  key_secret: "OrZIEPnliOgAX1mHPZO9FaCp",
+});
+
+exports.generatePaymentLink = catchAsync(async (req, res, next) => {
+  try {
+    const paymentLink = await razorpay.paymentLink.create({
+      upi_link: true,
+      amount: req.params.amount * 100,
+      currency: "INR",
+
+      description: `Towards transaction at ${req.store.storeName}`,
+      customer: {
+        name: req.params.customerName,
+        contact: req.params.customerPhone,
+      },
+      notify: { sms: true },
+      reminder_enable: true,
+      notes: {
+        store_id: req.store._id,
+        amount: req.params.amount,
+        type: "invoice-payment",
+      },
+    });
+
+    console.log(paymentLink);
+
+    res.status(200).json({
+      status: "success",
+      message: "Payment link generated successfully!",
+      data: paymentLink,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 // Get store details
 
@@ -911,6 +951,27 @@ exports.updatePreference = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     message: "Preferences Updated successfully!",
+    data: updatedStore,
+  });
+});
+
+exports.updateMenuCards = catchAsync(async (req, res, next) => {
+  const storeDoc = await Store.findById(req.store._id);
+
+  storeDoc.menuCards = storeDoc.menuCards.filter(
+    (el) => !req.body.excludedImages.includes(el)
+  );
+
+  storeDoc.menuCards = [...req.body.images, ...storeDoc.menuCards];
+
+  const updatedStore = await storeDoc.save({
+    new: true,
+    validateModifiedOnly: true,
+  });
+
+  res.status(200).json({
+    status: "success",
+    message: "Menu Cards Updated successfully!",
     data: updatedStore,
   });
 });

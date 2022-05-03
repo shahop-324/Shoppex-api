@@ -15,6 +15,7 @@ router.get(
 )
 
 router.patch('/accept', authController.protect, orderController.acceptOrder)
+router.patch('/updateShippingAddress', authController.protect, orderController.editShippingAddress);
 router.patch('/cancel', authController.protect, orderController.cancelOrder)
 router.post('/askForReview/:orderId', authController.protect, orderController.askForReview);
 

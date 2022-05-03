@@ -440,7 +440,12 @@ const storeSchema = new mongoose.Schema({
   opened: {
     type: Boolean,
     default: true,
-  }
+  },
+  menuCards: [
+    {
+      type: String,
+    },
+  ],
 });
 
 const Store = new mongoose.model("Store", storeSchema);

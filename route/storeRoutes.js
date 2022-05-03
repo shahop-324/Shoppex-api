@@ -5,6 +5,8 @@ const storeController = require("../controllers/storeController");
 const authController = require("../controllers/authController");
 const manageController = require("../controllers/manageController");
 
+router.post('/generate-payment-link/:amount/:customerName/:customerPhone', authController.protect, storeController.generatePaymentLink);
+
 router.get(
   "/getDetails/:storeId?",
   authController.protect,
@@ -17,6 +19,15 @@ router.post(
   authController.protect,
   storeController.generatePolicy
 ); // Auto generate policies
+
+
+router.patch(
+  "/menu-cards/",
+  authController.protect,
+  storeController.updateMenuCards
+); // Update menu cards
+
+
 router.patch(
   "/preference/update",
   authController.protect,

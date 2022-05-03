@@ -22,6 +22,106 @@ const RefundProccessed = require("../Template/Mail/RefundProccessed");
 // const OrderAccepted = require('../Template/OrderAccepted');
 sgMail.setApiKey(process.env.SENDGRID_KEY);
 
+exports.editShippingAddress = catchAsync(async (req, res, next) => {
+  const { orderId, name, address, pincode, city, state, contact } = req.body;
+  // check if this order is booked is shipped with shiprocket
+  const orderDoc = await Order.findById(orderId);
+  const shipmentDoc = await Shipment.findById(orderDoc.shipment);
+  if (orderDoc.carrier === "Shiprocket") {
+    // Shipped with shiprocket/
+    // Try to update shipping address using shiprocket API
+    let token = null;
+
+    const options = {
+      method: "POST",
+      url: "https://apiv2.shiprocket.in/v1/external/auth/login",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: "jyoti.shah@qwikshop.online",
+        password: "op12345@shah",
+      }),
+    };
+
+    request(options, async (error, response) => {
+      if (error) throw new Error(error);
+      // console.log(response.body)
+      JSON.parse(response.body);
+      const resp = await JSON.parse(response.body);
+
+      // console.log(resp.token)
+
+      token = resp.token;
+
+      var options = {
+        method: "POST",
+        url: "https://apiv2.shiprocket.in/v1/external/orders/address/update",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          order_id: shipmentDoc.shiprocket_order_id,
+          shipping_customer_name: name,
+          shipping_phone: contact,
+          shipping_address: address,
+          shipping_city: city,
+          shipping_state: state,
+          shipping_country: "India",
+          shipping_pincode: pincode * 1,
+        }),
+      };
+      request(options, async (error, response) => {
+        if (error) throw new Error(error);
+        console.log(response.body);
+
+        // Update orderDoc shipping address
+
+        orderDoc.shippingAddress.set("shipping_name", name);
+        orderDoc.shippingAddress.set("shipping_address1", address);
+        orderDoc.shippingAddress.set("shipping_city", city);
+        orderDoc.shippingAddress.set("shipping_state", state);
+        orderDoc.shippingAddress.set("shipping_zip", pincode);
+        orderDoc.shippingAddress.set("shipping_contact", contact);
+
+        const updatedOrder = await orderDoc.save({
+          new: true,
+          validateModifiedOnly: true,
+        });
+
+        res.status(200).json({
+          message: "Shipping address updated successfully!",
+          status: "success",
+          data: updatedOrder,
+        });
+      });
+    });
+
+    // If successful => Then also update this order in our database
+  } else {
+    // Shipped via Self service
+    // Update in our database
+    orderDoc.shippingAddress.set("shipping_name", name);
+    orderDoc.shippingAddress.set("shipping_address1", address);
+    orderDoc.shippingAddress.set("shipping_city", city);
+    orderDoc.shippingAddress.set("shipping_state", state);
+    orderDoc.shippingAddress.set("shipping_zip", pincode);
+    orderDoc.shippingAddress.set("shipping_contact", contact);
+
+    const updatedOrder = await orderDoc.save({
+      new: true,
+      validateModifiedOnly: true,
+    });
+
+    res.status(200).json({
+      message: "Shipping address updated successfully!",
+      status: "success",
+      data: updatedOrder,
+    });
+  }
+});
+
 exports.createOrder = catchAsync(async (req, res, next) => {
   const {
     storeId,
@@ -173,7 +273,6 @@ exports.getRecentOrders = catchAsync(async (req, res, next) => {
 exports.acceptOrder = catchAsync(async (req, res, next) => {
   //  Move order to ACCEPTED state
   //  Move shipment to ACCEPTED state
-
   try {
     let acceptedOrder;
 

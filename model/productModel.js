@@ -1,6 +1,10 @@
 const mongoose = require('mongoose')
 
 const productSchema = new mongoose.Schema({
+  upcoming: {
+    type: Boolean,
+    default: false,
+  },
   id: {
     type: String,
   },
