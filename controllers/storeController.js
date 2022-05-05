@@ -49,8 +49,7 @@ const razorpay = new Razorpay({
 exports.generatePaymentLink = catchAsync(async (req, res, next) => {
   try {
     const paymentLink = await razorpay.paymentLink.create({
-      accept_partial: true,
-      first_min_partial_amount: 100,
+      accept_partial: false,
 
       amount: req.params.amount * 100,
       currency: "INR",

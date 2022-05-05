@@ -4,6 +4,8 @@ const transactionSchema = new mongoose.Schema({
   type: {
     type: String,
     enum: [
+      'Invoice Payment',
+      'COD Contactless Payment',
       'Payout',
       'Customer Order',
       'Seller subscription',
