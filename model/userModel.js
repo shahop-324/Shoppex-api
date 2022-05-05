@@ -15,13 +15,16 @@ const userSchema = new mongoose.Schema({
     type: String,
   },
   phone: { type: String },
-  password: { // unselect
+  password: {
+    // unselect
     type: String,
   },
-  passwordConfirm: { // unselect
+  passwordConfirm: {
+    // unselect
     type: String,
   },
-  passwordChangedAt: { // unselect
+  passwordChangedAt: {
+    // unselect
     type: Date,
   },
   stores: [
@@ -74,22 +77,27 @@ const userSchema = new mongoose.Schema({
   },
   upgraded: {
     type: Boolean,
-    defauult: false,
+    default: false,
   },
-  joinedAt: { // unselect
+  joinedAt: {
+    // unselect
     type: Date,
     default: Date.now(),
   },
-  updatedAt: { // unselect
+  updatedAt: {
+    // unselect
     type: Date,
   },
-  passwordResetToken: { // unselect
+  passwordResetToken: {
+    // unselect
     type: String,
   },
-  passwordResetExpires: { // unselect
+  passwordResetExpires: {
+    // unselect
     type: Date,
   },
-  loginOTP: { // unselect
+  loginOTP: {
+    // unselect
     type: Number,
   },
   resetPasswordOTP: {

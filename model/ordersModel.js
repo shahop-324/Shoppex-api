@@ -142,6 +142,24 @@ const orderSchema = new mongoose.Schema({
   carrier: {
     type: String,
   },
+  paymentLinkId: {
+    type: String,
+  },
+  paymentLink: {
+    type: String,
+  },
+  partially_paid: {
+    type: Boolean,
+    default: false,
+  },
+  paid_amount: {
+    type: Number,
+    default: 0,
+  },
+  paid_fully: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 orderSchema.pre(/^find/, function (next) {

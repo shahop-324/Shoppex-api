@@ -15,6 +15,8 @@ const sgMail = require("@sendgrid/mail");
 const NewStore = require("../Template/Mail/NewStore");
 sgMail.setApiKey(process.env.SENDGRID_KEY);
 
+const request = require("request");
+
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = require("twilio")(accountSid, authToken);
@@ -47,7 +49,9 @@ const razorpay = new Razorpay({
 exports.generatePaymentLink = catchAsync(async (req, res, next) => {
   try {
     const paymentLink = await razorpay.paymentLink.create({
-      upi_link: true,
+      accept_partial: true,
+      first_min_partial_amount: 100,
+
       amount: req.params.amount * 100,
       currency: "INR",
 
@@ -1224,21 +1228,31 @@ exports.switchStore = catchAsync(async (req, res, next) => {
 // While logging in store also send permissions along with token & Populate name, image of store in user
 
 exports.updateBanner = catchAsync(async (req, res, next) => {
-  const storeDoc = await Store.findById(req.store._id);
+  try {
+    const storeDoc = await Store.findById(req.store._id);
+    const banners = req.body.banners.map((e) => {
+      Object.keys(e).forEach((key) => {
+        if (e[key] === null) {
+          delete e[key];
+        }
+      });
+      return e;
+    });
 
-  const banners = req.body.banners.map((el) => ({ ...el, file: null }));
+    storeDoc.banners = banners;
+    const updatedStoreDoc = await storeDoc.save({
+      new: true,
+      validateModifiedOnly: true,
+    });
 
-  storeDoc.banners = banners;
-  const updatedStoreDoc = await storeDoc.save({
-    new: true,
-    validateModifiedOnly: true,
-  });
-
-  res.status(200).json({
-    status: "success",
-    data: updatedStoreDoc,
-    message: "Store Banners Updated successfully!",
-  });
+    res.status(200).json({
+      status: "success",
+      data: updatedStoreDoc,
+      message: "Store Banners Updated successfully!",
+    });
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 exports.updateHeroBanner = catchAsync(async (req, res, next) => {
@@ -1529,5 +1543,51 @@ exports.uninstallMailchimp = catchAsync(async (req, res, next) => {
     status: "success",
     message: "WhatsApp Chat Uninstalled Successfully!",
     data: updatedStore,
+  });
+});
+
+exports.getSuggestedDomains = catchAsync(async (req, res, next) => {
+  var options = {
+    method: "GET",
+    url: `https://api.godaddy.com/v1/domains/suggest?query=${req.params.keyword}`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization:
+        "sso-key fXqZsMnwbt6T_3Y8LdwRavTjjWMHg6Mbj5R:M8gtj3iN3PiShgRQCMaz4E",
+    },
+  };
+
+  request(options, async (error, response) => {
+    const domains = JSON.parse(response["body"]);
+    const result = [];
+
+    domains.forEach((element) => {
+      var availOptions = {
+        method: "GET",
+        url: `https://api.godaddy.com/v1/domains/available?domain=${
+          element["domain"]
+        }&currency=INR&forTransfer=${false}`,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:
+            "sso-key fXqZsMnwbt6T_3Y8LdwRavTjjWMHg6Mbj5R:M8gtj3iN3PiShgRQCMaz4E",
+        },
+      };
+
+      request(availOptions, async (err, resp) => {
+        console.log(JSON.parse(resp["body"]));
+        if (result["code"] !== "TOO_MANY_REQUESTS") {
+          result.push(JSON.parse(resp["body"]));
+        }
+      });
+    });
+
+    setTimeout(() => {
+      res.status(200).json({
+        status: "success",
+        length: result.length,
+        data: result,
+      });
+    }, 1000);
   });
 });

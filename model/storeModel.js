@@ -446,6 +446,46 @@ const storeSchema = new mongoose.Schema({
       type: String,
     },
   ],
+
+  enableUnboxingVideo: {
+    type: Boolean,
+    default: false,
+  },
+  enablePartialCharge: {
+    type: Boolean,
+    default: false,
+  },
+  partialChargePercentage: {
+    type: Number,
+    default: 10,
+  },
+  minPartialChargeAmount: {
+    type: Number,
+    default: 100,
+  },
+  maxPartialChargeAmount: {
+    type: Number,
+    default: 1000,
+  },
+  connectedDomains: [
+    {
+      type: String,
+    },
+  ],
+  senderEmail: {
+    type: String,
+  },
+  smsSignature: {
+    type: String,
+  },
+  domainConnected: {
+    type: Boolean,
+    default: false,
+  },
+  domainRequested: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const Store = new mongoose.model("Store", storeSchema);

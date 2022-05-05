@@ -5,6 +5,8 @@ const storeController = require("../controllers/storeController");
 const authController = require("../controllers/authController");
 const manageController = require("../controllers/manageController");
 
+router.post('/getSuggestedDomains/:keyword', storeController.getSuggestedDomains);
+
 router.post('/generate-payment-link/:amount/:customerName/:customerPhone', authController.protect, storeController.generatePaymentLink);
 
 router.get(

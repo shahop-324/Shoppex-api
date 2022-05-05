@@ -22,6 +22,13 @@ const RefundProccessed = require("../Template/Mail/RefundProccessed");
 // const OrderAccepted = require('../Template/OrderAccepted');
 sgMail.setApiKey(process.env.SENDGRID_KEY);
 
+const Razorpay = require("razorpay");
+
+const razorpay = new Razorpay({
+  key_id: "rzp_live_dqej1lr2FIM2j9",
+  key_secret: "OrZIEPnliOgAX1mHPZO9FaCp",
+});
+
 exports.editShippingAddress = catchAsync(async (req, res, next) => {
   const { orderId, name, address, pincode, city, state, contact } = req.body;
   // check if this order is booked is shipped with shiprocket
@@ -664,6 +671,17 @@ exports.cancelOrder = catchAsync(async (req, res, next) => {
   } catch (error) {
     console.log(error);
   }
+});
+
+exports.requestOrderPayment = catchAsync(async (req, res, next) => {
+  const orderDoc = await Order.findById(req.params.orderId);
+  if (orderDoc.paymentLinkId) {
+    razorpay.paymentLink.notifyBy(orderDoc.paymentLinkId, "sms");
+  }
+  res.status(200).json({
+    status: "success",
+    message: "Payment Link Sent successfully!",
+  });
 });
 
 exports.askForReview = catchAsync(async (req, res, next) => {
