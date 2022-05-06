@@ -446,7 +446,6 @@ const storeSchema = new mongoose.Schema({
       type: String,
     },
   ],
-
   enableUnboxingVideo: {
     type: Boolean,
     default: false,
