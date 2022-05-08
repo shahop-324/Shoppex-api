@@ -293,15 +293,16 @@ const storeSchema = new mongoose.Schema({
       type: Map,
     },
   ],
+
   GAMeasurementId: {
     type: String,
   },
   GAInstalled: { type: Boolean, default: false },
-  GMCVerificationCode: {
+  GMCHTMLTag: {
     type: String,
   },
   GMCInstalled: { type: Boolean, default: false },
-  GSCVerificationCode: {
+  GSCHTMLTag: {
     type: String,
   },
   GSCInstalled: { type: Boolean, default: false },
@@ -322,14 +323,17 @@ const storeSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  adWordsVerificationCode: {
+  adWordsGlobalSiteTag: {
+    type: String,
+  },
+  adWordsConversionLabel: {
     type: String,
   },
   adWordsInstalled: {
     type: Boolean,
     default: false,
   },
-  FacebookPixelId: {
+  MetaPixelCode: {
     type: String,
   },
   PixelInstalled: {
@@ -343,6 +347,88 @@ const storeSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+
+  optionMonsterCampaignInlineCode: {
+    type: String,
+  },
+  optionMonsterGlobalInlineCode: {
+    type: String,
+  },
+  optionMonsterInstalled: {
+    type: Boolean,
+    default: false,
+  },
+  privyAccountIdentifier: {
+    type: String,
+  },
+  privyInstalled: {
+    type: Boolean,
+  },
+  clarityTrackingCode: {
+    type: String,
+  },
+  clarityInstalled: {
+    type: Boolean,
+    default: false,
+  },
+  driftJSEmbedCode: {
+    type: String,
+  },
+  driftChatInstalled: {
+    type: Boolean,
+    default: false,
+  },
+  hotjarTrackingCode: {
+    type: String,
+  },
+  hotjarInstalled: {
+    type: Boolean,
+    default: false,
+  },
+  hellobarEmbedCode: {
+    type: String,
+  },
+  hellobarInstalled: {
+    type: Boolean,
+    default: false,
+  },
+  thermalOrderReceiptInstalled: {
+    type: Boolean,
+    default: false,
+  },
+  productSocialSharingInstalled: {
+    type: Boolean,
+    default: false,
+  },
+  fastDeliveryBadge: {
+    type: Boolean,
+    default: false,
+  },
+  trustedSiteBadge: {
+    type: Boolean,
+    default: false,
+  },
+  qualityControlApprovedBadge: {
+    type: Boolean,
+    default: false,
+  },
+  easyReturnReplacementBadge: {
+    type: Boolean,
+    default: false,
+  },
+  satisfactionGuranteedBadge: {
+    type: Boolean,
+    default: false,
+  },
+  fullySecuredSSLCheckoutBadge: {
+    type: Boolean,
+    default: false,
+  },
+  MadeInIndiaBadge: {
+    type: Boolean,
+    default: false,
+  },
+
   currentPlan: {
     type: String,
     default: "Free",
