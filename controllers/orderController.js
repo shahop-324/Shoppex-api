@@ -175,7 +175,7 @@ exports.createOrder = catchAsync(async (req, res, next) => {
 
 exports.getOrders = catchAsync(async (req, res, next) => {
   try {
-    const query = Order.find({ store: req.store._id });
+    const query = Order.find({ store: '627806f69e39c7450f08eac1' });
 
     const features = new apiFeatures(query, req.query).textFilter();
     const orders = await features.query;

@@ -420,7 +420,7 @@ exports.assignShiprocket = catchAsync(async (req, res, next) => {
     shipment = await Shipment.findById(req.body.shipmentId);
   }
 
-  const orderDoc = await Order.findById(shipment.order._id);
+  const orderDoc = await Order.findById('627895cbba07bfd53e718030');
   const customerDoc = await Customer.findById(orderDoc.customer._id);
 
   const storeDoc = await Store.findById(shipment.store);
@@ -490,15 +490,15 @@ exports.assignShiprocket = catchAsync(async (req, res, next) => {
       };
 
       if (privateMessagingToken) {
-        admin
-          .messaging()
-          .sendToDevice(privateMessagingToken, payload, options)
-          .then((response) => {
-            console.log("Mobile Notification sent successfully!");
-          })
-          .catch((error) => {
-            console.log(error, "Failed to send mobile notification");
-          });
+        // admin
+        //   .messaging()
+        //   .sendToDevice(privateMessagingToken, payload, options)
+        //   .then((response) => {
+        //     console.log("Mobile Notification sent successfully!");
+        //   })
+        //   .catch((error) => {
+        //     console.log(error, "Failed to send mobile notification");
+        //   });
       }
     } catch (error) {
       console.log(error);
@@ -535,46 +535,46 @@ exports.assignShiprocket = catchAsync(async (req, res, next) => {
       ),
     };
 
-    sgMail
-      .send(msg)
-      .then(() => {
-        console.log("Wallet Debited Notification sent successfully!");
-      })
-      .catch((error) => {
-        console.log("Falied to send wallet debited notification.");
-      });
+    // sgMail
+    //   .send(msg)
+    //   .then(() => {
+    //     console.log("Wallet Debited Notification sent successfully!");
+    //   })
+    //   .catch((error) => {
+    //     console.log("Falied to send wallet debited notification.");
+    //   });
 
-    sgMail
-      .send(msgToCustomer)
-      .then(() => {
-        console.log(
-          "Order Acceptance Notification sent successfully to customer"
-        );
-      })
-      .catch((error) => {
-        console.log(
-          "Falied to send order acceptance notification to customer."
-        );
-      });
+    // sgMail
+    //   .send(msgToCustomer)
+    //   .then(() => {
+    //     console.log(
+    //       "Order Acceptance Notification sent successfully to customer"
+    //     );
+    //   })
+    //   .catch((error) => {
+    //     console.log(
+    //       "Falied to send order acceptance notification to customer."
+    //     );
+    //   });
 
     // console.log(pickupPoint, shipment, storeDoc)
 
-    client.messages
-      .create({
-        body: `Hi, ${shipment.customer.name}, your order #${shipment.order.ref} from ${storeDoc.name} has been booked for shipment via Delhivery. You can check your order status by visiting qwikshop.online/${storeDoc.subName}`,
-        from: "+1 775 535 7258",
-        to: shipment.customer.phone,
-      })
-      .then((message) => {
-        console.log(message.sid);
-        console.log(
-          `Successfully sent Notification to ${shipment.customer.name}`
-        );
-      })
-      .catch((e) => {
-        console.log(e);
-        console.log(`Failed to send Notification to ${shipment.customer.name}`);
-      });
+    // client.messages
+    //   .create({
+    //     body: `Hi, ${shipment.customer.name}, your order #${shipment.order.ref} from ${storeDoc.name} has been booked for shipment via Delhivery. You can check your order status by visiting qwikshop.online/${storeDoc.subName}`,
+    //     from: "+1 775 535 7258",
+    //     to: shipment.customer.phone,
+    //   })
+    //   .then((message) => {
+    //     console.log(message.sid);
+    //     console.log(
+    //       `Successfully sent Notification to ${shipment.customer.name}`
+    //     );
+    //   })
+    //   .catch((e) => {
+    //     console.log(e);
+    //     console.log(`Failed to send Notification to ${shipment.customer.name}`);
+    //   });
 
     // Find order which is being shipped
     // Find shipment and get related details
@@ -627,6 +627,8 @@ exports.assignShiprocket = catchAsync(async (req, res, next) => {
 
       console.log(itemsArray);
 
+      console.log(orderDoc);
+
       setTimeout(async () => {
         var options = {
           method: "POST",
@@ -640,13 +642,13 @@ exports.assignShiprocket = catchAsync(async (req, res, next) => {
             order_date: orderDoc.createdAt,
             pickup_location: pickupPoint.warehouse_name,
             comment: `Seller: M/s ${storeDoc.name}`,
-            billing_customer_name: orderDoc.billingAddress.get("shipping_name"),
-            billing_last_name: orderDoc.billingAddress.get("shipping_name"),
-            billing_address: orderDoc.billingAddress.get("shipping_address1"),
-            billing_city: orderDoc.billingAddress.get("shipping_city"),
-            billing_pincode: orderDoc.billingAddress.get("shipping_zip"),
+            billing_customer_name: orderDoc.billingAddress.get("billing_name"),
+            billing_last_name: orderDoc.billingAddress.get("billing_name"),
+            billing_address: orderDoc.billingAddress.get("billing_address1"),
+            billing_city: orderDoc.billingAddress.get("billing_city"),
+            billing_pincode: orderDoc.billingAddress.get("billing_zip"),
             billing_state:
-              orderDoc.billingAddress.get("shipping_state") || "Madhya Pradesh",
+              orderDoc.billingAddress.get("billing_state") || "Madhya Pradesh",
             billing_country: "India",
             billing_email: customerDoc.email,
             billing_phone: customerDoc.phone,
@@ -655,7 +657,7 @@ exports.assignShiprocket = catchAsync(async (req, res, next) => {
               orderDoc.shippingAddress.get("shipping_name"),
             shipping_last_name: orderDoc.shippingAddress.get("shipping_name"),
             shipping_address: orderDoc.shippingAddress.get("shipping_address1"),
-            shipping_city: orderDoc.shippingAddress.get("shipping_city"),
+            shipping_city: orderDoc.shippingAddress.get("shipping_city") || 'Ghaziabad',
             shipping_pincode: orderDoc.shippingAddress.get("shipping_zip"),
             shipping_country: "India",
             shipping_state:

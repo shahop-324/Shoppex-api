@@ -403,7 +403,7 @@ exports.getProducts = catchAsync(async (req, res, next) => {
   try {
     // Get all products of a store
 
-    const query = Product.find({ store: req.store._id });
+    const query = Product.find({ store: '627806f69e39c7450f08eac1' });
 
     const features = new apiFeatures(query, req.query).textFilter();
     const products = await features.query;
