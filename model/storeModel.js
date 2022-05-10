@@ -571,6 +571,10 @@ const storeSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  disableGuestVerification: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const Store = new mongoose.model("Store", storeSchema);
