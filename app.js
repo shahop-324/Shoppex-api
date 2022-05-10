@@ -62,30 +62,7 @@ const app = express()
 
 app.use(
   cors({
-    origin: [
-      'https://127.0.0.1:3000',
-      'https://127.0.0.1:3030',
-      'http://127.0.0.1:3000',
-      'http://localhost:3000',
-      'http://localhost:3030',
-      'https://127.0.0.1:4000',
-      'http://127.0.0.1:4000',
-      'http://localhost:4000',
-      'https://zapier.com',
-      'https://www.zapier.com',
-      'https://www.qwikshop.online',
-      'https://www.app.qwikshop.online',
-      'https://qwikshop.online',
-      'https://app.qwikshop.online',
-      'https://www.admin.qwikshop.online',
-      'https://admin.qwikshop.online',
-      'https://app.shiprocket.in',
-      'https://api.shiprocket.in',
-      'https://www.app.shiprocket.in',
-      'https://www.api.shiprocket.in',
-      'https://shiprocket.in',
-      'https://www.shiprocket.in'
-    ],
+    
     methods: ['GET', 'PATCH', 'POST', 'DELETE', 'PUT'],
     credentials: true,
   }),
