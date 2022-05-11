@@ -420,10 +420,23 @@ exports.assignShiprocket = catchAsync(async (req, res, next) => {
     shipment = await Shipment.findById(req.body.shipmentId);
   }
 
-  const orderDoc = await Order.findById('627895cbba07bfd53e718030');
+  const orderDoc = await Order.findById(shipment.order);
   const customerDoc = await Customer.findById(orderDoc.customer._id);
 
-  const storeDoc = await Store.findById(shipment.store);
+  let storeDoc;
+
+  storeDoc = await Store.findById(shipment.store);
+
+  if(storeDoc.walletAmount * 1 < shipment.order.deliveryCharge * 1) {
+    if(storeDoc.amountOnHold > (shipment.order.deliveryCharge * 1 - storeDoc.walletAmount * 1)) {
+      // we are sure we can transfer money to wallet from amount on hold
+      storeDoc.walletAmount = (shipment.order.deliveryCharge * 1) + 1;
+      // update amountOnHold
+      storeDoc.amountOnHold = (storeDoc.amountOnHold * 1) - (shipment.order.deliveryCharge * 1 - storeDoc.walletAmount * 1);
+      // save store doc and update reference
+      storeDoc = await storeDoc.save({new: true, validateModifiedOnly: true});
+    }
+  }
 
   // ! NOTE => Proceed to book shipment only if store has enough money in their qwikshop wallet
 
@@ -490,15 +503,15 @@ exports.assignShiprocket = catchAsync(async (req, res, next) => {
       };
 
       if (privateMessagingToken) {
-        // admin
-        //   .messaging()
-        //   .sendToDevice(privateMessagingToken, payload, options)
-        //   .then((response) => {
-        //     console.log("Mobile Notification sent successfully!");
-        //   })
-        //   .catch((error) => {
-        //     console.log(error, "Failed to send mobile notification");
-        //   });
+        admin
+          .messaging()
+          .sendToDevice(privateMessagingToken, payload, options)
+          .then((response) => {
+            console.log("Mobile Notification sent successfully!");
+          })
+          .catch((error) => {
+            console.log(error, "Failed to send mobile notification");
+          });
       }
     } catch (error) {
       console.log(error);
