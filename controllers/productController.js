@@ -61,7 +61,6 @@ exports.addProduct = catchAsync(async (req, res, next) => {
     highestPrice: highest,
     store: req.store._id,
     freeDelivery: qualifyForFreeDelivery,
-    upcoming: false,
   });
 
   if (shopCategory) {
