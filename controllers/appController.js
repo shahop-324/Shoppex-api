@@ -4,8 +4,8 @@ const AWS = require("aws-sdk");
 const s3 = new AWS.S3({
   signatureVersion: "v4",
   region: "ap-south-1",
-  accessKeyId: "AKIA3EQQNGREDXST6CHF",
-  secretAccessKey: "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",
+  accessKeyId: "AKIARWFU6ILBXBP5JCPB",
+  secretAccessKey: "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",
 });
 
 
@@ -17,7 +17,7 @@ exports.generateUploadURL = catchAsync((req, res, next) => {
   s3.getSignedUrl(
     "putObject",
     {
-      Bucket: "qwikshop",
+      Bucket: "qwikshop-in",
       Key: key,
       ContentType: fileType,
     },
